@@ -1,5 +1,5 @@
 /*
- * Sonner toast motion overrides — slide in from the right, slide out to the right.
+ * Sonner toast motion overrides — slide in from the right with a bounce, slide out to the right.
  *
  * Sonner v2 renders each toast as <li data-sonner-toast data-front
  * data-mounted data-removed data-swipe-out ...>. We animate the front toast
@@ -21,24 +21,32 @@
  * inline `--gap: <n>px` (falling back to 14px).
  */
 
-/* Enter: slide in from the right edge of the viewport */
+/* Enter: slide in from the right edge of the viewport, with a bounce */
 [data-sonner-toast][data-front='true']:not([data-removed='true']) {
-  animation: sonner-slide-in-right 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) backwards;
+  animation: sonner-slide-in-right 0.8s cubic-bezier(0.21, 1.02, 0.73, 1) backwards;
 }
 
 /* Exit: slide back out to the right edge */
 [data-sonner-toast][data-front='true'][data-removed='true']:not([data-swipe-out='true']) {
-  animation: sonner-slide-out-right 0.35s ease-in forwards;
+  animation: sonner-slide-out-right 0.65s ease-in forwards;
 }
 
 @keyframes sonner-slide-in-right {
-  from {
+  0% {
     transform: translate3d(calc(100% + var(--gap, 14px)), 0, 0);
     opacity: 0;
   }
-  to {
-    transform: translate3d(0, 0, 0);
+  55% {
     opacity: 1;
+  }
+  75% {
+    transform: translate3d(-14px, 0, 0); /* overshoot past the resting spot */
+  }
+  88% {
+    transform: translate3d(5px, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
   }
 }
 

@@ -5,8 +5,8 @@ import './toaster.css'
 /**
  * Global toast host (Sonner), theme-aware.
  *
- * Positioned bottom-right; the front toast slides in from the right edge and
- * slides back out to the right when dismissed (see toaster.css).
+ * Positioned bottom-right; the front toast slides in from the right edge with a
+ * bounce and slides back out to the right when dismissed (see toaster.css).
  */
 export function Toaster() {
   const { theme } = useTheme()
