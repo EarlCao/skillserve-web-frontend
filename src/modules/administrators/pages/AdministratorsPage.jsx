@@ -210,16 +210,16 @@ export default function AdministratorsPage() {
       </div>
 
       <Card bodyClassName="p-0">
-        <div className="flex flex-wrap items-center gap-3 border-b border-base-200 p-4">
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto border-b border-base-200 p-4">
           <SearchInput
             value={search}
             onChange={(event) => applyFilter(setSearch)(event.target.value)}
             placeholder="Search by name or email…"
-            className="w-full sm:w-64"
+            className="w-40 shrink min-w-0 sm:w-56"
           />
 
           <select
-            className="select select-bordered select-sm"
+            className="select select-bordered select-sm w-28 shrink-0"
             value={statusFilter}
             onChange={(event) => applyFilter(setStatusFilter)(event.target.value)}
             aria-label="Filter by status"
@@ -230,10 +230,11 @@ export default function AdministratorsPage() {
           </select>
 
           <select
-            className="select select-bordered select-sm"
+            className="select select-bordered select-sm w-32 shrink-0"
             value={roleFilter}
             onChange={(event) => applyFilter(setRoleFilter)(event.target.value)}
             aria-label="Filter by role"
+            title={roleFilter || 'All roles'}
           >
             <option value="">All roles</option>
             {roleNames.map((role) => (
@@ -244,20 +245,32 @@ export default function AdministratorsPage() {
           </select>
 
           <select
-            className="select select-bordered select-sm"
+            className="select select-bordered select-sm w-40 shrink-0"
             value={sort}
             onChange={(event) => applyFilter(setSort)(event.target.value)}
             aria-label="Sort by"
           >
-            <option value="created_at">Sort: Created date</option>
-            <option value="name">Sort: Name</option>
+            <option value="created_at">Created date</option>
+            <option value="name">Name</option>
           </select>
 
-          <Button variant="outline" size="sm" onClick={() => setDirection((value) => (value === 'asc' ? 'desc' : 'asc'))}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 whitespace-nowrap"
+            onClick={() => setDirection((value) => (value === 'asc' ? 'desc' : 'asc'))}
+          >
             {direction === 'asc' ? 'Ascending' : 'Descending'}
           </Button>
 
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh administrators">
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            aria-label="Refresh administrators"
+          >
             <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
         </div>
