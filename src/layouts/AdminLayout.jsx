@@ -1,7 +1,9 @@
-import { Outlet } from 'react-router-dom'
-import { LayoutDashboard, Moon, Sun } from 'lucide-react'
+import { Link, Outlet } from 'react-router-dom'
+import { KeyRound, LayoutDashboard, LogOut, Moon, Sun } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
+import { useAuth } from '../contexts/AuthContext'
+import { useLogout } from '../modules/authentication/hooks/useLogout'
 
 /**
  * Shared admin layout: responsive drawer sidebar + topbar + content outlet.
@@ -10,6 +12,15 @@ import { useTheme } from '../contexts/ThemeContext'
  */
 export default function AdminLayout() {
   const { theme, toggleTheme } = useTheme()
+  const { user } = useAuth()
+  const logoutMutation = useLogout()
+
+  const initials = (user?.name ?? 'A')
+    .split(' ')
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   return (
     <div className="drawer lg:drawer-open">
@@ -28,6 +39,7 @@ export default function AdminLayout() {
           <div className="flex-1">
             <h1 className="text-lg font-semibold">{APP_NAME} Admin</h1>
           </div>
+
           <button
             type="button"
             className="btn btn-circle btn-ghost"
@@ -36,6 +48,46 @@ export default function AdminLayout() {
           >
             {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
           </button>
+
+          <div className="dropdown dropdown-end ml-1">
+            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar placeholder">
+              <div className="w-10 rounded-full bg-primary text-primary-content">
+                <span className="text-sm font-semibold">{initials}</span>
+              </div>
+            </div>
+            <ul
+              tabIndex={0}
+              className="menu dropdown-content z-50 mt-2 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+            >
+              <li className="menu-title">
+                <div className="flex flex-col">
+                  <span className="truncate font-semibold text-base-content">{user?.name}</span>
+                  <span className="truncate text-xs font-normal text-base-content/60">{user?.email}</span>
+                </div>
+              </li>
+              <li>
+                <Link to="/admin/change-password">
+                  <KeyRound className="size-4" />
+                  Change password
+                </Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
+                  className="text-error"
+                >
+                  {logoutMutation.isPending ? (
+                    <span className="loading loading-spinner loading-xs" aria-hidden="true" />
+                  ) : (
+                    <LogOut className="size-4" />
+                  )}
+                  Sign out
+                </button>
+              </li>
+            </ul>
+          </div>
         </header>
 
         <main className="flex-1 p-4 md:p-6">

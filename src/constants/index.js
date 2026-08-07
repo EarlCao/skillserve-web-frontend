@@ -13,8 +13,18 @@ export const STORAGE_KEYS = {
 /** Available daisyui themes. */
 export const THEMES = ['light', 'dark']
 
+/** Window events the app listens to. */
+export const APP_EVENTS = {
+  unauthorized: 'skillserve:unauthorized',
+}
+
 /** React Query cache keys (grow as modules are added). */
-export const QUERY_KEYS = {}
+export const QUERY_KEYS = {
+  auth: {
+    all: ['auth'],
+    me: ['auth', 'me'],
+  },
+}
 
 /** Common HTTP status codes. */
 export const HTTP_STATUS = {

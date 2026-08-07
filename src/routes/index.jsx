@@ -1,15 +1,19 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import EmptyState from '../components/common/EmptyState'
 import AdminLayout from '../layouts/AdminLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import BlankLayout from '../layouts/BlankLayout'
+import { GuestOnly, RequireAuth } from '../modules/authentication/routes/guards'
+import ChangePasswordPage from '../modules/authentication/pages/ChangePasswordPage'
+import LoginPage from '../modules/authentication/pages/LoginPage'
 
 /**
- * Application routing structure — Phase 0.
+ * Application routing.
  *
- * Only the shared layouts are registered. Feature routes (auth, dashboard,
- * users, bookings, ...) will be added to each layout's `children` in later
- * phases.
+ * - `/login` is guest-only (authenticated users are redirected to /admin).
+ * - The admin area is protected by RequireAuth; feature routes are added to
+ *   AdminLayout's children in later phases, optionally wrapped in
+ *   RequireRole / RequirePermission.
  */
 export const router = createBrowserRouter([
   {
@@ -17,32 +21,45 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: (
-          <EmptyState
-            title="SkillServe"
-            description="The shared foundation is ready. Feature modules start in Phase 1."
-          />
-        ),
+        element: <Navigate to="/login" replace />,
       },
     ],
   },
   {
-    path: '/admin',
-    element: <AdminLayout />,
+    element: <GuestOnly />,
     children: [
       {
-        index: true,
-        element: <EmptyState title="Dashboard" description="Admin module routes will live here." />,
+        element: <AuthLayout />,
+        children: [
+          {
+            path: '/login',
+            element: <LoginPage />,
+          },
+        ],
       },
     ],
   },
   {
-    path: '/auth',
-    element: <AuthLayout />,
+    element: <RequireAuth />,
     children: [
       {
-        index: true,
-        element: <EmptyState title="Authentication" description="Login and register pages will live here." />,
+        path: '/admin',
+        element: <AdminLayout />,
+        children: [
+          {
+            index: true,
+            element: (
+              <EmptyState
+                title="Dashboard"
+                description="Admin module routes (administrators, providers, services, bookings) arrive in Phase 2+."
+              />
+            ),
+          },
+          {
+            path: 'change-password',
+            element: <ChangePasswordPage />,
+          },
+        ],
       },
     ],
   },

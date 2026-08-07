@@ -1,30 +1,75 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { AuthContext } from '../contexts/AuthContext'
+import { APP_EVENTS, QUERY_KEYS, STORAGE_KEYS } from '../constants'
+import { useLocalStorage } from '../hooks/useLocalStorage'
+import { queryClient } from '../lib/queryClient'
+import { api } from '../services/api'
 
 /**
- * Provides the auth context.
+ * Provides the auth context backed by the backend API.
  *
- * Phase 0: exposes the shape only. Phase 1 will wire login/logout to the
- * backend API and populate `user`.
+ * - Token is persisted in localStorage and attached by the axios interceptor.
+ * - The authenticated user is hydrated from GET /auth/me via React Query.
+ * - login()/logout() are consumed through module mutations (useLogin/useLogout).
  */
 export default function AuthProvider({ children }) {
-  // Phase 1 will wire the setters when login/logout flows are implemented.
-  const [user] = useState(null)
-  const [isLoading] = useState(false)
+  const [token, setToken] = useLocalStorage(STORAGE_KEYS.token, null)
+
+  const meQuery = useQuery({
+    queryKey: QUERY_KEYS.auth.me,
+    queryFn: () => api.get('/auth/me'),
+    enabled: Boolean(token),
+    retry: false,
+    staleTime: Infinity,
+  })
+
+  // A 401 anywhere (expired/revoked token) drops the session immediately.
+  useEffect(() => {
+    const onUnauthorized = () => setToken(null)
+
+    window.addEventListener(APP_EVENTS.unauthorized, onUnauthorized)
+
+    return () => window.removeEventListener(APP_EVENTS.unauthorized, onUnauthorized)
+  }, [setToken])
+
+  const login = useCallback(
+    async (credentials) => {
+      const response = await api.post('/auth/login', credentials)
+
+      // Hydrate the "me" query with the login payload so no extra round-trip.
+      queryClient.setQueryData(QUERY_KEYS.auth.me, response)
+      setToken(response.data.token)
+
+      return response.data
+    },
+    [setToken],
+  )
+
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout')
+    } catch {
+      // The token may already be invalid server-side — always clear locally.
+    } finally {
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.auth.all })
+      setToken(null)
+    }
+  }, [setToken])
+
+  const user = meQuery.data?.data ?? null
+  const isAuthenticated = Boolean(token && user)
+  const isLoading = Boolean(token) && meQuery.isPending
 
   const value = useMemo(
     () => ({
       user,
-      isAuthenticated: Boolean(user),
+      isAuthenticated,
       isLoading,
-      login: async () => {
-        throw new Error('login() is not implemented yet (Phase 1).')
-      },
-      logout: async () => {
-        throw new Error('logout() is not implemented yet (Phase 1).')
-      },
+      login,
+      logout,
     }),
-    [user, isLoading],
+    [user, isAuthenticated, isLoading, login, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

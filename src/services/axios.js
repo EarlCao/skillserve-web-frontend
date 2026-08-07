@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { API_BASE_URL, STORAGE_KEYS } from '../constants'
+import { API_BASE_URL, APP_EVENTS, HTTP_STATUS, STORAGE_KEYS } from '../constants'
 import { getErrorMessage } from '../lib/errors'
 
 /**
@@ -35,6 +35,14 @@ axiosInstance.interceptors.response.use(
   (error) => {
     const status = error.response?.status ?? null
     const data = error.response?.data
+    const isLoginRequest = error.config?.url?.includes('/auth/login')
+
+    // Expired or revoked session → drop the stored token and let the
+    // AuthProvider clear the authenticated state.
+    if (status === HTTP_STATUS.UNAUTHORIZED && !isLoginRequest) {
+      localStorage.removeItem(STORAGE_KEYS.token)
+      window.dispatchEvent(new Event(APP_EVENTS.unauthorized))
+    }
 
     // Normalize the error so every caller gets a consistent shape.
     error.normalized = {
