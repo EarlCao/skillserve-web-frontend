@@ -63,7 +63,7 @@ export default function AdministratorManagementPage() {
         </div>
       </div>
 
-      <div role="tablist" aria-label="Administrator management sections" className="tabs tabs-bordered w-fit">
+      <div role="tablist" aria-label="Administrator management sections" className="tabs tabs-border w-fit">
         {TABS.map(({ id, label }) => (
           <button
             key={id}

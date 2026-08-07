@@ -1,35 +1,54 @@
 /*
- * Sonner toast motion overrides.
+ * Sonner toast motion overrides — slide in from the right, slide out to the right.
  *
- * Sonner v2 animates toasts by transitioning a `--y` custom property that
- * drives `transform: var(--y)` (plus `opacity`) on each toast. These rules
- * only target the *front* toast — the one being added or dismissed — so the
- * stacked-behind toasts keep sonner's default lift/scale behavior.
+ * Sonner v2 renders each toast as <li data-sonner-toast data-front
+ * data-mounted data-removed data-swipe-out ...>. We animate the front toast
+ * with explicit CSS keyframes bound to stable attributes, so the motion does
+ * not depend on sonner's internal `--y` custom-property transition timing
+ * (which can silently no-op when the `data-mounted` flip happens before the
+ * browser paints the off-screen frame).
  *
- * Result:
- *   - Enter: slides in from the right edge of the viewport
- *   - Exit:  slides back out to the right edge
- *   - Swipe-to-dismiss keeps sonner's native swipe-out keyframes
- *     (excluded via `:not([data-swipe-out='true'])`), so the toast still
- *     follows the finger in the direction it was dragged.
+ *  - Enter: `data-front` is set from the very first frame a toast renders and
+ *    stays matched, so the slide-in animation starts immediately and runs to
+ *    completion even after sonner flips `data-mounted` to true.
+ *  - Exit:  when `data-removed` becomes true the toast switches to the
+ *    slide-out animation, held with `forwards` until sonner unmounts it.
+ *  - Swipe-to-dismiss keeps sonner's native swipe-out keyframes (excluded via
+ *    `:not([data-swipe-out='true'])`), so the toast still follows the finger
+ *    in the drag direction.
  *
- * Notes:
- *   - Once mounted, the resting position is left to sonner's own
- *     `[data-sonner-toast][data-mounted='true'] { --y: translateY(0) }` — we
- *     must NOT override it with `!important`, or we'd also override sonner's
- *     hover-expanded rule (`[data-mounted='true'][data-expanded='true']`)
- *     and break the stacked-toast expansion layout.
- *   - `!important` is required to beat sonner's position-based rules (e.g.
- *     `[data-sonner-toast][data-y-position='bottom'] { --y: translateY(100%) }`),
- *     which are injected by the library at runtime.
+ * Note: `@keyframes` values using `var(--gap)` resolve against the toaster's
+ * inline `--gap: <n>px` (falling back to 14px).
  */
 
-/* 1. A freshly mounted toast starts off-screen to the right… */
-[data-sonner-toast][data-front='true']:not([data-mounted='true']) {
-  --y: translate3d(calc(100% + var(--gap, 14px)), 0, 0) !important;
+/* Enter: slide in from the right edge of the viewport */
+[data-sonner-toast][data-front='true']:not([data-removed='true']) {
+  animation: sonner-slide-in-right 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) backwards;
 }
 
-/* 2. …and slides back out to the right when dismissed */
+/* Exit: slide back out to the right edge */
 [data-sonner-toast][data-front='true'][data-removed='true']:not([data-swipe-out='true']) {
-  --y: translate3d(calc(100% + var(--gap, 14px)), 0, 0) !important;
+  animation: sonner-slide-out-right 0.35s ease-in forwards;
+}
+
+@keyframes sonner-slide-in-right {
+  from {
+    transform: translate3d(calc(100% + var(--gap, 14px)), 0, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes sonner-slide-out-right {
+  from {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(calc(100% + var(--gap, 14px)), 0, 0);
+    opacity: 0;
+  }
 }
