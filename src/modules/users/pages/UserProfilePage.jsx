@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { ArrowLeft, Ban, Pencil, Power, Trash2, Wrench } from 'lucide-react'
+import { ArrowLeft, Ban, Pencil, Power, Trash2, UserCheck, Wrench } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
@@ -9,7 +9,7 @@ import Skeleton from '../../../components/ui/Skeleton'
 import ErrorState from '../../../components/common/ErrorState'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import { useDisclosure } from '../../../hooks/useDisclosure'
-import { useUser, useActivateUser, useBanUser, useDeleteUser, useSuspendUser } from '../hooks/useUsers'
+import { useUser, useActivateUser, useBanUser, useDeleteUser, useSuspendUser, useUnbanUser } from '../hooks/useUsers'
 import UserAvatar from '../components/UserAvatar'
 import UserStatusBadge from '../components/UserStatusBadge'
 import VerificationBadge from '../components/VerificationBadge'
@@ -42,21 +42,30 @@ export default function UserProfilePage() {
   const suspendMutation = useSuspendUser()
   const activateMutation = useActivateUser()
   const banMutation = useBanUser()
+  const unbanMutation = useUnbanUser()
   const deleteMutation = useDeleteUser()
 
   const isBanned = user?.status === 'banned'
   const isSuspended = user?.status === 'suspended'
 
-  const moderationMutation = moderationTarget?.action === 'ban' ? banMutation : suspendMutation
+  const moderationMutation =
+    moderationTarget?.action === 'ban'
+      ? banMutation
+      : moderationTarget?.action === 'unban'
+        ? unbanMutation
+        : suspendMutation
 
-  const confirmModeration = (reason) => {
+  const confirmModeration = (payload) => {
     const target = moderationTarget
     if (!target) return
 
-    moderationMutation.mutate(
-      { id: target.user.id, reason },
-      { onSettled: () => actionDisclosure.close() },
-    )
+    if (target.action === 'ban') {
+      banMutation.mutate({ id: target.user.id, ...payload }, { onSettled: () => actionDisclosure.close() })
+    } else if (target.action === 'unban') {
+      unbanMutation.mutate({ id: target.user.id, reason: payload || undefined }, { onSettled: () => actionDisclosure.close() })
+    } else {
+      suspendMutation.mutate({ id: target.user.id, reason: payload }, { onSettled: () => actionDisclosure.close() })
+    }
   }
 
   const confirmSimpleAction = () => {
@@ -145,6 +154,19 @@ export default function UserProfilePage() {
                   Ban
                 </Button>
               )}
+              {isBanned && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setModerationTarget({ user, action: 'unban' })
+                    actionDisclosure.open()
+                  }}
+                >
+                  <UserCheck className="size-4 text-success" />
+                  Unban
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -177,7 +199,7 @@ export default function UserProfilePage() {
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-lg font-semibold">{user.name}</span>
-                <UserStatusBadge status={user.status} />
+                <UserStatusBadge status={user.status} bannedUntil={user.banned_until} />
                 <VerificationBadge verified={user.verification === 'verified'} />
                 <Badge variant="secondary" className="capitalize">
                   {user.user_type}
@@ -255,9 +277,10 @@ export default function UserProfilePage() {
               {user.activated_at ? (
                 <HistoryItem
                   tone="success"
-                  title="Activated"
+                  title={user.unban_reason ? 'Unbanned' : 'Activated'}
                   date={formatDateTime(user.activated_at)}
-                  actor={user.activated_by?.name}
+                  actor={user.activated_by?.name ?? 'System'}
+                  reason={user.unban_reason ?? undefined}
                 />
               ) : null}
               {user.banned_at ? (
@@ -267,6 +290,11 @@ export default function UserProfilePage() {
                   date={formatDateTime(user.banned_at)}
                   actor={user.banned_by?.name}
                   reason={user.ban_reason}
+                  meta={
+                    user.banned_until
+                      ? `Lifted automatically on ${formatDateTime(user.banned_until)}`
+                      : 'Permanent ban'
+                  }
                 />
               ) : null}
               {!user.suspended_at && !user.activated_at && !user.banned_at ? (
@@ -325,14 +353,37 @@ export default function UserProfilePage() {
             onClose={actionDisclosure.close}
             onConfirm={confirmModeration}
             loading={moderationMutation.isPending}
-            title={moderationTarget?.action === 'ban' ? 'Ban user?' : 'Suspend user?'}
+            action={moderationTarget?.action ?? 'suspend'}
+            title={
+              moderationTarget?.action === 'ban'
+                ? 'Ban user?'
+                : moderationTarget?.action === 'unban'
+                  ? 'Unban user?'
+                  : 'Suspend user?'
+            }
             description={
               moderationTarget
-                ? `This will ${moderationTarget.action === 'ban' ? 'permanently ban' : 'temporarily suspend'} ${moderationTarget.user.name}. They will not be able to sign in while the account is blocked.`
+                ? moderationTarget.action === 'ban'
+                  ? `${moderationTarget.user.name} will not be able to sign in for the chosen duration.`
+                  : moderationTarget.action === 'unban'
+                    ? `This will restore ${moderationTarget.user.name}'s access to the platform immediately.`
+                    : `${moderationTarget.user.name} will not be able to sign in while suspended.`
                 : ''
             }
-            confirmText={moderationTarget?.action === 'ban' ? 'Ban user' : 'Suspend user'}
-            variant={moderationTarget?.action === 'ban' ? 'error' : 'warning'}
+            confirmText={
+              moderationTarget?.action === 'ban'
+                ? 'Ban user'
+                : moderationTarget?.action === 'unban'
+                  ? 'Unban user'
+                  : 'Suspend user'
+            }
+            variant={
+              moderationTarget?.action === 'ban'
+                ? 'error'
+                : moderationTarget?.action === 'unban'
+                  ? 'primary'
+                  : 'warning'
+            }
           />
 
           <ConfirmDialog
@@ -366,7 +417,7 @@ function ProfileField({ label, value, capitalize = false, className }) {
   )
 }
 
-function HistoryItem({ tone, title, date, actor, reason }) {
+function HistoryItem({ tone, title, date, actor, reason, meta }) {
   const dot = { warning: 'bg-warning', success: 'bg-success', error: 'bg-error' }[tone]
 
   return (
@@ -378,6 +429,7 @@ function HistoryItem({ tone, title, date, actor, reason }) {
       </div>
       {actor && <p className="text-xs text-base-content/60 pl-4">by {actor}</p>}
       {reason && <p className="pl-4 text-sm text-base-content/70">“{reason}”</p>}
+      {meta && <p className="pl-4 text-xs text-base-content/50">{meta}</p>}
     </li>
   )
 }

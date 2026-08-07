@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Ban, Eye, Pencil, Power, RefreshCw, Trash2 } from 'lucide-react'
+import { Ban, Eye, Pencil, Power, RefreshCw, Trash2, UserCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
@@ -12,7 +12,7 @@ import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useDisclosure } from '../../../hooks/useDisclosure'
-import { useUsers, useActivateUser, useBanUser, useDeleteUser, useSuspendUser } from '../hooks/useUsers'
+import { useUsers, useActivateUser, useBanUser, useDeleteUser, useSuspendUser, useUnbanUser } from '../hooks/useUsers'
 import UserAvatar from '../components/UserAvatar'
 import UserStatusBadge from '../components/UserStatusBadge'
 import VerificationBadge from '../components/VerificationBadge'
@@ -49,6 +49,7 @@ export default function UsersPage() {
   const suspendMutation = useSuspendUser()
   const activateMutation = useActivateUser()
   const banMutation = useBanUser()
+  const unbanMutation = useUnbanUser()
   const deleteMutation = useDeleteUser()
 
   const { data, isLoading, isFetching, isError, error, refetch } = useUsers({
@@ -78,16 +79,24 @@ export default function UsersPage() {
     }
   }, [paginationMeta?.last_page]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const moderationMutation = moderationTarget?.action === 'ban' ? banMutation : suspendMutation
+  const moderationMutation =
+    moderationTarget?.action === 'ban'
+      ? banMutation
+      : moderationTarget?.action === 'unban'
+        ? unbanMutation
+        : suspendMutation
 
-  const confirmModeration = (reason) => {
+  const confirmModeration = (payload) => {
     const target = moderationTarget
     if (!target) return
 
-    moderationMutation.mutate(
-      { id: target.user.id, reason },
-      { onSettled: () => actionDisclosure.close() },
-    )
+    if (target.action === 'ban') {
+      banMutation.mutate({ id: target.user.id, ...payload }, { onSettled: () => actionDisclosure.close() })
+    } else if (target.action === 'unban') {
+      unbanMutation.mutate({ id: target.user.id, reason: payload || undefined }, { onSettled: () => actionDisclosure.close() })
+    } else {
+      suspendMutation.mutate({ id: target.user.id, reason: payload }, { onSettled: () => actionDisclosure.close() })
+    }
   }
 
   const confirmSimpleAction = () => {
@@ -134,7 +143,9 @@ export default function UsersPage() {
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => <UserStatusBadge status={row.original.status} />,
+      cell: ({ row }) => (
+        <UserStatusBadge status={row.original.status} bannedUntil={row.original.banned_until} />
+      ),
     },
     {
       accessorKey: 'verification',
@@ -213,6 +224,20 @@ export default function UsersPage() {
                 aria-label={`Ban ${user.name}`}
               >
                 <Ban className="size-4 text-error" />
+              </Button>
+            )}
+            {isBanned && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setModerationTarget({ user, action: 'unban' })
+                  actionDisclosure.open()
+                }}
+                aria-label={`Unban ${user.name}`}
+                title="Unban"
+              >
+                <UserCheck className="size-4 text-success" />
               </Button>
             )}
             <Button
@@ -335,23 +360,44 @@ export default function UsersPage() {
         </div>
       </Card>
 
-      <UserFormModal open={Boolean(editing)} onClose={() => setEditing(null)} user={editing} />
-
-      <UserActionModal
-        key={moderationTarget ? `${moderationTarget.user.id}-${moderationTarget.action}-${actionDisclosure.isOpen}` : 'closed'}
-        open={actionDisclosure.isOpen}
-        onClose={actionDisclosure.close}
-        onConfirm={confirmModeration}
-        loading={moderationMutation.isPending}
-        title={moderationTarget?.action === 'ban' ? 'Ban user?' : 'Suspend user?'}
-        description={
-          moderationTarget
-            ? `This will ${moderationTarget.action === 'ban' ? 'permanently ban' : 'temporarily suspend'} ${moderationTarget.user.name}. They will not be able to sign in while the account is blocked.`
-            : ''
-        }
-        confirmText={moderationTarget?.action === 'ban' ? 'Ban user' : 'Suspend user'}
-        variant={moderationTarget?.action === 'ban' ? 'error' : 'warning'}
-      />
+      <UserFormModal open={Boolean(editing)} onClose={() => setEditing(null)} user={editing} />          <UserActionModal
+            key={moderationTarget ? `${moderationTarget.user.id}-${moderationTarget.action}-${actionDisclosure.isOpen}` : 'closed'}
+            open={actionDisclosure.isOpen}
+            onClose={actionDisclosure.close}
+            onConfirm={confirmModeration}
+            loading={moderationMutation.isPending}
+            action={moderationTarget?.action ?? 'suspend'}
+            title={
+              moderationTarget?.action === 'ban'
+                ? 'Ban user?'
+                : moderationTarget?.action === 'unban'
+                  ? 'Unban user?'
+                  : 'Suspend user?'
+            }
+            description={
+              moderationTarget
+                ? moderationTarget.action === 'ban'
+                  ? `${moderationTarget.user.name} will not be able to sign in for the chosen duration.`
+                  : moderationTarget.action === 'unban'
+                    ? `This will restore ${moderationTarget.user.name}'s access to the platform immediately.`
+                    : `${moderationTarget.user.name} will not be able to sign in while suspended.`
+                : ''
+            }
+            confirmText={
+              moderationTarget?.action === 'ban'
+                ? 'Ban user'
+                : moderationTarget?.action === 'unban'
+                  ? 'Unban user'
+                  : 'Suspend user'
+            }
+            variant={
+              moderationTarget?.action === 'ban'
+                ? 'error'
+                : moderationTarget?.action === 'unban'
+                  ? 'primary'
+                  : 'warning'
+            }
+          />
 
       <ConfirmDialog
         open={confirmDisclosure.isOpen}

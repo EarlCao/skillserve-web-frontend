@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { QUERY_KEYS } from '../../../constants'
 import { userApi } from '../api/userApi'
@@ -10,6 +10,9 @@ export function useUsers(params) {
   return useQuery({
     queryKey: QUERY_KEYS.users.list(params),
     queryFn: () => userApi.list(params),
+    // Keep the previous page rendered while the next one loads so the table
+    // doesn't collapse (which makes the page jump to the top on pagination).
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -79,19 +82,37 @@ export function useActivateUser() {
 }
 
 /**
- * Ban-user mutation.
+ * Ban-user mutation (temporary or permanent).
  */
 export function useBanUser() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, reason }) => userApi.ban(id, reason),
+    mutationFn: ({ id, reason, duration, days }) => userApi.ban(id, { reason, duration, days }),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'User banned.')
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to ban the user.')
+    },
+  })
+}
+
+/**
+ * Unban-user mutation.
+ */
+export function useUnbanUser() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, reason }) => userApi.unban(id, { reason }),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'User unbanned.')
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to unban the user.')
     },
   })
 }

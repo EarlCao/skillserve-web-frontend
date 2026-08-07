@@ -5,6 +5,8 @@ import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useLogout } from '../modules/authentication/hooks/useLogout'
+import { useDisclosure } from '../hooks/useDisclosure'
+import ConfirmDialog from '../components/feedback/ConfirmDialog'
 
 /**
  * Shared admin layout: responsive drawer sidebar + topbar + content outlet.
@@ -18,6 +20,7 @@ export default function AdminLayout() {
   const { theme, toggleTheme } = useTheme()
   const { user } = useAuth()
   const logoutMutation = useLogout()
+  const logoutDisclosure = useDisclosure()
   const [collapsed, setCollapsed] = useState(false)
 
   const initials = (user?.name ?? 'A')
@@ -102,17 +105,8 @@ export default function AdminLayout() {
                 </Link>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => logoutMutation.mutate()}
-                  disabled={logoutMutation.isPending}
-                  className="text-error"
-                >
-                  {logoutMutation.isPending ? (
-                    <span className="loading loading-spinner loading-xs" aria-hidden="true" />
-                  ) : (
-                    <LogOut className="size-4" />
-                  )}
+                <button type="button" onClick={logoutDisclosure.open} className="text-error">
+                  <LogOut className="size-4" />
                   Sign out
                 </button>
               </li>
@@ -179,8 +173,37 @@ export default function AdminLayout() {
               </NavLink>
             </li>
           )}
+
+          {/* Sign out — pinned to the bottom of the sidebar. */}
+          <li className="mt-auto">
+            <button
+              type="button"
+              onClick={logoutDisclosure.open}
+              className="text-error"
+              title={collapsed ? 'Sign out' : undefined}
+              aria-label={collapsed ? 'Sign out' : undefined}
+            >
+              <LogOut className="size-4 shrink-0" />
+              <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Sign out</span>
+            </button>
+          </li>
         </aside>
       </div>
+
+      <ConfirmDialog
+        open={logoutDisclosure.isOpen}
+        onCancel={logoutDisclosure.close}
+        onConfirm={() =>
+          logoutMutation.mutate(undefined, {
+            onSettled: () => logoutDisclosure.close(),
+          })
+        }
+        loading={logoutMutation.isPending}
+        title="Sign out?"
+        description="Are you sure you want to sign out? You will need to log in again to continue."
+        confirmText="Sign out"
+        variant="error"
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { QUERY_KEYS } from '../../../constants'
 import { roleApi } from '../api/roleApi'
@@ -10,6 +10,9 @@ export function useRoles(params) {
   return useQuery({
     queryKey: QUERY_KEYS.roles.list(params),
     queryFn: () => roleApi.list(params),
+    // Keep the previous page rendered while the next one loads so the table
+    // doesn't collapse (which makes the page jump to the top on pagination).
+    placeholderData: keepPreviousData,
   })
 }
 

@@ -10,6 +10,7 @@ export const userApi = {
   update: (id, payload) => api.put(`/users/${id}`, payload),
   suspend: (id, reason) => api.patch(`/users/${id}/suspend`, { reason }),
   activate: (id) => api.patch(`/users/${id}/activate`),
-  ban: (id, reason) => api.patch(`/users/${id}/ban`, { reason }),
+  ban: (id, { reason, duration, days } = {}) => api.patch(`/users/${id}/ban`, { reason, duration, days }),
+  unban: (id, { reason } = {}) => api.patch(`/users/${id}/unban`, { reason }),
   remove: (id) => api.delete(`/users/${id}`),
 }
