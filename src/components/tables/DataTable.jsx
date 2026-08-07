@@ -1,4 +1,8 @@
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { flexRender } from '@tanstack/react-table'
+// @tanstack/react-table is v9; this component is written against the v8 API.
+// The legacy entry keeps the v8 contract (useLegacyTable + getCoreRowModel) —
+// intentional, do not "upgrade" to the v9 useTable/Subscribe API.
+import { getCoreRowModel, useLegacyTable } from '@tanstack/react-table/legacy'
 import EmptyState from '../common/EmptyState'
 import Skeleton from '../ui/Skeleton'
 
@@ -21,10 +25,7 @@ export default function DataTable({
   emptyTitle = 'No records found',
   emptyDescription = 'Try adjusting your filters or search.',
 }) {
-  // TanStack Table's hook returns non-memoizable functions; React Compiler
-  // skips memoizing it, which is expected for this library.
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const table = useLegacyTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),

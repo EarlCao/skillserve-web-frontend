@@ -3,9 +3,12 @@ import EmptyState from '../components/common/EmptyState'
 import AdminLayout from '../layouts/AdminLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import BlankLayout from '../layouts/BlankLayout'
-import { GuestOnly, RequireAuth } from '../modules/authentication/routes/guards'
+import { GuestOnly, RequireAuth, RequirePermission } from '../modules/authentication/routes/guards'
 import ChangePasswordPage from '../modules/authentication/pages/ChangePasswordPage'
 import LoginPage from '../modules/authentication/pages/LoginPage'
+import AdministratorsPage from '../modules/administrators/pages/AdministratorsPage'
+import RolesPage from '../modules/administrators/pages/RolesPage'
+import PermissionsPage from '../modules/administrators/pages/PermissionsPage'
 
 /**
  * Application routing.
@@ -58,6 +61,24 @@ export const router = createBrowserRouter([
           {
             path: 'change-password',
             element: <ChangePasswordPage />,
+          },
+          {
+            // Administrator Management — requires the module permission.
+            element: <RequirePermission permissions={['manage administrators']} />,
+            children: [
+              {
+                path: 'administrators',
+                element: <AdministratorsPage />,
+              },
+              {
+                path: 'roles',
+                element: <RolesPage />,
+              },
+              {
+                path: 'permissions',
+                element: <PermissionsPage />,
+              },
+            ],
           },
         ],
       },

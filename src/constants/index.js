@@ -24,6 +24,18 @@ export const QUERY_KEYS = {
     all: ['auth'],
     me: ['auth', 'me'],
   },
+  administrators: {
+    all: ['administrators'],
+    list: (params) => ['administrators', 'list', params],
+  },
+  roles: {
+    all: ['roles'],
+    list: (params) => ['roles', 'list', params],
+  },
+  permissions: {
+    all: ['permissions'],
+    matrix: ['permissions', 'matrix'],
+  },
 }
 
 /** Common HTTP status codes. */

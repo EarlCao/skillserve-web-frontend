@@ -1,5 +1,5 @@
-import { Link, Outlet } from 'react-router-dom'
-import { KeyRound, LayoutDashboard, LogOut, Moon, Sun } from 'lucide-react'
+import { Link, NavLink, Outlet } from 'react-router-dom'
+import { KeyRound, LayoutDashboard, LogOut, Moon, ShieldCheck, Sun, UserCog, Users } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -21,6 +21,8 @@ export default function AdminLayout() {
     .slice(0, 2)
     .join('')
     .toUpperCase()
+
+  const canManageAdministrators = (user?.permissions ?? []).includes('manage administrators')
 
   return (
     <div className="drawer lg:drawer-open">
@@ -103,11 +105,59 @@ export default function AdminLayout() {
             <LayoutDashboard className="size-6 text-primary" />
             <span>{APP_NAME}</span>
           </div>
-          {/* Feature navigation is added here in later phases. */}
           <li className="menu-title">Main</li>
           <li>
-            <span className="opacity-60">(Modules will appear here)</span>
+            <NavLink
+              to="/admin"
+              end
+              className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
+            >
+              <LayoutDashboard className="size-4" />
+              Dashboard
+            </NavLink>
           </li>
+          <li className="mt-2">
+            <NavLink
+              to="/admin/change-password"
+              className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
+            >
+              <KeyRound className="size-4" />
+              Change password
+            </NavLink>
+          </li>
+
+          {canManageAdministrators && (
+            <>
+              <li className="menu-title mt-2">Administration</li>
+              <li>
+                <NavLink
+                  to="/admin/administrators"
+                  className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
+                >
+                  <Users className="size-4" />
+                  Administrators
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/roles"
+                  className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
+                >
+                  <UserCog className="size-4" />
+                  Roles
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/permissions"
+                  className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
+                >
+                  <ShieldCheck className="size-4" />
+                  Permissions
+                </NavLink>
+              </li>
+            </>
+          )}
         </aside>
       </div>
     </div>
