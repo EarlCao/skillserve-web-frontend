@@ -2,10 +2,13 @@ import { useMemo, useState } from 'react'
 import Badge from '../../../components/ui/Badge'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
+import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import ErrorState from '../../../components/common/ErrorState'
 import EmptyState from '../../../components/common/EmptyState'
+import PermissionGroupList from '../components/PermissionGroupList'
 import { usePermissionMatrix } from '../hooks/usePermissions'
 import { useRoles, useSyncRolePermissions } from '../hooks/useRoles'
+import { usePermissionSelection } from '../hooks/usePermissionSelection'
 
 const SUPER_ADMIN = 'super-admin'
 
@@ -17,18 +20,20 @@ export default function PermissionsPage() {
   const rolesQuery = useRoles({ per_page: 100, sort: 'name', direction: 'asc' })
   const matrixQuery = usePermissionMatrix()
   const syncMutation = useSyncRolePermissions()
+  const { selected, setSelected, toggle, clearAll, collapsedModules, toggleModule } = usePermissionSelection()
+  const [confirmSaveOpen, setConfirmSaveOpen] = useState(false)
 
   const roles = useMemo(() => rolesQuery.data?.data ?? [], [rolesQuery.data])
   const groups = matrixQuery.data?.data ?? []
+  const permissionNames = groups.flatMap((group) => group.permissions.map((permission) => permission.name))
 
   const [selectedRole, setSelectedRole] = useState(null)
-  const [selected, setSelected] = useState([])
+  const [autoSelected, setAutoSelected] = useState(false)
 
   const isSuperAdmin = selectedRole?.name === SUPER_ADMIN
 
   // Auto-select the first (non-system) role once the list loads. Adjusting
   // state during render follows the React docs' recommended pattern.
-  const [autoSelected, setAutoSelected] = useState(false)
   if (!autoSelected && !selectedRole && roles.length > 0) {
     setAutoSelected(true)
     const initial = roles.find((role) => role.name !== SUPER_ADMIN) ?? roles[0]
@@ -41,16 +46,10 @@ export default function PermissionsPage() {
     setSelected(role?.permissions ?? [])
   }
 
-  const toggle = (name) => {
-    setSelected((prev) => (prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]))
-  }
-
-  const permissionNames = groups.flatMap((group) => group.permissions.map((permission) => permission.name))
-  const isSelectAll = permissionNames.length > 0 && permissionNames.every((name) => selected.includes(name))
-
-  const toggleAll = () => setSelected(isSelectAll ? [] : permissionNames)
+  const onSelectAll = () => setSelected(permissionNames)
 
   const onSubmit = () => {
+    setConfirmSaveOpen(false)
     if (!selectedRole) return
 
     syncMutation.mutate({ id: selectedRole.id, permissions: selected })
@@ -118,77 +117,39 @@ export default function PermissionsPage() {
           />
         )}
 
-        {matrixQuery.isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <span className="loading loading-spinner loading-lg text-primary" aria-hidden="true" />
-          </div>
-        ) : (
-          <>
-            {!isSuperAdmin && (
-              <label className="label cursor-pointer justify-start gap-2 border-b border-base-200 pb-2">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-sm checkbox-primary"
-                  checked={isSelectAll}
-                  onChange={toggleAll}
-                />
-                <span className="label-text font-medium">Select all permissions</span>
-              </label>
-            )}
+        <PermissionGroupList
+          groups={groups}
+          selected={selected}
+          onToggle={toggle}
+          onSelectAll={onSelectAll}
+          onClearAll={clearAll}
+          readOnly={isSuperAdmin}
+          collapsedModules={collapsedModules}
+          onToggleModule={toggleModule}
+          isLoading={matrixQuery.isLoading}
+        />
 
-            <div className="mt-2 flex flex-col gap-6">
-              {groups.map((group) => (
-                <section key={group.module}>
-                  <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">
-                    {group.module}
-                    <Badge variant="outline" size="xs">
-                      {group.permissions.length}
-                    </Badge>
-                  </h2>
-
-                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-                    {group.permissions.map((permission) => {
-                      const checked = selected.includes(permission.name)
-
-                      return (
-                        <label
-                          key={permission.id}
-                          className={`label cursor-pointer justify-start gap-3 rounded-lg border p-2.5 transition-colors ${
-                            isSuperAdmin
-                              ? 'border-base-200 bg-base-200/40'
-                              : checked
-                                ? 'border-primary/40 bg-primary/5'
-                                : 'border-base-200 hover:border-base-300'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            className="checkbox checkbox-sm checkbox-primary"
-                            checked={checked}
-                            disabled={isSuperAdmin}
-                            onChange={() => toggle(permission.name)}
-                          />
-                          <span className="label-text text-sm">{permission.name}</span>
-                        </label>
-                      )
-                    })}
-                  </div>
-                </section>
-              ))}
-
-              {groups.length === 0 && (
-                <p className="py-8 text-center text-sm text-base-content/60">No permissions in the catalog yet.</p>
-              )}
-            </div>
-
-            <div className="mt-6 flex justify-end border-t border-base-200 pt-4">
-              <Button onClick={onSubmit} loading={syncMutation.isPending} disabled={isSuperAdmin}>
-                Save permissions
-              </Button>
-            </div>
-          </>
-        )}
+        <div className="mt-6 flex justify-end border-t border-base-200 pt-4">
+          <Button
+            onClick={() => setConfirmSaveOpen(true)}
+            loading={syncMutation.isPending}
+            disabled={isSuperAdmin || matrixQuery.isLoading}
+          >
+            Save permissions
+          </Button>
+        </div>
       </Card>
+
+      <ConfirmDialog
+        open={confirmSaveOpen}
+        onCancel={() => setConfirmSaveOpen(false)}
+        onConfirm={onSubmit}
+        loading={syncMutation.isPending}
+        title="Save permission changes?"
+        description={`Assign the selected permissions to "${selectedRole?.name ?? ''}"? Changes take effect immediately.`}
+        confirmText="Save changes"
+        variant="primary"
+      />
     </div>
   )
 }

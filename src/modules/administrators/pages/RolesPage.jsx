@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react'
+import { Eye, Pencil, Plus, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react'
 import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
 import Card from '../../../components/ui/Card'
@@ -12,6 +12,7 @@ import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useDisclosure } from '../../../hooks/useDisclosure'
 import { useDeleteRole, useRoles } from '../hooks/useRoles'
+import RoleDetailsModal from '../components/RoleDetailsModal'
 import RoleFormModal from '../components/RoleFormModal'
 import PermissionsModal from '../components/PermissionsModal'
 
@@ -31,10 +32,11 @@ export default function RolesPage() {
   const [editing, setEditing] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const deleteDisclosure = useDisclosure()
+  const [viewing, setViewing] = useState(null)
   const [permissionsTarget, setPermissionsTarget] = useState(null)
   const permissionsDisclosure = useDisclosure()
 
-  const { data, isLoading, isError, error, refetch } = useRoles({
+  const { data, isLoading, isFetching, isError, error, refetch } = useRoles({
     search: debouncedSearch || undefined,
     per_page: PER_PAGE,
     page: pagination.currentPage,
@@ -105,6 +107,14 @@ export default function RolesPage() {
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => setViewing(role)}
+              aria-label={`View ${role.name}`}
+            >
+              <Eye className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setEditing(role)
                 setFormOpen(true)
@@ -172,6 +182,10 @@ export default function RolesPage() {
             placeholder="Search roles…"
             className="w-full sm:w-64"
           />
+
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh roles">
+            <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
 
         {isError ? (
@@ -195,6 +209,8 @@ export default function RolesPage() {
       </Card>
 
       <RoleFormModal open={formOpen} onClose={() => setFormOpen(false)} role={editing} />
+
+      <RoleDetailsModal open={Boolean(viewing)} onClose={() => setViewing(null)} role={viewing} />
 
       <PermissionsModal
         open={permissionsDisclosure.isOpen}

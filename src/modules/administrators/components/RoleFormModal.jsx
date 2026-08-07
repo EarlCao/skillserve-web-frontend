@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
 import Modal from '../../../components/ui/Modal'
+import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import FormField from '../../../components/forms/FormField'
 import { roleSchema } from '../schemas/roleSchema'
 import { useCreateRole, useUpdateRole } from '../hooks/useRoles'
@@ -19,12 +20,14 @@ import { useCreateRole, useUpdateRole } from '../hooks/useRoles'
 export default function RoleFormModal({ open, onClose, role }) {
   const isEditing = Boolean(role)
 
+  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
+
   const {
     register,
     handleSubmit,
     reset,
     setError,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm({
     resolver: zodResolver(roleSchema),
     defaultValues: { name: '', description: '' },
@@ -43,9 +46,30 @@ export default function RoleFormModal({ open, onClose, role }) {
   const updateMutation = useUpdateRole()
   const mutation = isEditing ? updateMutation : createMutation
 
+  // Ask for confirmation before discarding unsaved edits.
+  const requestClose = () => {
+    if (isDirty && !mutation.isPending) {
+      setConfirmDiscardOpen(true)
+
+      return
+    }
+
+    onClose()
+  }
+
+  const confirmDiscard = () => {
+    setConfirmDiscardOpen(false)
+    onClose()
+  }
+
   const onSubmit = (values) => {
     const options = {
-      onSuccess: () => onClose(),
+      onSuccess: () => {
+        if (!isEditing) {
+          reset()
+        }
+        onClose()
+      },
       onError: (error) => {
         if (error?.errors && typeof error.errors === 'object') {
           Object.entries(error.errors).forEach(([field, messages]) => {
@@ -63,14 +87,15 @@ export default function RoleFormModal({ open, onClose, role }) {
   }
 
   return (
+    <>
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={requestClose}
       title={isEditing ? 'Edit role' : 'Add role'}
       description="Role names use lowercase letters, numbers and hyphens (e.g. reports-manager)."
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={mutation.isPending}>
+          <Button variant="ghost" onClick={requestClose} disabled={mutation.isPending}>
             Cancel
           </Button>
           <Button type="submit" form="role-form" loading={mutation.isPending}>
@@ -94,5 +119,16 @@ export default function RoleFormModal({ open, onClose, role }) {
         </FormField>
       </form>
     </Modal>
+
+    <ConfirmDialog
+      open={confirmDiscardOpen}
+      onCancel={() => setConfirmDiscardOpen(false)}
+      onConfirm={confirmDiscard}
+      title="Discard unsaved changes?"
+      description="You have unsaved changes. They will be lost if you close this form."
+      confirmText="Discard"
+      variant="error"
+    />
+    </>
   )
 }

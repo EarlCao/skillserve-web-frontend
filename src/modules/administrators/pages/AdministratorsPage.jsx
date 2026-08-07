@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Pencil, Power, UserPlus } from 'lucide-react'
+import { Eye, Pencil, Power, RefreshCw, UserPlus } from 'lucide-react'
 import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
 import Card from '../../../components/ui/Card'
@@ -9,11 +9,13 @@ import ErrorState from '../../../components/common/ErrorState'
 import DataTable from '../../../components/tables/DataTable'
 import Pagination from '../../../components/tables/Pagination'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useDisclosure } from '../../../hooks/useDisclosure'
 import { useAdministrators, useUpdateAdministratorStatus } from '../hooks/useAdministrators'
 import { useRoles } from '../hooks/useRoles'
+import AdministratorDetailsModal from '../components/AdministratorDetailsModal'
 import AdministratorFormModal from '../components/AdministratorFormModal'
 import StatusBadge from '../components/StatusBadge'
 
@@ -34,15 +36,18 @@ export default function AdministratorsPage() {
   const [direction, setDirection] = useState('desc')
   const pagination = usePagination({ perPage: PER_PAGE })
 
+  const { user } = useAuth()
+
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [viewing, setViewing] = useState(null)
   const [statusTarget, setStatusTarget] = useState(null)
   const statusDisclosure = useDisclosure()
 
   const rolesQuery = useRoles({ per_page: 100, sort: 'name', direction: 'asc' })
   const roleNames = rolesQuery.data?.data?.map((role) => role.name) ?? []
 
-  const { data, isLoading, isError, error, refetch } = useAdministrators({
+  const { data, isLoading, isFetching, isError, error, refetch } = useAdministrators({
     search: debouncedSearch || undefined,
     status: statusFilter || undefined,
     role: roleFilter || undefined,
@@ -126,14 +131,34 @@ export default function AdministratorsPage() {
       cell: ({ row }) => row.original.created_by?.name ?? <span className="text-base-content/40">—</span>,
     },
     {
+      accessorKey: 'created_at',
+      header: 'Created date',
+      cell: ({ row }) => {
+        const value = formatDateTime(row.original.created_at)
+
+        return value ? <span className="whitespace-nowrap">{value}</span> : <span className="text-base-content/40">—</span>
+      },
+    },
+    {
       id: 'actions',
       header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => {
         const administrator = row.original
         const isInactive = administrator.status === 'inactive'
 
+        const isSelf = administrator.id === user?.id
+        const canDeactivate = !(isSelf && !isInactive)
+
         return (
           <div className="flex justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewing(administrator)}
+              aria-label={`View ${administrator.name}`}
+            >
+              <Eye className="size-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -148,11 +173,19 @@ export default function AdministratorsPage() {
             <Button
               variant="ghost"
               size="sm"
+              disabled={!canDeactivate}
+              title={isSelf ? 'You cannot deactivate your own account' : undefined}
               onClick={() => {
                 setStatusTarget({ administrator, to: isInactive ? 'active' : 'inactive' })
                 statusDisclosure.open()
               }}
-              aria-label={isInactive ? `Activate ${administrator.name}` : `Deactivate ${administrator.name}`}
+              aria-label={
+                isSelf
+                  ? `You cannot deactivate your own account`
+                  : isInactive
+                    ? `Activate ${administrator.name}`
+                    : `Deactivate ${administrator.name}`
+              }
             >
               <Power className={`size-4 ${isInactive ? 'text-success' : 'text-warning'}`} />
             </Button>
@@ -227,6 +260,10 @@ export default function AdministratorsPage() {
           <Button variant="outline" size="sm" onClick={() => setDirection((value) => (value === 'asc' ? 'desc' : 'asc'))}>
             {direction === 'asc' ? 'Ascending' : 'Descending'}
           </Button>
+
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh administrators">
+            <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
 
         {isError ? (
@@ -255,6 +292,8 @@ export default function AdministratorsPage() {
         administrator={editing}
         roles={roleNames}
       />
+
+      <AdministratorDetailsModal open={Boolean(viewing)} onClose={() => setViewing(null)} administrator={viewing} />
 
       <ConfirmDialog
         open={statusDisclosure.isOpen}

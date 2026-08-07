@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { KeyRound, LayoutDashboard, LogOut, Moon, ShieldCheck, Sun, UserCog, Users } from 'lucide-react'
+import { KeyRound, LayoutDashboard, LogOut, Menu, Moon, ShieldCheck, Sun, UserCog, Users } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -8,12 +9,16 @@ import { useLogout } from '../modules/authentication/hooks/useLogout'
 /**
  * Shared admin layout: responsive drawer sidebar + topbar + content outlet.
  *
- * Sidebar navigation will be filled by feature modules in later phases.
+ * - Mobile (< lg): the sidebar is an overlay drawer opened by the topbar
+ *   hamburger.
+ * - Desktop (>= lg): the sidebar is always visible and can be collapsed to an
+ *   icon rail by the topbar hamburger.
  */
 export default function AdminLayout() {
   const { theme, toggleTheme } = useTheme()
   const { user } = useAuth()
   const logoutMutation = useLogout()
+  const [collapsed, setCollapsed] = useState(false)
 
   const initials = (user?.name ?? 'A')
     .split(' ')
@@ -24,6 +29,14 @@ export default function AdminLayout() {
 
   const canManageAdministrators = (user?.permissions ?? []).includes('manage administrators')
 
+  // Active nav item uses the primary color (not daisyUI's near-black
+  // base-content that `menu-active` applies). When collapsed, icons center.
+  const navLinkClass = ({ isActive }) => {
+    const base = collapsed ? 'lg:justify-center lg:px-0' : ''
+
+    return isActive ? `bg-primary/10 text-primary font-semibold ${base}`.trim() : base.trim() || undefined
+  }
+
   return (
     <div className="drawer lg:drawer-open">
       <input id="app-drawer" type="checkbox" className="drawer-toggle" />
@@ -31,13 +44,27 @@ export default function AdminLayout() {
       {/* Content */}
       <div className="drawer-content flex min-h-svh flex-col">
         <header className="navbar sticky top-0 z-30 border-b border-base-300 bg-base-100">
+          {/* Mobile: open the overlay drawer. */}
           <div className="flex-none lg:hidden">
             <label htmlFor="app-drawer" aria-label="Open menu" className="btn btn-square btn-ghost">
-              <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <Menu className="size-6" />
             </label>
           </div>
+
+          {/* Desktop: collapse / expand the sidebar. */}
+          <div className="hidden flex-none lg:block">
+            <button
+              type="button"
+              className="btn btn-square btn-ghost"
+              onClick={() => setCollapsed((value) => !value)}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-expanded={!collapsed}
+              aria-controls="admin-sidebar"
+            >
+              <Menu className="size-6" />
+            </button>
+          </div>
+
           <div className="flex-1">
             <h1 className="text-lg font-semibold">{APP_NAME} Admin</h1>
           </div>
@@ -100,60 +127,70 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <div className="drawer-side z-40">
         <label htmlFor="app-drawer" aria-label="Close menu" className="drawer-overlay" />
-        <aside className="menu min-h-full w-64 gap-2 border-r border-base-300 bg-base-100 p-4">
-          <div className="mb-4 flex items-center gap-2 px-2 text-xl font-bold">
-            <LayoutDashboard className="size-6 text-primary" />
-            <span>{APP_NAME}</span>
+        <aside
+          id="admin-sidebar"
+          className={`menu min-h-full w-64 gap-2 border-r border-base-300 bg-base-100 p-4 transition-[width] duration-300 ${
+            collapsed ? 'lg:w-20' : 'lg:w-64'
+          }`}
+        >
+          <div
+            className={`mb-4 flex items-center gap-2 text-xl font-bold ${
+              collapsed ? 'lg:justify-center lg:px-0' : 'px-2'
+            }`}
+          >
+            <LayoutDashboard className="size-6 shrink-0 text-primary" />
+            <span className={collapsed ? 'lg:hidden' : undefined}>{APP_NAME}</span>
           </div>
-          <li className="menu-title">Main</li>
+
+          <li className={`menu-title ${collapsed ? 'lg:hidden' : undefined}`}>Main</li>
           <li>
-            <NavLink
-              to="/admin"
-              end
-              className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
-            >
-              <LayoutDashboard className="size-4" />
-              Dashboard
+            <NavLink to="/admin" end className={navLinkClass} title={collapsed ? 'Dashboard' : undefined}>
+              <LayoutDashboard className="size-4 shrink-0" />
+              <span className={collapsed ? 'lg:hidden' : undefined}>Dashboard</span>
             </NavLink>
           </li>
           <li className="mt-2">
             <NavLink
               to="/admin/change-password"
-              className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
+              className={navLinkClass}
+              title={collapsed ? 'Change password' : undefined}
             >
-              <KeyRound className="size-4" />
-              Change password
+              <KeyRound className="size-4 shrink-0" />
+              <span className={collapsed ? 'lg:hidden' : undefined}>Change password</span>
             </NavLink>
           </li>
 
           {canManageAdministrators && (
             <>
-              <li className="menu-title mt-2">Administration</li>
+              <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
               <li>
                 <NavLink
                   to="/admin/administrators"
-                  className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
+                  className={navLinkClass}
+                  title={collapsed ? 'Administrators' : undefined}
                 >
-                  <Users className="size-4" />
-                  Administrators
+                  <Users className="size-4 shrink-0" />
+                  <span className={collapsed ? 'lg:hidden' : undefined}>Administrators</span>
                 </NavLink>
               </li>
               <li>
                 <NavLink
                   to="/admin/roles"
-                  className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
+                  className={navLinkClass}
+                  title={collapsed ? 'Roles' : undefined}
                 >
-                  <UserCog className="size-4" />
-                  Roles
+                  <UserCog className="size-4 shrink-0" />
+                  <span className={collapsed ? 'lg:hidden' : undefined}>Roles</span>
                 </NavLink>
               </li>
               <li>
                 <NavLink
                   to="/admin/permissions"
-                  className={({ isActive }) => (isActive ? 'menu-active' : undefined)}
+                  className={navLinkClass}
+                  title={collapsed ? 'Permissions' : undefined}
                 >
-                  <ShieldCheck className="size-4" />
-                  Permissions
+                  <ShieldCheck className="size-4 shrink-0" />
+                  <span className={collapsed ? 'lg:hidden' : undefined}>Permissions</span>
                 </NavLink>
               </li>
             </>

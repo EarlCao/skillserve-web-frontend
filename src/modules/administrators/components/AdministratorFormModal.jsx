@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
 import Modal from '../../../components/ui/Modal'
+import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import FormField from '../../../components/forms/FormField'
 import PasswordInput from '../../authentication/components/PasswordInput'
 import { administratorCreateSchema, administratorUpdateSchema } from '../schemas/administratorSchema'
@@ -21,12 +22,14 @@ import { useCreateAdministrator, useUpdateAdministrator } from '../hooks/useAdmi
 export default function AdministratorFormModal({ open, onClose, administrator, roles = [] }) {
   const isEditing = Boolean(administrator)
 
+  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
+
   const {
     register,
     handleSubmit,
     reset,
     setError,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm({
     resolver: zodResolver(isEditing ? administratorUpdateSchema : administratorCreateSchema),
     defaultValues: isEditing
@@ -75,9 +78,31 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
   const updateMutation = useUpdateAdministrator()
   const mutation = isEditing ? updateMutation : createMutation
 
+  // Ask for confirmation before discarding unsaved edits.
+  const requestClose = () => {
+    if (isDirty && !mutation.isPending) {
+      setConfirmDiscardOpen(true)
+
+      return
+    }
+
+    onClose()
+  }
+
+  const confirmDiscard = () => {
+    setConfirmDiscardOpen(false)
+    onClose()
+  }
+
   const onSubmit = (values) => {
     const options = {
-      onSuccess: () => onClose(),
+      onSuccess: () => {
+        // Clear the form so a subsequent open starts fresh (spec 15.2).
+        if (!isEditing) {
+          reset()
+        }
+        onClose()
+      },
       onError: (error) => {
         // Map server-side field errors onto the form (422 envelope).
         if (error?.errors && typeof error.errors === 'object') {
@@ -96,9 +121,10 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
   }
 
   return (
+    <>
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={requestClose}
       title={isEditing ? 'Edit administrator' : 'Add administrator'}
       description={
         isEditing
@@ -107,7 +133,7 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
       }
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={mutation.isPending}>
+          <Button variant="ghost" onClick={requestClose} disabled={mutation.isPending}>
             Cancel
           </Button>
           <Button type="submit" form="administrator-form" loading={mutation.isPending}>
@@ -162,5 +188,16 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
         )}
       </form>
     </Modal>
+
+    <ConfirmDialog
+      open={confirmDiscardOpen}
+      onCancel={() => setConfirmDiscardOpen(false)}
+      onConfirm={confirmDiscard}
+      title="Discard unsaved changes?"
+      description="You have unsaved changes. They will be lost if you close this form."
+      confirmText="Discard"
+      variant="error"
+    />
+    </>
   )
 }
