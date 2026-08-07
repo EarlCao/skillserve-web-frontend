@@ -36,6 +36,11 @@ export const QUERY_KEYS = {
     all: ['permissions'],
     matrix: ['permissions', 'matrix'],
   },
+  users: {
+    all: ['users'],
+    list: (params) => ['users', 'list', params],
+    detail: (id) => ['users', 'detail', id],
+  },
 }
 
 /** Common HTTP status codes. */

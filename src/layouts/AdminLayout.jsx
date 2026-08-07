@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { KeyRound, LayoutDashboard, LogOut, Menu, Moon, Sun, Users } from 'lucide-react'
+import { KeyRound, LayoutDashboard, LogOut, Menu, Moon, Sun, Users, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -28,6 +28,7 @@ export default function AdminLayout() {
     .toUpperCase()
 
   const canManageAdministrators = (user?.permissions ?? []).includes('manage administrators')
+  const canManageUsers = (user?.permissions ?? []).includes('manage users')
 
   // Active nav item uses the primary color (not daisyUI's near-black
   // base-content that `menu-active` applies). When collapsed, icons center.
@@ -165,6 +166,18 @@ export default function AdminLayout() {
                 </NavLink>
               </li>
             </>
+          )}
+          {canManageUsers && (
+            <li>
+              <NavLink
+                to="/admin/users"
+                className={navLinkClass}
+                title={collapsed ? 'User management' : undefined}
+              >
+                <UsersRound className="size-4 shrink-0" />
+                <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>User Management</span>
+              </NavLink>
+            </li>
           )}
         </aside>
       </div>

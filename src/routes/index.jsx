@@ -7,6 +7,8 @@ import { GuestOnly, RequireAuth, RequirePermission } from '../modules/authentica
 import ChangePasswordPage from '../modules/authentication/pages/ChangePasswordPage'
 import LoginPage from '../modules/authentication/pages/LoginPage'
 import AdministratorManagementPage from '../modules/administrators/pages/AdministratorManagementPage'
+import UsersPage from '../modules/users/pages/UsersPage'
+import UserProfilePage from '../modules/users/pages/UserProfilePage'
 
 /**
  * Application routing.
@@ -76,6 +78,20 @@ export const router = createBrowserRouter([
               {
                 path: 'permissions',
                 element: <Navigate to="/admin/administrators?tab=permissions" replace />,
+              },
+            ],
+          },
+          {
+            // User Management — requires the module permission.
+            element: <RequirePermission permissions={['manage users']} />,
+            children: [
+              {
+                path: 'users',
+                element: <UsersPage />,
+              },
+              {
+                path: 'users/:userId',
+                element: <UserProfilePage />,
               },
             ],
           },
