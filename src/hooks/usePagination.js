@@ -3,6 +3,11 @@ import { useMemo, useState } from 'react'
 /**
  * Pagination state for tables and lists.
  *
+ * Note: `pageNumbers` / `canPrev` / `canNext` / `totalPages` are only correct
+ * when `totalItems` is known. The shared Pagination component derives the
+ * page range from the server-side total itself, so list pages typically use
+ * this hook just for the current page state (currentPage / setCurrentPage).
+ *
  * @param {object} options
  * @param {number} options.totalItems
  * @param {number} [options.perPage]

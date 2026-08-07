@@ -47,7 +47,7 @@ export default function RolesPage() {
 
   useEffect(() => {
     if (paginationMeta && pagination.currentPage > paginationMeta.last_page) {
-      pagination.goToPage(paginationMeta.last_page)
+      pagination.setCurrentPage(paginationMeta.last_page)
     }
   }, [paginationMeta?.last_page]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -161,7 +161,7 @@ export default function RolesPage() {
             value={search}
             onChange={(event) => {
               setSearch(event.target.value)
-              pagination.goToPage(1)
+              pagination.setCurrentPage(1)
             }}
             placeholder="Search roles…"
             className="w-full sm:w-64"

@@ -68,13 +68,13 @@ export default function UsersPage() {
   // A filter change restarts at page 1.
   const applyFilter = (setter) => (value) => {
     setter(value)
-    pagination.goToPage(1)
+    pagination.setCurrentPage(1)
   }
 
   // Step back when the current page no longer exists (e.g. last row removed).
   useEffect(() => {
     if (paginationMeta && pagination.currentPage > paginationMeta.last_page) {
-      pagination.goToPage(paginationMeta.last_page)
+      pagination.setCurrentPage(paginationMeta.last_page)
     }
   }, [paginationMeta?.last_page]) // eslint-disable-line react-hooks/exhaustive-deps
 
