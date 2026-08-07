@@ -1,3 +1,18 @@
+# Git metadata
 .git
+.gitignore
+
+# Dependencies / build output (node_modules is provided via a volume)
 node_modules
 dist
+
+# Secrets — never bake Vite env files into an image layer
+.env
+.env.*
+*.local
+
+# Editor / OS / logs
+.idea
+.vscode
+.DS_Store
+*.log
