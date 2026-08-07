@@ -155,11 +155,7 @@ export default function RolesPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Roles</h1>
-          <p className="text-sm text-base-content/60">Create and manage administrative roles and their permissions.</p>
-        </div>
+      <div className="flex justify-end">
         <Button
           onClick={() => {
             setEditing(null)

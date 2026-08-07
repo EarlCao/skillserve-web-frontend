@@ -45,6 +45,8 @@ export default function PermissionsModal({ open, onClose, role }) {
   const onSelectAll = () => setSelected(permissionNames)
 
   const onSubmit = () => {
+    if (!role) return
+
     setConfirmSaveOpen(false)
     syncMutation.mutate({ id: role.id, permissions: selected }, { onSuccess: () => onClose() })
   }

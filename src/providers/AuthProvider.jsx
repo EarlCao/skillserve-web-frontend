@@ -38,7 +38,12 @@ export default function AuthProvider({ children }) {
       const response = await api.post('/auth/login', credentials)
 
       // Hydrate the "me" query with the login payload so no extra round-trip.
-      queryClient.setQueryData(QUERY_KEYS.auth.me, response)
+      // Shape it like GET /auth/me (envelope with `data` = the user) — the
+      // rest of the app reads `meQuery.data.data` as the user object.
+      queryClient.setQueryData(QUERY_KEYS.auth.me, {
+        ...response,
+        data: response.data.user,
+      })
       setToken(response.data.token)
 
       return response.data

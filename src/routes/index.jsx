@@ -6,9 +6,7 @@ import BlankLayout from '../layouts/BlankLayout'
 import { GuestOnly, RequireAuth, RequirePermission } from '../modules/authentication/routes/guards'
 import ChangePasswordPage from '../modules/authentication/pages/ChangePasswordPage'
 import LoginPage from '../modules/authentication/pages/LoginPage'
-import AdministratorsPage from '../modules/administrators/pages/AdministratorsPage'
-import RolesPage from '../modules/administrators/pages/RolesPage'
-import PermissionsPage from '../modules/administrators/pages/PermissionsPage'
+import AdministratorManagementPage from '../modules/administrators/pages/AdministratorManagementPage'
 
 /**
  * Application routing.
@@ -54,7 +52,7 @@ export const router = createBrowserRouter([
             element: (
               <EmptyState
                 title="Dashboard"
-                description="Admin module routes (administrators, providers, services, bookings) arrive in Phase 2+."
+                description="Welcome! Use the sidebar to manage administrators, and providers, services and bookings modules will arrive in later phases."
               />
             ),
           },
@@ -68,15 +66,16 @@ export const router = createBrowserRouter([
             children: [
               {
                 path: 'administrators',
-                element: <AdministratorsPage />,
+                element: <AdministratorManagementPage />,
               },
+              // Pre-consolidation URLs redirect to the matching tab.
               {
                 path: 'roles',
-                element: <RolesPage />,
+                element: <Navigate to="/admin/administrators?tab=roles" replace />,
               },
               {
                 path: 'permissions',
-                element: <PermissionsPage />,
+                element: <Navigate to="/admin/administrators?tab=permissions" replace />,
               },
             ],
           },

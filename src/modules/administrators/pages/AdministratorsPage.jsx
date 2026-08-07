@@ -197,11 +197,7 @@ export default function AdministratorsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Administrators</h1>
-          <p className="text-sm text-base-content/60">Manage administrator accounts, activation status and roles.</p>
-        </div>
+      <div className="flex justify-end">
         <Button
           onClick={() => {
             setEditing(null)

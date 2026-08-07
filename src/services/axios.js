@@ -19,9 +19,25 @@ const axiosInstance = axios.create({
   },
 })
 
-// Attach an auth token if one is stored (Phase 1 will populate it).
+// Attach an auth token if one is stored. AuthProvider persists it through
+// useLocalStorage, which JSON-stringifies values — so parse the stored JSON
+// (e.g. `"abc123"` → `abc123`) and fall back to the raw value if it was
+// written by something that didn't use the hook.
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem(STORAGE_KEYS.token)
+  const stored = localStorage.getItem(STORAGE_KEYS.token)
+  let token = null
+
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored)
+      // useLocalStorage stores JSON (`"abc123"`). A parsed null means the
+      // session was explicitly cleared → send no header. Fall back to the
+      // raw value for anything written without the hook.
+      token = typeof parsed === 'string' && parsed ? parsed : null
+    } catch {
+      token = stored
+    }
+  }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`

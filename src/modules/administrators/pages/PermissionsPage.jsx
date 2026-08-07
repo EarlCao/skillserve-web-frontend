@@ -80,11 +80,6 @@ export default function PermissionsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold">Permissions</h1>
-        <p className="text-sm text-base-content/60">Assign permissions to roles. Permissions are grouped by module.</p>
-      </div>
-
       <Card>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm font-medium" htmlFor="permission-role">

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { KeyRound, LayoutDashboard, LogOut, Menu, Moon, ShieldCheck, Sun, UserCog, Users } from 'lucide-react'
+import { KeyRound, LayoutDashboard, LogOut, Menu, Moon, Sun, Users } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -167,30 +167,10 @@ export default function AdminLayout() {
                 <NavLink
                   to="/admin/administrators"
                   className={navLinkClass}
-                  title={collapsed ? 'Administrators' : undefined}
+                  title={collapsed ? 'Administrator management' : undefined}
                 >
                   <Users className="size-4 shrink-0" />
-                  <span className={collapsed ? 'lg:hidden' : undefined}>Administrators</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/roles"
-                  className={navLinkClass}
-                  title={collapsed ? 'Roles' : undefined}
-                >
-                  <UserCog className="size-4 shrink-0" />
-                  <span className={collapsed ? 'lg:hidden' : undefined}>Roles</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/admin/permissions"
-                  className={navLinkClass}
-                  title={collapsed ? 'Permissions' : undefined}
-                >
-                  <ShieldCheck className="size-4 shrink-0" />
-                  <span className={collapsed ? 'lg:hidden' : undefined}>Permissions</span>
+                  <span className={collapsed ? 'lg:hidden' : undefined}>Administrator Management</span>
                 </NavLink>
               </li>
             </>
