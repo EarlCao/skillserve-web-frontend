@@ -146,20 +146,9 @@ export default function AdminLayout() {
           <li>
             <NavLink to="/admin" end className={navLinkClass} title={collapsed ? 'Dashboard' : undefined}>
               <LayoutDashboard className="size-4 shrink-0" />
-              <span className={collapsed ? 'lg:hidden' : undefined}>Dashboard</span>
+              <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Dashboard</span>
             </NavLink>
           </li>
-          <li className="mt-2">
-            <NavLink
-              to="/admin/change-password"
-              className={navLinkClass}
-              title={collapsed ? 'Change password' : undefined}
-            >
-              <KeyRound className="size-4 shrink-0" />
-              <span className={collapsed ? 'lg:hidden' : undefined}>Change password</span>
-            </NavLink>
-          </li>
-
           {canManageAdministrators && (
             <>
               <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
@@ -170,7 +159,9 @@ export default function AdminLayout() {
                   title={collapsed ? 'Administrator management' : undefined}
                 >
                   <Users className="size-4 shrink-0" />
-                  <span className={collapsed ? 'lg:hidden' : undefined}>Administrator Management</span>
+                  <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
+                    Administrator Management
+                  </span>
                 </NavLink>
               </li>
             </>
