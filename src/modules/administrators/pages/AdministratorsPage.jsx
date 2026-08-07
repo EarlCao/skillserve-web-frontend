@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Eye, Pencil, Power, RefreshCw, UserPlus } from 'lucide-react'
+import { Eye, Pencil, Power, RefreshCw } from 'lucide-react'
 import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
 import Card from '../../../components/ui/Card'
@@ -147,7 +147,15 @@ export default function AdministratorsPage() {
         const isInactive = administrator.status === 'inactive'
 
         const isSelf = administrator.id === user?.id
-        const canDeactivate = !(isSelf && !isInactive)
+        const isSuperAdmin = (administrator.roles ?? []).includes('super-admin')
+        const isLocked = isSuperAdmin
+        const canDeactivate = !isLocked && !(isSelf && !isInactive)
+
+        const statusTitle = isSuperAdmin
+          ? 'Super administrator accounts are fixed and cannot be deactivated'
+          : isSelf
+            ? 'You cannot deactivate your own account'
+            : undefined
 
         return (
           <div className="flex justify-end gap-1">
@@ -174,20 +182,24 @@ export default function AdministratorsPage() {
               variant="ghost"
               size="sm"
               disabled={!canDeactivate}
-              title={isSelf ? 'You cannot deactivate your own account' : undefined}
+              title={statusTitle}
               onClick={() => {
                 setStatusTarget({ administrator, to: isInactive ? 'active' : 'inactive' })
                 statusDisclosure.open()
               }}
               aria-label={
-                isSelf
-                  ? `You cannot deactivate your own account`
-                  : isInactive
-                    ? `Activate ${administrator.name}`
-                    : `Deactivate ${administrator.name}`
+                isLocked
+                  ? `Super administrator accounts are fixed and cannot be deactivated`
+                  : isSelf
+                    ? `You cannot deactivate your own account`
+                    : isInactive
+                      ? `Activate ${administrator.name}`
+                      : `Deactivate ${administrator.name}`
               }
             >
-              <Power className={`size-4 ${isInactive ? 'text-success' : 'text-warning'}`} />
+              <Power
+                className={`size-4 ${isLocked ? 'text-base-content/30' : isInactive ? 'text-success' : 'text-warning'}`}
+              />
             </Button>
           </div>
         )
@@ -197,18 +209,6 @@ export default function AdministratorsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button
-          onClick={() => {
-            setEditing(null)
-            setFormOpen(true)
-          }}
-        >
-          <UserPlus className="size-4" />
-          Add administrator
-        </Button>
-      </div>
-
       <Card bodyClassName="p-0">
         <div className="flex flex-nowrap items-center gap-2 overflow-x-auto border-b border-base-200 p-4">
           <SearchInput

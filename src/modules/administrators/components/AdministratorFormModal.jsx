@@ -22,6 +22,10 @@ import { useCreateAdministrator, useUpdateAdministrator } from '../hooks/useAdmi
 export default function AdministratorFormModal({ open, onClose, administrator, roles = [] }) {
   const isEditing = Boolean(administrator)
 
+  // Super administrators are a fixed system role: role and status cannot be
+  // changed (the backend enforces this too).
+  const isSuperAdmin = (administrator?.roles ?? []).includes('super-admin')
+
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
 
   const {
@@ -167,8 +171,13 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
           </>
         )}
 
-        <FormField label="Role" required error={errors.role?.message}>
-          <select className="select select-bordered w-full" {...register('role')}>
+        <FormField
+          label="Role"
+          required
+          error={errors.role?.message}
+          hint={isSuperAdmin ? 'Super administrator role is fixed and cannot be changed.' : undefined}
+        >
+          <select className="select select-bordered w-full" {...register('role')} disabled={isSuperAdmin}>
             <option value="">Select a role…</option>
             {roles.map((role) => (
               <option key={role} value={role}>
@@ -179,8 +188,13 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
         </FormField>
 
         {isEditing && (
-          <FormField label="Status" required error={errors.status?.message}>
-            <select className="select select-bordered w-full" {...register('status')}>
+          <FormField
+            label="Status"
+            required
+            error={errors.status?.message}
+            hint={isSuperAdmin ? 'Super administrator status is fixed and cannot be changed.' : undefined}
+          >
+            <select className="select select-bordered w-full" {...register('status')} disabled={isSuperAdmin}>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>

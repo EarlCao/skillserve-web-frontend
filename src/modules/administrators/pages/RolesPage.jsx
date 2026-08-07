@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Eye, Pencil, Plus, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react'
+import { Eye, Pencil, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react'
 import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
 import Card from '../../../components/ui/Card'
@@ -155,18 +155,6 @@ export default function RolesPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button
-          onClick={() => {
-            setEditing(null)
-            setFormOpen(true)
-          }}
-        >
-          <Plus className="size-4" />
-          Add role
-        </Button>
-      </div>
-
       <Card bodyClassName="p-0">
         <div className="flex flex-wrap items-center gap-3 border-b border-base-200 p-4">
           <SearchInput
