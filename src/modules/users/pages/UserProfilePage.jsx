@@ -9,7 +9,7 @@ import Skeleton from '../../../components/ui/Skeleton'
 import ErrorState from '../../../components/common/ErrorState'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import { useDisclosure } from '../../../hooks/useDisclosure'
-import { useUser, useActivateUser, useBanUser, useDeleteUser, useSuspendUser, useUnbanUser } from '../hooks/useUsers'
+import { useUser, useActivateUser, useBanUser, useBanHistory, useDeleteUser, useSuspendUser, useUnbanUser } from '../hooks/useUsers'
 import UserAvatar from '../components/UserAvatar'
 import UserStatusBadge from '../components/UserStatusBadge'
 import VerificationBadge from '../components/VerificationBadge'
@@ -32,6 +32,13 @@ export default function UserProfilePage() {
   const navigate = useNavigate()
   const { data, isLoading, isError, error, refetch } = useUser(userId)
   const user = data?.data
+  const banHistoryQuery = useBanHistory(userId)
+  const banHistory = banHistoryQuery.data?.data ?? []
+  // The endpoint returns every moderation event; the ban card shows the
+  // ban/unban records only.
+  const banEvents = banHistory.filter(
+    (entry) => entry.event === 'user_banned' || entry.event === 'user_unbanned',
+  )
 
   const [editing, setEditing] = useState(false)
   const [moderationTarget, setModerationTarget] = useState(null) // { user, action }
@@ -327,9 +334,50 @@ export default function UserProfilePage() {
             </ul>
           )}
         </Card>
-      </div>
+      </div>        {/* Full ban / unban history — from the audit trail, not just the latest state */}
+        <Card title="Ban history" description="Every ban and unban recorded for this account (newest first).">
+          {banHistoryQuery.isLoading ? (
+            <div className="flex flex-col gap-3">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          ) : (
+            <ul className="flex max-h-96 flex-col gap-3 overflow-y-auto pr-1">
+              {banEvents.map((entry) => {
+                const isBan = entry.event === 'user_banned'
 
-      {/* Platform summary — populated by future modules */}
+                return (
+                  <li key={entry.id} className="flex flex-col gap-0.5 border-l-2 border-base-300 pl-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`size-2 rounded-full ${isBan ? 'bg-error' : 'bg-success'}`}
+                        aria-hidden="true"
+                      />
+                      <span className="text-sm font-semibold">{isBan ? 'Banned' : 'Unbanned'}</span>
+                      <span className="text-xs text-base-content/50">{formatDateTime(entry.logged_at)}</span>
+                    </div>
+                    <p className="text-xs text-base-content/60">by {entry.actor?.name ?? 'System'}</p>
+                    <p className="pl-4 text-sm text-base-content/70">“{entry.properties?.reason ?? '—'}”</p>
+                    {isBan && (
+                      <p className="pl-4 text-xs text-base-content/50">
+                        {entry.properties?.banned_until
+                          ? `Lifts on ${formatDateTime(entry.properties.banned_until)}`
+                          : 'Permanent ban'}
+                      </p>
+                    )}
+                  </li>
+                )
+              })}
+              {banEvents.length === 0 && (
+                <li>
+                  <p className="text-sm text-base-content/40">No bans recorded.</p>
+                </li>
+              )}
+            </ul>
+          )}
+        </Card>
+
+        {/* Platform summary — populated by future modules */}
       <Card title="Platform summary" description="Services, bookings, ratings and reviews land with their modules.">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <SummaryStat label="Services" value={summary.services_count ?? 0} />

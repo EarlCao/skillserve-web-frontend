@@ -17,6 +17,17 @@ export function useUsers(params) {
 }
 
 /**
+ * Full moderation (ban/unban/suspend/activate) history for a user.
+ */
+export function useBanHistory(id) {
+  return useQuery({
+    queryKey: QUERY_KEYS.users.history(id),
+    queryFn: () => userApi.banHistory(id),
+    enabled: Boolean(id),
+  })
+}
+
+/**
  * Single user profile.
  */
 export function useUser(id) {

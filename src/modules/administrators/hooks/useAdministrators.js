@@ -53,6 +53,25 @@ export function useUpdateAdministrator() {
 }
 
 /**
+ * Reset an administrator's password (ends all their sessions).
+ */
+export function useResetAdministratorPassword() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, password, password_confirmation }) =>
+      administratorApi.resetPassword(id, { password, password_confirmation }),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Administrator password updated.')
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to reset the password.')
+    },
+  })
+}
+
+/**
  * Activate/deactivate mutation.
  */
 export function useUpdateAdministratorStatus() {

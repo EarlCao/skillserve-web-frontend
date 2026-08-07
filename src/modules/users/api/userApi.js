@@ -12,5 +12,6 @@ export const userApi = {
   activate: (id) => api.patch(`/users/${id}/activate`),
   ban: (id, { reason, duration, days } = {}) => api.patch(`/users/${id}/ban`, { reason, duration, days }),
   unban: (id, { reason } = {}) => api.patch(`/users/${id}/unban`, { reason }),
+  banHistory: (id) => api.get(`/users/${id}/moderation-history`),
   remove: (id) => api.delete(`/users/${id}`),
 }

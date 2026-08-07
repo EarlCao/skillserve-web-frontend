@@ -9,4 +9,5 @@ export const administratorApi = {
   create: (payload) => api.post('/administrators', payload),
   update: (id, payload) => api.put(`/administrators/${id}`, payload),
   updateStatus: (id, status) => api.patch(`/administrators/${id}/status`, { status }),
+  resetPassword: (id, payload) => api.patch(`/administrators/${id}/password`, payload),
 }

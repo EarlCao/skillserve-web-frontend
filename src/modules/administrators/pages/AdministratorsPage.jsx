@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Eye, Pencil, Power, RefreshCw } from 'lucide-react'
+import { Eye, KeyRound, Pencil, Power, RefreshCw } from 'lucide-react'
 import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
 import Card from '../../../components/ui/Card'
@@ -17,6 +17,7 @@ import { useAdministrators, useUpdateAdministratorStatus } from '../hooks/useAdm
 import { useRoles } from '../hooks/useRoles'
 import AdministratorDetailsModal from '../components/AdministratorDetailsModal'
 import AdministratorFormModal from '../components/AdministratorFormModal'
+import ResetPasswordModal from '../components/ResetPasswordModal'
 import StatusBadge from '../components/StatusBadge'
 
 const PER_PAGE = 10
@@ -43,6 +44,8 @@ export default function AdministratorsPage() {
   const [viewing, setViewing] = useState(null)
   const [statusTarget, setStatusTarget] = useState(null)
   const statusDisclosure = useDisclosure()
+  const [passwordTarget, setPasswordTarget] = useState(null)
+  const passwordDisclosure = useDisclosure()
 
   const rolesQuery = useRoles({ per_page: 100, sort: 'name', direction: 'asc' })
   const roleNames = rolesQuery.data?.data?.map((role) => role.name) ?? []
@@ -151,6 +154,17 @@ export default function AdministratorsPage() {
         const isLocked = isSuperAdmin
         const canDeactivate = !isLocked && !(isSelf && !isInactive)
 
+        // A super administrator's password is exclusively self-managed — even
+        // another super administrator cannot change it. Regular admins use the
+        // self-service change-password page for their own account.
+        const canResetPassword = isSuperAdmin ? isSelf : !isSelf
+        const passwordTitle =
+          isSuperAdmin && !isSelf
+            ? 'Only the super administrator themselves can change this password'
+            : isSelf && !isSuperAdmin
+              ? 'Use the self-service Change password page for your own account'
+              : undefined
+
         const statusTitle = isSuperAdmin
           ? 'Super administrator accounts are fixed and cannot be deactivated'
           : isSelf
@@ -177,6 +191,19 @@ export default function AdministratorsPage() {
               aria-label={`Edit ${administrator.name}`}
             >
               <Pencil className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={!canResetPassword}
+              title={passwordTitle}
+              onClick={() => {
+                setPasswordTarget(administrator)
+                passwordDisclosure.open()
+              }}
+              aria-label={`Reset ${administrator.name}'s password`}
+            >
+              <KeyRound className={`size-4 ${canResetPassword ? 'text-primary' : 'text-base-content/30'}`} />
             </Button>
             <Button
               variant="ghost"
@@ -317,6 +344,12 @@ export default function AdministratorsPage() {
         }
         confirmText={statusTarget?.to === 'inactive' ? 'Deactivate' : 'Activate'}
         variant={statusTarget?.to === 'inactive' ? 'error' : 'primary'}
+      />
+
+      <ResetPasswordModal
+        open={passwordDisclosure.isOpen}
+        onClose={passwordDisclosure.close}
+        administrator={passwordTarget}
       />
     </div>
   )

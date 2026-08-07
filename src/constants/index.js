@@ -40,6 +40,7 @@ export const QUERY_KEYS = {
     all: ['users'],
     list: (params) => ['users', 'list', params],
     detail: (id) => ['users', 'detail', id],
+    history: (id) => ['users', 'history', id],
   },
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { format } from 'date-fns'
+import { differenceInCalendarDays, format } from 'date-fns'
 import { Ban, Eye, Pencil, Power, RefreshCw, Trash2, UserCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
@@ -22,6 +22,15 @@ import UserActionModal from '../components/UserActionModal'
 const PER_PAGE = 10
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
+
+// Short countdown shown under the Banned badge, e.g. "Lifts in 5 days".
+const banCountdown = (bannedUntil) => {
+  const days = differenceInCalendarDays(new Date(bannedUntil), new Date())
+
+  if (days <= 0) return 'Lifts today'
+
+  return `Lifts in ${days} day${days === 1 ? '' : 's'}`
+}
 
 /**
  * User management list: server-side search (name/email/ID), user-type,
@@ -143,9 +152,20 @@ export default function UsersPage() {
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => (
-        <UserStatusBadge status={row.original.status} bannedUntil={row.original.banned_until} />
-      ),
+      cell: ({ row }) => {
+        const { status, banned_until: bannedUntil } = row.original
+
+        return (
+          <div className="flex flex-col items-start gap-0.5">
+            <UserStatusBadge status={status} bannedUntil={bannedUntil} />
+            {status === 'banned' && (
+              <span className="text-xs text-base-content/50">
+                {bannedUntil ? banCountdown(bannedUntil) : 'Permanent'}
+              </span>
+            )}
+          </div>
+        )
+      },
     },
     {
       accessorKey: 'verification',
