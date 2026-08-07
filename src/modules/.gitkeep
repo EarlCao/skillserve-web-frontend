@@ -1,0 +1,4 @@
+# Feature modules
+
+Business feature modules (authentication, users, providers, services, bookings, ...)
+will live in `src/modules/<feature>/` starting with Phase 1.
