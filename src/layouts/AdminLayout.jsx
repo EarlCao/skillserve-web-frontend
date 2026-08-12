@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { KeyRound, LayoutDashboard, LogOut, Menu, Moon, Sun, Users, UsersRound } from 'lucide-react'
+import { FolderTree, KeyRound, LayoutDashboard, LogOut, Menu, Moon, Sun, Users, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -32,6 +32,7 @@ export default function AdminLayout() {
 
   const canManageAdministrators = (user?.permissions ?? []).includes('manage administrators')
   const canManageUsers = (user?.permissions ?? []).includes('manage users')
+  const canManageServiceCategories = (user?.permissions ?? []).includes('manage service categories')
 
   // Active nav item uses the primary color (not daisyUI's near-black
   // base-content that `menu-active` applies). When collapsed, icons center.
@@ -144,21 +145,37 @@ export default function AdminLayout() {
               <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Dashboard</span>
             </NavLink>
           </li>
-          {canManageAdministrators && (
+          {(canManageAdministrators || canManageServiceCategories) && (
             <>
               <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
-              <li>
-                <NavLink
-                  to="/admin/administrators"
-                  className={navLinkClass}
-                  title={collapsed ? 'Administrator management' : undefined}
-                >
-                  <Users className="size-4 shrink-0" />
-                  <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
-                    Administrator Management
-                  </span>
-                </NavLink>
-              </li>
+              {canManageAdministrators && (
+                <li>
+                  <NavLink
+                    to="/admin/administrators"
+                    className={navLinkClass}
+                    title={collapsed ? 'Administrator management' : undefined}
+                  >
+                    <Users className="size-4 shrink-0" />
+                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
+                      Administrator Management
+                    </span>
+                  </NavLink>
+                </li>
+              )}
+              {canManageServiceCategories && (
+                <li>
+                  <NavLink
+                    to="/admin/service-categories"
+                    className={navLinkClass}
+                    title={collapsed ? 'Service categories' : undefined}
+                  >
+                    <FolderTree className="size-4 shrink-0" />
+                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
+                      Service Categories
+                    </span>
+                  </NavLink>
+                </li>
+              )}
             </>
           )}
           {canManageUsers && (

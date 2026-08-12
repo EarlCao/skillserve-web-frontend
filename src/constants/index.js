@@ -42,6 +42,11 @@ export const QUERY_KEYS = {
     detail: (id) => ['users', 'detail', id],
     history: (id) => ['users', 'history', id],
   },
+  serviceCategories: {
+    all: ['service-categories'],
+    list: (params) => ['service-categories', 'list', params],
+    detail: (id) => ['service-categories', 'detail', id],
+  },
 }
 
 /** Common HTTP status codes. */

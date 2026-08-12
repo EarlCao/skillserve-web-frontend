@@ -9,6 +9,7 @@ import LoginPage from '../modules/authentication/pages/LoginPage'
 import AdministratorManagementPage from '../modules/administrators/pages/AdministratorManagementPage'
 import UsersPage from '../modules/users/pages/UsersPage'
 import UserProfilePage from '../modules/users/pages/UserProfilePage'
+import ServiceCategoriesPage from '../modules/serviceCategories/pages/ServiceCategoriesPage'
 
 /**
  * Application routing.
@@ -92,6 +93,16 @@ export const router = createBrowserRouter([
               {
                 path: 'users/:userId',
                 element: <UserProfilePage />,
+              },
+            ],
+          },
+          {
+            // Service Category Management — requires the module permission.
+            element: <RequirePermission permissions={['manage service categories']} />,
+            children: [
+              {
+                path: 'service-categories',
+                element: <ServiceCategoriesPage />,
               },
             ],
           },
