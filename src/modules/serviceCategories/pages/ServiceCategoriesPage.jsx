@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Eye, FolderPlus, Pencil, Power, RefreshCw, Trash2 } from 'lucide-react'
+import { CircleOff, Eye, FolderPlus, Pencil, Power, RefreshCw, Trash2 } from 'lucide-react'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
 import SearchInput from '../../../components/common/SearchInput'
@@ -164,7 +164,11 @@ export default function ServiceCategoriesPage() {
               }}
               aria-label={isEnabled ? `Disable ${category.name}` : `Enable ${category.name}`}
             >
-              <Power className={`size-4 ${isEnabled ? 'text-warning' : 'text-success'}`} />
+              {isEnabled ? (
+                <CircleOff className="size-4 text-warning" />
+              ) : (
+                <Power className="size-4 text-success" />
+              )}
             </Button>
             <Button
               variant="ghost"

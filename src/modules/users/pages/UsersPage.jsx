@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { differenceInCalendarDays, format } from 'date-fns'
-import { Ban, Eye, Pencil, Power, RefreshCw, Trash2, UserCheck } from 'lucide-react'
+import { Ban, CirclePause, Eye, Pencil, Power, RefreshCw, Trash2, UserCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
@@ -230,7 +230,7 @@ export default function UsersPage() {
                   }}
                   aria-label={`Suspend ${user.name}`}
                 >
-                  <Power className="size-4 text-warning" />
+                  <CirclePause className="size-4 text-warning" />
                 </Button>
               ))}
             {!isBanned && (
