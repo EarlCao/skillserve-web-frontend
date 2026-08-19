@@ -31,8 +31,9 @@ export default function AdminLayout() {
     .toUpperCase()
 
   const canManageAdministrators = (user?.permissions ?? []).includes('manage administrators')
-  const canManageUsers = (user?.permissions ?? []).includes('manage users')
-  const canManageServiceCategories = (user?.permissions ?? []).includes('manage service categories')
+  const permissions = user?.permissions ?? []
+  const canManageUsers = ['manage users', 'view users', 'edit users', 'delete users', 'suspend users', 'activate users', 'ban users'].some((permission) => permissions.includes(permission))
+  const canManageServiceCategories = ['manage service categories', 'view service categories', 'create service categories', 'edit service categories', 'delete service categories'].some((permission) => permissions.includes(permission))
 
   // Active nav item uses the primary color (not daisyUI's near-black
   // base-content that `menu-active` applies). When collapsed, icons center.

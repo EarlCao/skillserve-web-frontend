@@ -84,7 +84,7 @@ export const router = createBrowserRouter([
           },
           {
             // User Management — requires the module permission.
-            element: <RequirePermission permissions={['manage users']} />,
+            element: <RequirePermission permissions={['manage users', 'view users', 'edit users', 'delete users', 'suspend users', 'activate users', 'ban users']} />,
             children: [
               {
                 path: 'users',
@@ -98,7 +98,7 @@ export const router = createBrowserRouter([
           },
           {
             // Service Category Management — requires the module permission.
-            element: <RequirePermission permissions={['manage service categories']} />,
+            element: <RequirePermission permissions={['manage service categories', 'view service categories', 'create service categories', 'edit service categories', 'delete service categories']} />,
             children: [
               {
                 path: 'service-categories',
