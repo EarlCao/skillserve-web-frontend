@@ -25,7 +25,7 @@ const SUPER_ADMIN = 'super-admin'
 export default function PermissionsModal({ open, onClose, role }) {
   const matrixQuery = usePermissionMatrix()
   const syncMutation = useSyncRolePermissions()
-  const { selected, setSelected, toggle, clearAll, collapsedModules, toggleModule } = usePermissionSelection()
+  const { selected, setSelected, toggle, toggleGroup, clearAll, collapsedModules, toggleModule } = usePermissionSelection()
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false)
 
   const isSuperAdmin = role?.name === SUPER_ADMIN
@@ -96,6 +96,7 @@ export default function PermissionsModal({ open, onClose, role }) {
             groups={groups}
             selected={selected}
             onToggle={toggle}
+            onToggleGroup={toggleGroup}
             onSelectAll={onSelectAll}
             onClearAll={clearAll}
             readOnly={isSuperAdmin}

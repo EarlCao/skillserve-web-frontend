@@ -15,6 +15,7 @@ import Skeleton from '../../../components/ui/Skeleton'
  * @param {Array<{module: string, permissions: Array<{id: number, name: string}>}>} props.groups
  * @param {string[]} props.selected
  * @param {(name: string) => void} props.onToggle
+ * @param {(names: string[]) => void} props.onToggleGroup
  * @param {() => void} props.onSelectAll
  * @param {() => void} props.onClearAll
  * @param {boolean} [props.readOnly]   super administrator — no toggling
@@ -26,6 +27,7 @@ export default function PermissionGroupList({
   groups,
   selected,
   onToggle,
+  onToggleGroup,
   onSelectAll,
   onClearAll,
   readOnly = false,
@@ -83,6 +85,8 @@ export default function PermissionGroupList({
 
       {groups.map((group) => {
         const isCollapsed = collapsedModules.has(group.module)
+        const groupPermissionNames = group.permissions.map((permission) => permission.name)
+        const hasFullControl = groupPermissionNames.every((name) => selected.includes(name))
 
         return (
           <fieldset key={group.module} className="flex flex-col gap-2">
@@ -108,6 +112,19 @@ export default function PermissionGroupList({
 
             {!isCollapsed && (
               <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {!readOnly && groupPermissionNames.length > 1 && (
+                  <label className={`label cursor-pointer justify-start gap-3 rounded-lg border p-2.5 transition-colors ${
+                    hasFullControl ? 'border-primary bg-primary/10' : 'border-primary/30 bg-primary/5 hover:border-primary/50'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-sm checkbox-primary"
+                      checked={hasFullControl}
+                      onChange={() => onToggleGroup(groupPermissionNames)}
+                    />
+                    <span className="label-text text-sm font-semibold">Full control</span>
+                  </label>
+                )}
                 {group.permissions.map((permission) => {
                   const checked = selected.includes(permission.name)
 
@@ -129,7 +146,7 @@ export default function PermissionGroupList({
                         disabled={readOnly}
                         onChange={() => onToggle(permission.name)}
                       />
-                      <span className="label-text text-sm">{permission.name}</span>
+                      <span className="label-text text-sm">{permission.name.replace(/^(manage|view|create|edit|update|delete|suspend|activate|ban) /, (_, action) => action === 'manage' ? 'Full control — ' : `${action[0].toUpperCase()}${action.slice(1)} — `).concat(permission.module)}</span>
                     </label>
                   )
                 })}

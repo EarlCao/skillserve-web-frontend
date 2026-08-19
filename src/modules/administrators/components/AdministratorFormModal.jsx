@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
@@ -29,6 +29,7 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -140,7 +141,7 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
           <Button variant="ghost" onClick={requestClose} disabled={mutation.isPending}>
             Cancel
           </Button>
-          <Button type="submit" form="administrator-form" loading={mutation.isPending}>
+          <Button type="button" onClick={handleSubmit(onSubmit)} loading={mutation.isPending}>
             {isEditing ? 'Save changes' : 'Create administrator'}
           </Button>
         </>
@@ -149,10 +150,18 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
       <form id="administrator-form" onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="First name" required error={errors.first_name?.message}>
-            <Input autoComplete="off" {...register('first_name')} />
+            <Controller
+              control={control}
+              name="first_name"
+              render={({ field }) => <Input autoComplete="off" {...field} />}
+            />
           </FormField>
           <FormField label="Last name" required error={errors.last_name?.message}>
-            <Input autoComplete="off" {...register('last_name')} />
+            <Controller
+              control={control}
+              name="last_name"
+              render={({ field }) => <Input autoComplete="off" {...field} />}
+            />
           </FormField>
         </div>
 

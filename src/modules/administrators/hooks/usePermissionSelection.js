@@ -24,6 +24,12 @@ export function usePermissionSelection() {
 
   const clearAll = useCallback(() => setSelected([]), [])
 
+  const toggleGroup = useCallback((names) => {
+    setSelected((prev) => (names.every((name) => prev.includes(name))
+      ? prev.filter((name) => !names.includes(name))
+      : [...new Set([...prev, ...names])]))
+  }, [])
+
   const toggleModule = useCallback((module) => {
     setCollapsedModules((prev) => {
       const next = new Set(prev)
@@ -37,5 +43,5 @@ export function usePermissionSelection() {
     })
   }, [])
 
-  return { selected, setSelected, toggle, clearAll, collapsedModules, toggleModule }
+  return { selected, setSelected, toggle, toggleGroup, clearAll, collapsedModules, toggleModule }
 }

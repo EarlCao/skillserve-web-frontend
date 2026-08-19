@@ -20,7 +20,7 @@ export default function PermissionsPage() {
   const rolesQuery = useRoles({ per_page: 100, sort: 'name', direction: 'asc' })
   const matrixQuery = usePermissionMatrix()
   const syncMutation = useSyncRolePermissions()
-  const { selected, setSelected, toggle, clearAll, collapsedModules, toggleModule } = usePermissionSelection()
+  const { selected, setSelected, toggle, toggleGroup, clearAll, collapsedModules, toggleModule } = usePermissionSelection()
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false)
 
   const roles = useMemo(() => rolesQuery.data?.data ?? [], [rolesQuery.data])
@@ -116,6 +116,7 @@ export default function PermissionsPage() {
           groups={groups}
           selected={selected}
           onToggle={toggle}
+          onToggleGroup={toggleGroup}
           onSelectAll={onSelectAll}
           onClearAll={clearAll}
           readOnly={isSuperAdmin}
