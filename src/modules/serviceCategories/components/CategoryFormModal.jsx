@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
@@ -29,6 +29,7 @@ export default function CategoryFormModal({ open, onClose, category }) {
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -108,7 +109,7 @@ export default function CategoryFormModal({ open, onClose, category }) {
             <Button variant="ghost" onClick={requestClose} disabled={mutation.isPending}>
               Cancel
             </Button>
-            <Button type="submit" form="service-category-form" loading={mutation.isPending}>
+            <Button type="button" onClick={handleSubmit(onSubmit)} loading={mutation.isPending}>
               {isEditing ? 'Save changes' : 'Create category'}
             </Button>
           </>
@@ -121,7 +122,13 @@ export default function CategoryFormModal({ open, onClose, category }) {
           className="flex flex-col gap-4"
         >
           <FormField label="Name" required error={errors.name?.message} hint="Unique category name.">
-            <Input autoComplete="off" placeholder="e.g. Home Maintenance" {...register('name')} />
+            <Controller
+              control={control}
+              name="name"
+              render={({ field }) => (
+                <Input autoComplete="off" placeholder="e.g. Home Maintenance" {...field} />
+              )}
+            />
           </FormField>
 
           <FormField label="Description" error={errors.description?.message}>

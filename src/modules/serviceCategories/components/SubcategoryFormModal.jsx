@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
@@ -31,6 +31,7 @@ export default function SubcategoryFormModal({ open, onClose, categoryId, subcat
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -112,7 +113,7 @@ export default function SubcategoryFormModal({ open, onClose, categoryId, subcat
             <Button variant="ghost" onClick={requestClose} disabled={mutation.isPending}>
               Cancel
             </Button>
-            <Button type="submit" form="subcategory-form" loading={mutation.isPending}>
+            <Button type="button" onClick={handleSubmit(onSubmit)} loading={mutation.isPending}>
               {isEditing ? 'Save changes' : 'Add subcategory'}
             </Button>
           </>
@@ -120,7 +121,11 @@ export default function SubcategoryFormModal({ open, onClose, categoryId, subcat
       >
         <form id="subcategory-form" onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
           <FormField label="Name" required error={errors.name?.message} hint="Unique within this category.">
-            <Input autoComplete="off" placeholder="e.g. Plumbing" {...register('name')} />
+            <Controller
+              control={control}
+              name="name"
+              render={({ field }) => <Input autoComplete="off" placeholder="e.g. Plumbing" {...field} />}
+            />
           </FormField>
 
           <FormField label="Description" error={errors.description?.message}>
