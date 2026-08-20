@@ -53,6 +53,11 @@ export const QUERY_KEYS = {
     detail: (id) => ['providers', 'detail', id],
     verificationHistory: (id) => ['providers', 'verification-history', id],
   },
+  services: {
+    all: ['services'],
+    list: (params) => ['services', 'list', params],
+    detail: (id) => ['services', 'detail', id],
+  },
 }
 
 /** Common HTTP status codes. */

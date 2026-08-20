@@ -10,6 +10,7 @@ import AdministratorManagementPage from '../modules/administrators/pages/Adminis
 import UsersPage from '../modules/users/pages/UsersPage'
 import UserProfilePage from '../modules/users/pages/UserProfilePage'
 import ServiceCategoriesPage from '../modules/serviceCategories/pages/ServiceCategoriesPage'
+import ServicesPage from '../modules/services/pages/ServicesPage'
 import ProvidersPage from '../modules/providers/pages/ProvidersPage'
 import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
 
@@ -105,6 +106,16 @@ export const router = createBrowserRouter([
               {
                 path: 'service-categories',
                 element: <ServiceCategoriesPage />,
+              },
+            ],
+          },
+          {
+            // Service Management — requires the module permission.
+            element: <RequirePermission permissions={['manage services', 'view services', 'create services', 'edit services', 'delete services', 'approve services', 'reject services', 'feature services']} />,
+            children: [
+              {
+                path: 'services',
+                element: <ServicesPage />,
               },
             ],
           },
