@@ -172,10 +172,18 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
         {!isEditing && (
           <>
             <FormField label="Password" required error={errors.password?.message} hint="At least 8 characters.">
-              <PasswordInput autoComplete="new-password" {...register('password')} />
+              <Controller
+                control={control}
+                name="password"
+                render={({ field }) => <PasswordInput autoComplete="new-password" {...field} />}
+              />
             </FormField>
             <FormField label="Confirm password" required error={errors.password_confirmation?.message}>
-              <PasswordInput autoComplete="new-password" {...register('password_confirmation')} />
+              <Controller
+                control={control}
+                name="password_confirmation"
+                render={({ field }) => <PasswordInput autoComplete="new-password" {...field} />}
+              />
             </FormField>
           </>
         )}

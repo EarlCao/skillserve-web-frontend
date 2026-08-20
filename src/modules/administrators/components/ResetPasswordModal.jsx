@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Button from '../../../components/ui/Button'
@@ -32,7 +32,7 @@ const resetPasswordSchema = z
  */
 export default function ResetPasswordModal({ open, onClose, administrator }) {
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     setError,
@@ -96,10 +96,18 @@ export default function ResetPasswordModal({ open, onClose, administrator }) {
         className="flex flex-col gap-4"
       >
         <FormField label="New password" required error={errors.password?.message} hint="At least 8 characters.">
-          <PasswordInput autoComplete="new-password" {...register('password')} />
+          <Controller
+            control={control}
+            name="password"
+            render={({ field }) => <PasswordInput autoComplete="new-password" {...field} />}
+          />
         </FormField>
         <FormField label="Confirm new password" required error={errors.password_confirmation?.message}>
-          <PasswordInput autoComplete="new-password" {...register('password_confirmation')} />
+          <Controller
+            control={control}
+            name="password_confirmation"
+            render={({ field }) => <PasswordInput autoComplete="new-password" {...field} />}
+          />
         </FormField>
       </form>
     </Modal>
