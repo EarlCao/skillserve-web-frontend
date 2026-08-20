@@ -10,6 +10,8 @@ import AdministratorManagementPage from '../modules/administrators/pages/Adminis
 import UsersPage from '../modules/users/pages/UsersPage'
 import UserProfilePage from '../modules/users/pages/UserProfilePage'
 import ServiceCategoriesPage from '../modules/serviceCategories/pages/ServiceCategoriesPage'
+import ProvidersPage from '../modules/providers/pages/ProvidersPage'
+import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
 
 /**
  * Application routing.
@@ -103,6 +105,20 @@ export const router = createBrowserRouter([
               {
                 path: 'service-categories',
                 element: <ServiceCategoriesPage />,
+              },
+            ],
+          },
+          {
+            // Provider Management — requires the module permission.
+            element: <RequirePermission permissions={['manage providers', 'view providers', 'edit providers', 'delete providers', 'suspend providers', 'activate providers', 'verify providers', 'reject providers']} />,
+            children: [
+              {
+                path: 'providers',
+                element: <ProvidersPage />,
+              },
+              {
+                path: 'providers/:providerId',
+                element: <ProviderProfilePage />,
               },
             ],
           },

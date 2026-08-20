@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { FolderTree, KeyRound, LayoutDashboard, LogOut, Menu, Moon, Sun, Users, UsersRound } from 'lucide-react'
+import { FolderTree, KeyRound, LayoutDashboard, LogOut, Menu, Moon, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -34,6 +34,7 @@ export default function AdminLayout() {
   const permissions = user?.permissions ?? []
   const canManageUsers = ['manage users', 'view users', 'edit users', 'delete users', 'suspend users', 'activate users', 'ban users'].some((permission) => permissions.includes(permission))
   const canManageServiceCategories = ['manage service categories', 'view service categories', 'create service categories', 'edit service categories', 'delete service categories'].some((permission) => permissions.includes(permission))
+  const canManageProviders = ['manage providers', 'view providers', 'edit providers', 'delete providers', 'suspend providers', 'activate providers', 'verify providers', 'reject providers'].some((permission) => permissions.includes(permission))
 
   // Active nav item uses the primary color (not daisyUI's near-black
   // base-content that `menu-active` applies). When collapsed, icons center.
@@ -188,6 +189,18 @@ export default function AdminLayout() {
               >
                 <UsersRound className="size-4 shrink-0" />
                 <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>User Management</span>
+              </NavLink>
+            </li>
+          )}
+          {canManageProviders && (
+            <li>
+              <NavLink
+                to="/admin/providers"
+                className={navLinkClass}
+                title={collapsed ? 'Provider management' : undefined}
+              >
+                <UserCheck className="size-4 shrink-0" />
+                <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Provider Management</span>
               </NavLink>
             </li>
           )}
