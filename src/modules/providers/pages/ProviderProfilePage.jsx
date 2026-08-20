@@ -68,6 +68,7 @@ export default function ProviderProfilePage() {
   const removeVerificationMutation = useRemoveVerification()
 
   const handleApprove = () => {
+    if (!provider) return
     approveMutation.mutate(
       { id: provider.id, notes: approveNotes.trim() || undefined },
       {
@@ -80,7 +81,7 @@ export default function ProviderProfilePage() {
   }
 
   const handleReject = () => {
-    if (!rejectReason.trim()) return
+    if (!provider || !rejectReason.trim()) return
     rejectMutation.mutate(
       { id: provider.id, reason: rejectReason.trim() },
       {
@@ -93,7 +94,7 @@ export default function ProviderProfilePage() {
   }
 
   const handleRequestInfo = () => {
-    if (!requestInfoMessage.trim()) return
+    if (!provider || !requestInfoMessage.trim()) return
     requestInfoMutation.mutate(
       { id: provider.id, message: requestInfoMessage.trim() },
       {
@@ -106,7 +107,7 @@ export default function ProviderProfilePage() {
   }
 
   const handleSuspend = () => {
-    if (!suspendReason.trim()) return
+    if (!provider || !suspendReason.trim()) return
     suspendMutation.mutate(
       { id: provider.id, reason: suspendReason.trim() },
       {
@@ -346,7 +347,7 @@ export default function ProviderProfilePage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <SummaryStat label="Rating" value={provider?.average_rating > 0 ? provider.average_rating.toFixed(1) : '—'} icon={<Star className="size-4 text-yellow-500" />} />
+              <SummaryStat label="Rating" value={provider?.average_rating > 0 ? Number(provider.average_rating).toFixed(1) : '—'} icon={<Star className="size-4 text-yellow-500" />} />
               <SummaryStat label="Reviews" value={provider?.total_reviews ?? 0} />
               <SummaryStat label="Total Bookings" value={provider?.total_bookings ?? 0} />
               <SummaryStat label="Completed" value={provider?.completed_bookings ?? 0} />
@@ -593,7 +594,7 @@ export default function ProviderProfilePage() {
         open={showActivateConfirm}
         onCancel={() => setShowActivateConfirm(false)}
         onConfirm={() => {
-          activateMutation.mutate(provider.id, { onSettled: () => setShowActivateConfirm(false) })
+          if (provider) activateMutation.mutate(provider.id, { onSettled: () => setShowActivateConfirm(false) })
         }}
         loading={activateMutation.isPending}
         title="Activate provider?"
@@ -607,7 +608,7 @@ export default function ProviderProfilePage() {
         open={showRemoveVerificationConfirm}
         onCancel={() => setShowRemoveVerificationConfirm(false)}
         onConfirm={() => {
-          removeVerificationMutation.mutate(provider.id, { onSettled: () => setShowRemoveVerificationConfirm(false) })
+          if (provider) removeVerificationMutation.mutate(provider.id, { onSettled: () => setShowRemoveVerificationConfirm(false) })
         }}
         loading={removeVerificationMutation.isPending}
         title="Remove verification?"

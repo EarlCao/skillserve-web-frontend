@@ -127,7 +127,7 @@ export default function ProvidersPage() {
         const rating = row.original.average_rating
         return (
           <div className="flex items-center gap-1">
-            <span className="font-medium">{rating > 0 ? rating.toFixed(1) : '—'}</span>
+            <span className="font-medium">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
             {rating > 0 && <span className="text-xs text-base-content/50">({row.original.total_reviews})</span>}
           </div>
         )
