@@ -12,6 +12,7 @@ import UserProfilePage from '../modules/users/pages/UserProfilePage'
 import ServiceCategoriesPage from '../modules/serviceCategories/pages/ServiceCategoriesPage'
 import ServicesPage from '../modules/services/pages/ServicesPage'
 import BookingsPage from '../modules/bookings/pages/BookingsPage'
+import ReviewsPage from '../modules/reviews/pages/ReviewsPage'
 import ProvidersPage from '../modules/providers/pages/ProvidersPage'
 import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
 
@@ -127,6 +128,16 @@ export const router = createBrowserRouter([
               {
                 path: 'bookings',
                 element: <BookingsPage />,
+              },
+            ],
+          },
+          {
+            // Reviews and Ratings Management — requires the module permission.
+            element: <RequirePermission permissions={['manage reviews', 'view reviews', 'edit reviews', 'delete reviews']} />,
+            children: [
+              {
+                path: 'reviews',
+                element: <ReviewsPage />,
               },
             ],
           },

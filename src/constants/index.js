@@ -64,6 +64,11 @@ export const QUERY_KEYS = {
     detail: (id) => ['bookings', 'detail', id],
     history: (id) => ['bookings', 'history', id],
   },
+  reviews: {
+    all: ['reviews'],
+    list: (params) => ['reviews', 'list', params],
+    detail: (id) => ['reviews', 'detail', id],
+  },
 }
 
 /** Common HTTP status codes. */
