@@ -11,6 +11,7 @@ import UsersPage from '../modules/users/pages/UsersPage'
 import UserProfilePage from '../modules/users/pages/UserProfilePage'
 import ServiceCategoriesPage from '../modules/serviceCategories/pages/ServiceCategoriesPage'
 import ServicesPage from '../modules/services/pages/ServicesPage'
+import BookingsPage from '../modules/bookings/pages/BookingsPage'
 import ProvidersPage from '../modules/providers/pages/ProvidersPage'
 import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
 
@@ -58,7 +59,7 @@ export const router = createBrowserRouter([
             element: (
               <EmptyState
                 title="Dashboard"
-                description="Welcome! Use the sidebar to manage administrators, and providers, services and bookings modules will arrive in later phases."
+                description="Welcome! Use the sidebar to manage administrators, users, providers, services, and bookings."
               />
             ),
           },
@@ -116,6 +117,16 @@ export const router = createBrowserRouter([
               {
                 path: 'services',
                 element: <ServicesPage />,
+              },
+            ],
+          },
+          {
+            // Booking Management — requires the module permission.
+            element: <RequirePermission permissions={['manage bookings', 'view bookings', 'cancel bookings', 'manage booking disputes']} />,
+            children: [
+              {
+                path: 'bookings',
+                element: <BookingsPage />,
               },
             ],
           },

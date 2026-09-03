@@ -58,6 +58,12 @@ export const QUERY_KEYS = {
     list: (params) => ['services', 'list', params],
     detail: (id) => ['services', 'detail', id],
   },
+  bookings: {
+    all: ['bookings'],
+    list: (params) => ['bookings', 'list', params],
+    detail: (id) => ['bookings', 'detail', id],
+    history: (id) => ['bookings', 'history', id],
+  },
 }
 
 /** Common HTTP status codes. */
