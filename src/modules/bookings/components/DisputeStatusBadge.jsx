@@ -2,9 +2,10 @@ import Badge from '../../../components/ui/Badge'
 
 const DISPUTE_STYLES = {
   pending: { variant: 'warning', label: 'Pending' },
-  investigated: { variant: 'info', label: 'Investigated' },
+  investigated: { variant: 'primary', label: 'Investigated' },
   resolved: { variant: 'success', label: 'Resolved' },
   rejected: { variant: 'error', label: 'Rejected' },
+  closed: { variant: 'neutral', label: 'Closed' },
 }
 
 /**

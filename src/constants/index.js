@@ -64,6 +64,12 @@ export const QUERY_KEYS = {
     detail: (id) => ['bookings', 'detail', id],
     history: (id) => ['bookings', 'history', id],
   },
+  disputes: {
+    all: ['disputes'],
+    list: (params) => ['disputes', 'list', params],
+    detail: (id) => ['disputes', 'detail', id],
+    history: (id) => ['disputes', 'history', id],
+  },
   reviews: {
     all: ['reviews'],
     list: (params) => ['reviews', 'list', params],

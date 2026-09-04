@@ -14,6 +14,7 @@ import ServicesPage from '../modules/services/pages/ServicesPage'
 import BookingsPage from '../modules/bookings/pages/BookingsPage'
 import ReviewsPage from '../modules/reviews/pages/ReviewsPage'
 import ReportsPage from '../modules/reports/pages/ReportsPage'
+import DisputesPage from '../modules/disputes/pages/DisputesPage'
 import ProvidersPage from '../modules/providers/pages/ProvidersPage'
 import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
 
@@ -129,6 +130,16 @@ export const router = createBrowserRouter([
               {
                 path: 'bookings',
                 element: <BookingsPage />,
+              },
+            ],
+          },
+          {
+            // Dispute Management — reuses booking permissions and data.
+            element: <RequirePermission permissions={['manage bookings', 'view bookings', 'manage booking disputes']} />,
+            children: [
+              {
+                path: 'disputes',
+                element: <DisputesPage />,
               },
             ],
           },

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { CalendarDays, FolderTree, FileText, KeyRound, LayoutDashboard, LogOut, Menu, Moon, ShieldAlert, Star, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
+import { CalendarDays, FolderTree, FileText, Gavel, KeyRound, LayoutDashboard, LogOut, Menu, Moon, ShieldAlert, Star, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -37,6 +37,7 @@ export default function AdminLayout() {
   const canManageProviders = ['manage providers', 'view providers', 'edit providers', 'delete providers', 'suspend providers', 'activate providers', 'verify providers', 'reject providers'].some((permission) => permissions.includes(permission))
   const canManageServices = ['manage services', 'view services', 'create services', 'edit services', 'delete services', 'approve services', 'reject services', 'feature services'].some((permission) => permissions.includes(permission))
   const canManageBookings = ['manage bookings', 'view bookings', 'cancel bookings', 'manage booking disputes'].some((permission) => permissions.includes(permission))
+  const canManageDisputes = ['manage bookings', 'view bookings', 'manage booking disputes'].some((permission) => permissions.includes(permission))
   const canManageReviews = ['manage reviews', 'view reviews', 'edit reviews', 'delete reviews'].some((permission) => permissions.includes(permission))
   const canManageReports = ['manage reports', 'view reports', 'investigate reports', 'resolve reports', 'manage moderation'].some((permission) => permissions.includes(permission))
 
@@ -151,7 +152,7 @@ export default function AdminLayout() {
               <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Dashboard</span>
             </NavLink>
           </li>
-          {(canManageAdministrators || canManageServiceCategories || canManageReports) && (
+          {(canManageAdministrators || canManageServiceCategories || canManageBookings || canManageReports) && (
             <>
               <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
               {canManageAdministrators && (
@@ -207,6 +208,14 @@ export default function AdminLayout() {
                     <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
                       Bookings
                     </span>
+                  </NavLink>
+                </li>
+              )}
+              {canManageDisputes && (
+                <li>
+                  <NavLink to="/admin/disputes" className={navLinkClass} title={collapsed ? 'Dispute management' : undefined}>
+                    <Gavel className="size-4 shrink-0" />
+                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Dispute Management</span>
                   </NavLink>
                 </li>
               )}
