@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { CalendarDays, FolderTree, FileText, KeyRound, LayoutDashboard, LogOut, Menu, Moon, Star, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
+import { CalendarDays, FolderTree, FileText, KeyRound, LayoutDashboard, LogOut, Menu, Moon, ShieldAlert, Star, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -38,6 +38,7 @@ export default function AdminLayout() {
   const canManageServices = ['manage services', 'view services', 'create services', 'edit services', 'delete services', 'approve services', 'reject services', 'feature services'].some((permission) => permissions.includes(permission))
   const canManageBookings = ['manage bookings', 'view bookings', 'cancel bookings', 'manage booking disputes'].some((permission) => permissions.includes(permission))
   const canManageReviews = ['manage reviews', 'view reviews', 'edit reviews', 'delete reviews'].some((permission) => permissions.includes(permission))
+  const canManageReports = ['manage reports', 'view reports', 'investigate reports', 'resolve reports', 'manage moderation'].some((permission) => permissions.includes(permission))
 
   // Active nav item uses the primary color (not daisyUI's near-black
   // base-content that `menu-active` applies). When collapsed, icons center.
@@ -150,7 +151,7 @@ export default function AdminLayout() {
               <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Dashboard</span>
             </NavLink>
           </li>
-          {(canManageAdministrators || canManageServiceCategories) && (
+          {(canManageAdministrators || canManageServiceCategories || canManageReports) && (
             <>
               <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
               {canManageAdministrators && (
@@ -219,6 +220,20 @@ export default function AdminLayout() {
                     <Star className="size-4 shrink-0" />
                     <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
                       Reviews and Ratings
+                    </span>
+                  </NavLink>
+                </li>
+              )}
+              {canManageReports && (
+                <li>
+                  <NavLink
+                    to="/admin/reports"
+                    className={navLinkClass}
+                    title={collapsed ? 'Reports and moderation' : undefined}
+                  >
+                    <ShieldAlert className="size-4 shrink-0" />
+                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
+                      Reports and Moderation
                     </span>
                   </NavLink>
                 </li>

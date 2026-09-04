@@ -13,6 +13,7 @@ import ServiceCategoriesPage from '../modules/serviceCategories/pages/ServiceCat
 import ServicesPage from '../modules/services/pages/ServicesPage'
 import BookingsPage from '../modules/bookings/pages/BookingsPage'
 import ReviewsPage from '../modules/reviews/pages/ReviewsPage'
+import ReportsPage from '../modules/reports/pages/ReportsPage'
 import ProvidersPage from '../modules/providers/pages/ProvidersPage'
 import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
 
@@ -138,6 +139,16 @@ export const router = createBrowserRouter([
               {
                 path: 'reviews',
                 element: <ReviewsPage />,
+              },
+            ],
+          },
+          {
+            // Reports and Moderation — requires the module permission.
+            element: <RequirePermission permissions={['manage reports', 'view reports', 'investigate reports', 'resolve reports', 'manage moderation']} />,
+            children: [
+              {
+                path: 'reports',
+                element: <ReportsPage />,
               },
             ],
           },

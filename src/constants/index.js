@@ -69,6 +69,11 @@ export const QUERY_KEYS = {
     list: (params) => ['reviews', 'list', params],
     detail: (id) => ['reviews', 'detail', id],
   },
+  reports: {
+    all: ['reports'],
+    list: (params) => ['reports', 'list', params],
+    detail: (id) => ['reports', 'detail', id],
+  },
 }
 
 /** Common HTTP status codes. */
