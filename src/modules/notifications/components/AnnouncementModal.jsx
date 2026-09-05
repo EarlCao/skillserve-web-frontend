@@ -45,7 +45,8 @@ export default function AnnouncementModal({ open, onClose, mutation, canTarget, 
       onClose={onClose}
       title="Send announcement"
       description="Notify active clients and service providers, now or at a scheduled time."
-      className="max-w-2xl"
+      className="modal-middle"
+      boxClassName="max-w-2xl max-h-[90vh] overflow-y-auto"
       footer={(
         <>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>

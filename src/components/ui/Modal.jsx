@@ -7,7 +7,7 @@ import { cn } from '../../lib/utils'
  * @param {boolean} open
  * @param {() => void} onClose  called on Escape / backdrop click / onClose event
  */
-export default function Modal({ open, onClose, title, description, children, footer, className }) {
+export default function Modal({ open, onClose, title, description, children, footer, className, boxClassName }) {
   const dialogRef = useRef(null)
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function Modal({ open, onClose, title, description, children, foo
         }
       }}
     >
-      <div className="modal-box">
+      <div className={cn('modal-box', boxClassName)}>
         {(title || description) && (
           <div className="mb-4">
             {title && <h3 className="text-lg font-bold">{title}</h3>}
