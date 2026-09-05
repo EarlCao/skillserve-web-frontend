@@ -1,5 +1,4 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-import EmptyState from '../components/common/EmptyState'
 import AdminLayout from '../layouts/AdminLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import BlankLayout from '../layouts/BlankLayout'
@@ -18,6 +17,7 @@ import DisputesPage from '../modules/disputes/pages/DisputesPage'
 import ProvidersPage from '../modules/providers/pages/ProvidersPage'
 import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
 import NotificationsPage from '../modules/notifications/pages/NotificationsPage'
+import DashboardPage from '../modules/dashboard/pages/DashboardPage'
 
 /**
  * Application routing.
@@ -59,13 +59,13 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           {
-            index: true,
-            element: (
-              <EmptyState
-                title="Dashboard"
-                description="Welcome! Use the sidebar to manage administrators, users, providers, services, and bookings."
-              />
-            ),
+            element: <RequirePermission permissions={['view dashboard']} />,
+            children: [
+              {
+                index: true,
+                element: <DashboardPage />,
+              },
+            ],
           },
           {
             path: 'change-password',

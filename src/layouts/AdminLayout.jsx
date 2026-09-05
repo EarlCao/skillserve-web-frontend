@@ -149,10 +149,12 @@ export default function AdminLayout() {
 
           <li className={`menu-title ${collapsed ? 'lg:hidden' : undefined}`}>Main</li>
           <li>
+            {(user?.permissions?.includes('view dashboard') || user?.roles?.includes('super-admin')) && (
             <NavLink to="/admin" end className={navLinkClass} title={collapsed ? 'Dashboard' : undefined}>
               <LayoutDashboard className="size-4 shrink-0" />
               <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Dashboard</span>
             </NavLink>
+            )}
           </li>
           {(canManageAdministrators || canManageServiceCategories || canManageBookings || canManageReports || canManageNotifications) && (
             <>

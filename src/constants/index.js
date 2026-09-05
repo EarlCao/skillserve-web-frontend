@@ -20,6 +20,10 @@ export const APP_EVENTS = {
 
 /** React Query cache keys (grow as modules are added). */
 export const QUERY_KEYS = {
+  dashboard: {
+    all: ['dashboard'],
+    summary: ['dashboard', 'summary'],
+  },
   auth: {
     all: ['auth'],
     me: ['auth', 'me'],
