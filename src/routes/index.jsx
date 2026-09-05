@@ -17,6 +17,7 @@ import ReportsPage from '../modules/reports/pages/ReportsPage'
 import DisputesPage from '../modules/disputes/pages/DisputesPage'
 import ProvidersPage from '../modules/providers/pages/ProvidersPage'
 import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
+import NotificationsPage from '../modules/notifications/pages/NotificationsPage'
 
 /**
  * Application routing.
@@ -160,6 +161,16 @@ export const router = createBrowserRouter([
               {
                 path: 'reports',
                 element: <ReportsPage />,
+              },
+            ],
+          },
+          {
+            // Notifications and Announcements — requires the module permission.
+            element: <RequirePermission permissions={['view notifications', 'send announcements', 'target notifications', 'schedule announcements']} />,
+            children: [
+              {
+                path: 'notifications',
+                element: <NotificationsPage />,
               },
             ],
           },
