@@ -89,6 +89,10 @@ export const QUERY_KEYS = {
     list: (params) => ['notifications', 'list', params],
     recipients: (target, search) => ['notifications', 'recipients', target, search],
   },
+  analytics: {
+    all: ['analytics'],
+    reports: (type, params) => ['analytics', 'reports', type, params],
+  },
 }
 
 /** Common HTTP status codes. */

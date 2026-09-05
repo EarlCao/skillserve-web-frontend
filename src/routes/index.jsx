@@ -18,6 +18,7 @@ import ProvidersPage from '../modules/providers/pages/ProvidersPage'
 import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
 import NotificationsPage from '../modules/notifications/pages/NotificationsPage'
 import DashboardPage from '../modules/dashboard/pages/DashboardPage'
+import AnalyticsPage from '../modules/analytics/pages/AnalyticsPage'
 
 /**
  * Application routing.
@@ -185,6 +186,16 @@ export const router = createBrowserRouter([
               {
                 path: 'providers/:providerId',
                 element: <ProviderProfilePage />,
+              },
+            ],
+          },
+          {
+            // Reports and Analytics — requires the module permission.
+            element: <RequirePermission permissions={['view analytics', 'export analytics']} />,
+            children: [
+              {
+                path: 'analytics',
+                element: <AnalyticsPage />,
               },
             ],
           },
