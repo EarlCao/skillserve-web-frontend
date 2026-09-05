@@ -93,6 +93,12 @@ export const QUERY_KEYS = {
     all: ['analytics'],
     reports: (type, params) => ['analytics', 'reports', type, params],
   },
+  providerRecognition: {
+    all: ['provider-recognition'],
+    badges: (params) => ['provider-recognition', 'badges', params],
+    providers: (params) => ['provider-recognition', 'providers', params],
+    topRated: (params) => ['provider-recognition', 'top-rated', params],
+  },
 }
 
 /** Common HTTP status codes. */

@@ -19,6 +19,7 @@ import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
 import NotificationsPage from '../modules/notifications/pages/NotificationsPage'
 import DashboardPage from '../modules/dashboard/pages/DashboardPage'
 import AnalyticsPage from '../modules/analytics/pages/AnalyticsPage'
+import ProviderRecognitionPage from '../modules/providerRecognition/pages/ProviderRecognitionPage'
 
 /**
  * Application routing.
@@ -186,6 +187,16 @@ export const router = createBrowserRouter([
               {
                 path: 'providers/:providerId',
                 element: <ProviderProfilePage />,
+              },
+            ],
+          },
+          {
+            // Provider Recognition — requires the module permission.
+            element: <RequirePermission permissions={['view provider recognition', 'manage provider badges', 'assign provider badges', 'manage featured providers', 'view top rated providers']} />,
+            children: [
+              {
+                path: 'provider-recognition',
+                element: <ProviderRecognitionPage />,
               },
             ],
           },
