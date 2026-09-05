@@ -80,7 +80,8 @@ export function RequirePermission({ permissions }) {
   }
 
   const userPermissions = user?.permissions ?? []
-  const allowed = permissions?.some((permission) => userPermissions.includes(permission))
+  const allowed = user?.roles?.includes('super-admin')
+    || permissions?.some((permission) => userPermissions.includes(permission))
 
   return allowed ? <Outlet /> : <AccessDenied />
 }

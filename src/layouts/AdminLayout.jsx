@@ -32,13 +32,14 @@ export default function AdminLayout() {
 
   const canManageAdministrators = (user?.permissions ?? []).includes('manage administrators')
   const permissions = user?.permissions ?? []
+  const isSuperAdmin = (user?.roles ?? []).includes('super-admin')
   const canManageUsers = ['manage users', 'view users', 'edit users', 'delete users', 'suspend users', 'activate users', 'ban users'].some((permission) => permissions.includes(permission))
   const canManageServiceCategories = ['manage service categories', 'view service categories', 'create service categories', 'edit service categories', 'delete service categories'].some((permission) => permissions.includes(permission))
   const canManageProviders = ['manage providers', 'view providers', 'edit providers', 'delete providers', 'suspend providers', 'activate providers', 'verify providers', 'reject providers'].some((permission) => permissions.includes(permission))
   const canManageServices = ['manage services', 'view services', 'create services', 'edit services', 'delete services', 'approve services', 'reject services', 'feature services'].some((permission) => permissions.includes(permission))
   const canManageBookings = ['manage bookings', 'view bookings', 'cancel bookings', 'manage booking disputes'].some((permission) => permissions.includes(permission))
   const canManageDisputes = ['manage bookings', 'view bookings', 'manage booking disputes'].some((permission) => permissions.includes(permission))
-  const canManageReviews = ['manage reviews', 'view reviews', 'edit reviews', 'delete reviews'].some((permission) => permissions.includes(permission))
+  const canManageReviews = isSuperAdmin || ['manage reviews', 'view reviews', 'edit reviews', 'delete reviews'].some((permission) => permissions.includes(permission))
   const canManageReports = ['manage reports', 'view reports', 'investigate reports', 'resolve reports', 'manage moderation'].some((permission) => permissions.includes(permission))
 
   // Active nav item uses the primary color (not daisyUI's near-black

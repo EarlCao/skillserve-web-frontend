@@ -31,6 +31,7 @@ export default function PermissionsPage() {
   const [autoSelected, setAutoSelected] = useState(false)
 
   const isSuperAdmin = selectedRole?.name === SUPER_ADMIN
+  const displayedSelected = isSuperAdmin ? permissionNames : selected
 
   // Auto-select the first (non-system) role once the list loads. Adjusting
   // state during render follows the React docs' recommended pattern.
@@ -114,7 +115,7 @@ export default function PermissionsPage() {
 
         <PermissionGroupList
           groups={groups}
-          selected={selected}
+          selected={displayedSelected}
           onToggle={toggle}
           onToggleGroup={toggleGroup}
           onSelectAll={onSelectAll}
