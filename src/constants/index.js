@@ -99,6 +99,11 @@ export const QUERY_KEYS = {
     providers: (params) => ['provider-recognition', 'providers', params],
     topRated: (params) => ['provider-recognition', 'top-rated', params],
   },
+  audit: {
+    all: ['audit'],
+    list: (params) => ['audit', 'list', params],
+    administrators: ['audit', 'administrators'],
+  },
 }
 
 /** Common HTTP status codes. */

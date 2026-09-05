@@ -20,6 +20,7 @@ import NotificationsPage from '../modules/notifications/pages/NotificationsPage'
 import DashboardPage from '../modules/dashboard/pages/DashboardPage'
 import AnalyticsPage from '../modules/analytics/pages/AnalyticsPage'
 import ProviderRecognitionPage from '../modules/providerRecognition/pages/ProviderRecognitionPage'
+import AuditLogsPage from '../modules/audit/pages/AuditLogsPage'
 
 /**
  * Application routing.
@@ -207,6 +208,16 @@ export const router = createBrowserRouter([
               {
                 path: 'analytics',
                 element: <AnalyticsPage />,
+              },
+            ],
+          },
+          {
+            // Security and Audit Logs — requires the module permission.
+            element: <RequirePermission permissions={['view audit logs', 'view login activity', 'monitor security events']} />,
+            children: [
+              {
+                path: 'audit-logs',
+                element: <AuditLogsPage />,
               },
             ],
           },

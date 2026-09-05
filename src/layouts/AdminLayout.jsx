@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { Award, Bell, BarChart3, CalendarDays, FolderTree, FileText, Gavel, KeyRound, LayoutDashboard, LogOut, Menu, Moon, ShieldAlert, Star, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
+import { Award, Bell, BarChart3, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, LayoutDashboard, LogOut, Menu, Moon, ShieldAlert, Star, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -44,6 +44,7 @@ export default function AdminLayout() {
   const canManageNotifications = isSuperAdmin || ['view notifications', 'send announcements', 'target notifications', 'schedule announcements'].some((permission) => permissions.includes(permission))
   const canManageAnalytics = isSuperAdmin || ['view analytics', 'export analytics'].some((permission) => permissions.includes(permission))
   const canManageRecognition = isSuperAdmin || ['view provider recognition', 'manage provider badges', 'assign provider badges', 'manage featured providers', 'view top rated providers'].some((permission) => permissions.includes(permission))
+  const canViewAudit = isSuperAdmin || ['view audit logs', 'view login activity', 'monitor security events'].some((permission) => permissions.includes(permission))
 
   // Active nav item uses the primary color (not daisyUI's near-black
   // base-content that `menu-active` applies). When collapsed, icons center.
@@ -158,7 +159,7 @@ export default function AdminLayout() {
             </NavLink>
             )}
           </li>
-          {(canManageAdministrators || canManageServiceCategories || canManageBookings || canManageReports || canManageNotifications || canManageAnalytics || canManageRecognition) && (
+          {(canManageAdministrators || canManageServiceCategories || canManageBookings || canManageReports || canManageNotifications || canManageAnalytics || canManageRecognition || canViewAudit) && (
             <>
               <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
               {canManageAdministrators && (
@@ -274,6 +275,14 @@ export default function AdminLayout() {
                   <NavLink to="/admin/provider-recognition" className={navLinkClass} title={collapsed ? 'Provider recognition' : undefined}>
                     <Award className="size-4 shrink-0" />
                     <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Provider Recognition</span>
+                  </NavLink>
+                </li>
+              )}
+              {canViewAudit && (
+                <li>
+                  <NavLink to="/admin/audit-logs" className={navLinkClass} title={collapsed ? 'Security and audit logs' : undefined}>
+                    <ClipboardList className="size-4 shrink-0" />
+                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Security & Audit</span>
                   </NavLink>
                 </li>
               )}
