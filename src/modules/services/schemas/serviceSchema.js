@@ -6,6 +6,7 @@ import { z } from 'zod'
 export const serviceFormSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255, 'Title must be 255 characters or less'),
   description: z.string().max(5000, 'Description must be 5000 characters or less').optional().nullable(),
+  provider_id: z.string().min(1, 'Provider is required'),
   category_id: z.string().min(1, 'Category is required'),
   subcategory_id: z.string().optional().nullable(),
   price: z.string().optional().nullable(),

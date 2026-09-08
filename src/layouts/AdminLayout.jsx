@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { Archive, Award, Bell, BarChart3, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, LayoutDashboard, LogOut, Menu, Moon, Settings, ShieldAlert, Star, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
+import { Archive, Award, Bell, BarChart3, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, LayoutDashboard, LifeBuoy, LogOut, Menu, Moon, Settings, ShieldAlert, Star, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -47,6 +47,7 @@ export default function AdminLayout() {
   const canViewAudit = isSuperAdmin || ['view audit logs', 'view login activity', 'monitor security events'].some((permission) => permissions.includes(permission))
   const canManageSettings = isSuperAdmin || permissions.includes('manage settings')
   const canManageData = isSuperAdmin || ['manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records'].some((permission) => permissions.includes(permission))
+  const canManageSupport = ['view support', 'manage support', 'assign support tickets', 'respond to support tickets', 'resolve support tickets'].some((permission) => permissions.includes(permission))
 
   // Active nav item uses the primary color (not daisyUI's near-black
   // base-content that `menu-active` applies). When collapsed, icons center.
@@ -161,7 +162,7 @@ export default function AdminLayout() {
             </NavLink>
             )}
           </li>
-          {(canManageAdministrators || canManageServiceCategories || canManageBookings || canManageReports || canManageNotifications || canManageAnalytics || canManageRecognition || canViewAudit || canManageSettings || canManageData) && (
+          {(canManageAdministrators || canManageServiceCategories || canManageBookings || canManageReports || canManageNotifications || canManageAnalytics || canManageRecognition || canViewAudit || canManageSettings || canManageData || canManageSupport) && (
             <>
               <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
               {canManageAdministrators && (
@@ -298,6 +299,14 @@ export default function AdminLayout() {
               )}
               {canManageData && (
                 <li><NavLink to="/admin/data-management" className={navLinkClass} title={collapsed ? 'Data management' : undefined}><Archive className="size-4 shrink-0" /><span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Data Management</span></NavLink></li>
+              )}
+              {canManageSupport && (
+                <li>
+                  <NavLink to="/admin/support" className={navLinkClass} title={collapsed ? 'Support management' : undefined}>
+                    <LifeBuoy className="size-4 shrink-0" />
+                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Support Management</span>
+                  </NavLink>
+                </li>
               )}
             </>
           )}

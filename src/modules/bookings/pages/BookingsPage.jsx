@@ -85,7 +85,7 @@ export default function BookingsPage() {
     if (!cancelTarget) return
     cancelMutation.mutate(
       { id: cancelTarget.id, reason: cancelTarget.reason },
-      { onSettled: () => { cancelDisclosure.close(); setCancelTarget(null); setViewing(null); } },
+      { onSuccess: () => { cancelDisclosure.close(); setCancelTarget(null); setViewing(null); } },
     )
   }
 

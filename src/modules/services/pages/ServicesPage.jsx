@@ -35,6 +35,9 @@ import ServiceStatusBadge from '../components/ServiceStatusBadge'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge'
 import ServiceFormModal from '../components/ServiceFormModal'
 import ServiceDetailsModal from '../components/ServiceDetailsModal'
+import Textarea from '../../../components/ui/Textarea'
+import { rejectServiceSchema } from '../schemas/serviceSchema'
+import { toast } from 'sonner'
 
 const PER_PAGE = 10
 
@@ -119,9 +122,14 @@ export default function ServicesPage() {
 
   const confirmReject = () => {
     if (!rejectTarget) return
+    const parsed = rejectServiceSchema.safeParse({ reason: rejectTarget.reason?.trim() ?? '' })
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? 'A rejection reason is required.')
+      return
+    }
     rejectMutation.mutate(
-      { id: rejectTarget.id, reason: rejectTarget.reason },
-      { onSettled: () => { rejectDisclosure.close(); setRejectTarget(null); setViewing(null); } },
+      { id: rejectTarget.id, reason: parsed.data.reason },
+      { onSuccess: () => { rejectDisclosure.close(); setRejectTarget(null); setViewing(null); } },
     )
   }
 
@@ -470,7 +478,16 @@ export default function ServicesPage() {
         }
         confirmText="Reject"
         variant="error"
-      />
+      >
+        <Textarea
+          label="Rejection reason"
+          required
+          rows={3}
+          value={rejectTarget?.reason ?? ''}
+          onChange={(event) => setRejectTarget((previous) => previous ? { ...previous, reason: event.target.value } : previous)}
+          placeholder="Explain why this service is being rejected…"
+        />
+      </ConfirmDialog>
 
       <ConfirmDialog
         open={hideDisclosure.isOpen}

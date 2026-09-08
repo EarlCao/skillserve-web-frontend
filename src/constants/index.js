@@ -113,6 +113,12 @@ export const QUERY_KEYS = {
     archives: (params) => ['data-management', 'archives', params],
     deleted: (params) => ['data-management', 'deleted', params],
   },
+  supportTickets: {
+    all: ['support-tickets'],
+    list: (params) => ['support-tickets', 'list', params],
+    detail: (id) => ['support-tickets', 'detail', id],
+    assignees: (search) => ['support-tickets', 'assignees', search],
+  },
 }
 
 /** Common HTTP status codes. */

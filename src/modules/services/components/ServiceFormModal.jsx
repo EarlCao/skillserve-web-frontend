@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Modal from '../../../components/ui/Modal'
 import Button from '../../../components/ui/Button'
@@ -8,6 +8,8 @@ import Input from '../../../components/ui/Input'
 import Textarea from '../../../components/ui/Textarea'
 import { useCreateService, useUpdateService } from '../hooks/useServices'
 import { serviceFormSchema } from '../schemas/serviceSchema'
+import { useProviders } from '../../providers/hooks/useProviders'
+import { useServiceCategory } from '../../serviceCategories/hooks/useServiceCategories'
 
 /**
  * Modal form for creating or editing a service.
@@ -16,17 +18,21 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
   const isEditing = Boolean(service)
   const createMutation = useCreateService()
   const updateMutation = useUpdateService()
+  const { data: providersData } = useProviders({ status: 'active', verification: 'verified', per_page: 100 })
+  const providers = providersData?.data ?? []
 
   const {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(serviceFormSchema),
     defaultValues: {
       title: '',
       description: '',
+      provider_id: '',
       category_id: '',
       subcategory_id: '',
       price: '',
@@ -37,6 +43,10 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
     },
   })
 
+  const selectedCategoryId = useWatch({ control, name: 'category_id' })
+  const { data: selectedCategoryData } = useServiceCategory(selectedCategoryId)
+  const subcategories = selectedCategoryData?.data?.subcategories ?? []
+
   // Reset form when service or open state changes.
   useEffect(() => {
     if (open) {
@@ -44,6 +54,7 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
         reset({
           title: service.title ?? '',
           description: service.description ?? '',
+          provider_id: service.provider_id ? String(service.provider_id) : '',
           category_id: service.category_id ?? '',
           subcategory_id: service.subcategory_id ?? '',
           price: service.price ?? '',
@@ -56,6 +67,7 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
         reset({
           title: '',
           description: '',
+          provider_id: '',
           category_id: '',
           subcategory_id: '',
           price: '',
@@ -72,6 +84,7 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
     const payload = {
       ...data,
       price: data.price ? Number(data.price) : null,
+      provider_id: Number(data.provider_id),
       category_id: Number(data.category_id),
       subcategory_id: data.subcategory_id ? Number(data.subcategory_id) : null,
     }
@@ -117,6 +130,17 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
           <Textarea {...register('description')} placeholder="Describe the service..." rows={3} />
         </FormField>
 
+        <FormField label="Provider" error={errors.provider_id?.message} required>
+          <select {...register('provider_id')} className="select select-bordered w-full">
+            <option value="">Select a verified provider</option>
+            {providers.map((provider) => (
+              <option key={provider.id} value={provider.id}>
+                {provider.business_name || provider.user?.name || `Provider #${provider.id}`}
+              </option>
+            ))}
+          </select>
+        </FormField>
+
         <FormField label="Category" error={errors.category_id?.message} required>
           <select
             {...register('category_id')}
@@ -126,6 +150,17 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
+              </option>
+            ))}
+          </select>
+        </FormField>
+
+        <FormField label="Subcategory" error={errors.subcategory_id?.message}>
+          <select {...register('subcategory_id')} className="select select-bordered w-full" disabled={!selectedCategoryId}>
+            <option value="">No subcategory</option>
+            {subcategories.map((subcategory) => (
+              <option key={subcategory.id} value={subcategory.id}>
+                {subcategory.name}
               </option>
             ))}
           </select>

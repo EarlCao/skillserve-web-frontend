@@ -18,6 +18,7 @@ export default function ConfirmDialog({
   loading = false,
   title = 'Are you sure?',
   description,
+  children,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   variant = 'error',
@@ -38,6 +39,8 @@ export default function ConfirmDialog({
           </Button>
         </>
       }
-    />
+    >
+      {children}
+    </Modal>
   )
 }

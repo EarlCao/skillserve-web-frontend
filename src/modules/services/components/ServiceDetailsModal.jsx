@@ -1,9 +1,6 @@
 import { format } from 'date-fns'
 import Modal from '../../../components/ui/Modal'
 import Button from '../../../components/ui/Button'
-import Badge from '../../../components/ui/Badge'
-import Skeleton from '../../../components/ui/Skeleton'
-import ServiceStatusBadge from './ServiceStatusBadge'
 import ApprovalStatusBadge from './ApprovalStatusBadge'
 import { useService } from '../hooks/useServices'
 
