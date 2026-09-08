@@ -108,6 +108,11 @@ export const QUERY_KEYS = {
     all: ['settings'],
     detail: ['settings', 'detail'],
   },
+  dataManagement: {
+    all: ['data-management'],
+    archives: (params) => ['data-management', 'archives', params],
+    deleted: (params) => ['data-management', 'deleted', params],
+  },
 }
 
 /** Common HTTP status codes. */

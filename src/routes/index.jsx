@@ -22,6 +22,7 @@ import AnalyticsPage from '../modules/analytics/pages/AnalyticsPage'
 import ProviderRecognitionPage from '../modules/providerRecognition/pages/ProviderRecognitionPage'
 import AuditLogsPage from '../modules/audit/pages/AuditLogsPage'
 import SettingsPage from '../modules/settings/pages/SettingsPage'
+import DataManagementPage from '../modules/dataManagement/pages/DataManagementPage'
 
 /**
  * Application routing.
@@ -225,6 +226,10 @@ export const router = createBrowserRouter([
           {
             element: <RequirePermission permissions={['manage settings']} />,
             children: [{ path: 'settings', element: <SettingsPage /> }],
+          },
+          {
+            element: <RequirePermission permissions={['manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records']} />,
+            children: [{ path: 'data-management', element: <DataManagementPage /> }],
           },
         ],
       },
