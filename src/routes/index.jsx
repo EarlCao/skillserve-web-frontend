@@ -21,6 +21,7 @@ import DashboardPage from '../modules/dashboard/pages/DashboardPage'
 import AnalyticsPage from '../modules/analytics/pages/AnalyticsPage'
 import ProviderRecognitionPage from '../modules/providerRecognition/pages/ProviderRecognitionPage'
 import AuditLogsPage from '../modules/audit/pages/AuditLogsPage'
+import SettingsPage from '../modules/settings/pages/SettingsPage'
 
 /**
  * Application routing.
@@ -220,6 +221,10 @@ export const router = createBrowserRouter([
                 element: <AuditLogsPage />,
               },
             ],
+          },
+          {
+            element: <RequirePermission permissions={['manage settings']} />,
+            children: [{ path: 'settings', element: <SettingsPage /> }],
           },
         ],
       },

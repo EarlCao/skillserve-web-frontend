@@ -104,6 +104,10 @@ export const QUERY_KEYS = {
     list: (params) => ['audit', 'list', params],
     administrators: ['audit', 'administrators'],
   },
+  settings: {
+    all: ['settings'],
+    detail: ['settings', 'detail'],
+  },
 }
 
 /** Common HTTP status codes. */
