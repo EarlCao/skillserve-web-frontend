@@ -4,6 +4,7 @@ import Modal from '../../../components/ui/Modal'
 import Button from '../../../components/ui/Button'
 import ReviewStatusBadge from './ReviewStatusBadge'
 import { useReview } from '../hooks/useReviews'
+import ErrorState from '../../../components/common/ErrorState'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
 
@@ -18,7 +19,7 @@ export default function ReviewDetailsModal({
   onHide,
   onRemove,
 }) {
-  const { data, isLoading, isError, error } = useReview(reviewId)
+  const { data, isLoading, isError, error, refetch } = useReview(reviewId)
   const review = data?.data
 
   return (
@@ -59,9 +60,7 @@ export default function ReviewDetailsModal({
           ))}
         </div>
       ) : isError ? (
-        <div className="text-center text-error">
-          <p>{error?.message ?? 'Failed to load review details.'}</p>
-        </div>
+        <ErrorState title="Could not load review details" message={error?.message} onRetry={refetch} />
       ) : review ? (
         <div className="flex flex-col gap-4">
           {/* Rating and status */}

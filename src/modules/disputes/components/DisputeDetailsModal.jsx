@@ -1,6 +1,7 @@
 import { format } from 'date-fns'
 import { FileText, History, MessageSquare, Scale } from 'lucide-react'
 import Modal from '../../../components/ui/Modal'
+import ErrorState from '../../../components/common/ErrorState'
 import Button from '../../../components/ui/Button'
 import DisputeStatusBadge from '../../bookings/components/DisputeStatusBadge'
 import BookingStatusBadge from '../../bookings/components/BookingStatusBadge'
@@ -10,7 +11,7 @@ import { useDispute, useDisputeHistory } from '../hooks/useDisputes'
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
 
 export default function DisputeDetailsModal({ open, onClose, bookingId, onAction, canManage }) {
-  const { data, isLoading, isError, error } = useDispute(bookingId)
+  const { data, isLoading, isError, error, refetch } = useDispute(bookingId)
   const { data: historyData } = useDisputeHistory(bookingId)
   const booking = data?.data
   const history = historyData?.data ?? []
@@ -41,7 +42,7 @@ export default function DisputeDetailsModal({ open, onClose, bookingId, onAction
       {isLoading ? (
         <div className="flex flex-col gap-3">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-4 w-full animate-pulse rounded bg-base-200" />)}</div>
       ) : isError ? (
-        <div className="text-center text-error"><p>{error?.message ?? 'Failed to load dispute details.'}</p></div>
+        <ErrorState title="Could not load dispute details" message={error?.message} onRetry={refetch} />
       ) : booking ? (
         <div className="flex flex-col gap-4">
           <div className="flex items-start justify-between gap-3">

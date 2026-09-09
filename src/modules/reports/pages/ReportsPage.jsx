@@ -24,6 +24,8 @@ import ReportDetailsModal from '../components/ReportDetailsModal'
 import ReportActionModal from '../components/ReportActionModal'
 import ReportTextModal from '../components/ReportTextModal'
 import { reportableLabel, reportableSubtitle } from '../utils/reportable'
+import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 
 const PER_PAGE = 10
 
@@ -45,6 +47,17 @@ const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy 
  * (investigate, add note, take moderation action, resolve, reject).
  */
 export default function ReportsPage() {
+  const { user: currentUser } = useAuth()
+  const can = (permission) => hasCapability(currentUser, permission, 'manage reports')
+  const canModerationAction = (type, action) => {
+    if (action === 'suspend') return hasCapability(currentUser, 'suspend users', 'manage users')
+    if (action === 'ban') return hasCapability(currentUser, 'ban users', 'manage users')
+    if (type === 'service') return hasCapability(currentUser, 'edit services', 'manage services')
+    if (type === 'review' && action === 'hide') return hasCapability(currentUser, 'edit reviews', 'manage reviews')
+    if (type === 'review' && action === 'remove') return hasCapability(currentUser, 'delete reviews', 'manage reviews')
+
+    return hasCapability(currentUser, 'manage moderation', 'manage reports')
+  }
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
   const [typeFilter, setTypeFilter] = useState('')
@@ -287,11 +300,11 @@ export default function ReportsPage() {
         open={Boolean(viewing)}
         onClose={() => setViewing(null)}
         reportId={viewing}
-        onInvestigate={(report) => { setInvestigateTarget(report); investigateDisclosure.open(); }}
-        onAddNote={(report) => { setNoteTarget(report); noteDisclosure.open(); }}
-        onTakeAction={(report) => { setActionTarget(report); actionDisclosure.open(); }}
-        onResolve={(report) => { setResolveTarget(report); resolveDisclosure.open(); }}
-        onReject={(report) => { setRejectTarget(report); rejectDisclosure.open(); }}
+        onInvestigate={can('investigate reports') ? (report) => { setInvestigateTarget(report); investigateDisclosure.open(); } : undefined}
+        onAddNote={can('investigate reports') ? (report) => { setNoteTarget(report); noteDisclosure.open(); } : undefined}
+        onTakeAction={can('manage moderation') ? (report) => { setActionTarget(report); actionDisclosure.open(); } : undefined}
+        onResolve={can('resolve reports') ? (report) => { setResolveTarget(report); resolveDisclosure.open(); } : undefined}
+        onReject={can('resolve reports') ? (report) => { setRejectTarget(report); rejectDisclosure.open(); } : undefined}
       />
 
       <ReportTextModal
@@ -309,7 +322,7 @@ export default function ReportsPage() {
         onConfirm={(note) =>
           investigateMutation.mutate(
             { id: investigateTarget?.id, note: note || undefined },
-            { onSettled: () => settleModal(investigateDisclosure, setInvestigateTarget) },
+            { onSuccess: () => settleModal(investigateDisclosure, setInvestigateTarget) },
           )
         }
       />
@@ -328,7 +341,7 @@ export default function ReportsPage() {
         onConfirm={(note) =>
           noteMutation.mutate(
             { id: noteTarget?.id, note },
-            { onSettled: () => settleModal(noteDisclosure, setNoteTarget) },
+            { onSuccess: () => settleModal(noteDisclosure, setNoteTarget) },
           )
         }
       />
@@ -347,7 +360,7 @@ export default function ReportsPage() {
         onConfirm={(resolutionNote) =>
           resolveMutation.mutate(
             { id: resolveTarget?.id, resolutionNote },
-            { onSettled: () => settleModal(resolveDisclosure, setResolveTarget) },
+            { onSuccess: () => settleModal(resolveDisclosure, setResolveTarget) },
           )
         }
       />
@@ -366,7 +379,7 @@ export default function ReportsPage() {
         onConfirm={(reason) =>
           rejectMutation.mutate(
             { id: rejectTarget?.id, reason },
-            { onSettled: () => settleModal(rejectDisclosure, setRejectTarget) },
+            { onSuccess: () => settleModal(rejectDisclosure, setRejectTarget) },
           )
         }
       />
@@ -377,10 +390,11 @@ export default function ReportsPage() {
         onClose={() => settleModal(actionDisclosure, setActionTarget)}
         report={actionTarget}
         loading={actionMutation.isPending}
+        canAction={canModerationAction}
         onConfirm={(payload) =>
           actionMutation.mutate(
             { id: actionTarget?.id, ...payload },
-            { onSettled: () => settleModal(actionDisclosure, setActionTarget) },
+            { onSuccess: () => settleModal(actionDisclosure, setActionTarget) },
           )
         }
       />

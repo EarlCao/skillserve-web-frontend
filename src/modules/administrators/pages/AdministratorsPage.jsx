@@ -10,6 +10,7 @@ import DataTable from '../../../components/tables/DataTable'
 import Pagination from '../../../components/tables/Pagination'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useDisclosure } from '../../../hooks/useDisclosure'
@@ -38,6 +39,7 @@ export default function AdministratorsPage() {
   const pagination = usePagination({ perPage: PER_PAGE })
 
   const { user } = useAuth()
+  const can = (permission) => hasCapability(user, permission, 'manage administrators')
 
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -83,7 +85,7 @@ export default function AdministratorsPage() {
 
     statusMutation.mutate(
       { id: statusTarget.administrator.id, status: statusTarget.to },
-      { onSettled: () => statusDisclosure.close() },
+      { onSuccess: () => statusDisclosure.close() },
     )
   }
 
@@ -173,15 +175,15 @@ export default function AdministratorsPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            <Button
+            {can('view administrators') && <Button
               variant="ghost"
               size="sm"
               onClick={() => setViewing(administrator)}
               aria-label={`View ${administrator.name}`}
             >
               <Eye className="size-4" />
-            </Button>
-            <Button
+            </Button>}
+            {can('edit administrators') && <Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -191,8 +193,8 @@ export default function AdministratorsPage() {
               aria-label={`Edit ${administrator.name}`}
             >
               <Pencil className="size-4" />
-            </Button>
-            <Button
+            </Button>}
+            {can('edit administrators') && <Button
               variant="ghost"
               size="sm"
               disabled={!canResetPassword}
@@ -204,8 +206,8 @@ export default function AdministratorsPage() {
               aria-label={`Reset ${administrator.name}'s password`}
             >
               <KeyRound className={`size-4 ${canResetPassword ? 'text-primary' : 'text-base-content/30'}`} />
-            </Button>
-            <Button
+            </Button>}
+            {can('edit administrators') && <Button
               variant="ghost"
               size="sm"
               disabled={!canDeactivate}
@@ -227,7 +229,7 @@ export default function AdministratorsPage() {
               <Power
                 className={`size-4 ${isLocked ? 'text-base-content/30' : isInactive ? 'text-success' : 'text-warning'}`}
               />
-            </Button>
+            </Button>}
           </div>
         )
       },

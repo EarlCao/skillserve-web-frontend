@@ -26,12 +26,18 @@ export function useReport(id) {
 }
 
 /**
- * Invalidate the reports namespace plus the users cache, because a moderation
- * action can change a reported user's account status.
+ * Invalidate reports and the related module caches because moderation can
+ * change the reported entity and dashboard/analytics aggregates.
  */
 function invalidateReportCaches(queryClient) {
   queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reports.all })
   queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reviews.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.analytics.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.audit.all })
 }
 
 /**
@@ -44,7 +50,7 @@ export function useInvestigateReport() {
     mutationFn: ({ id, note }) => reportApi.investigate(id, note),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Report investigation started.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reports.all })
+      invalidateReportCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to start the investigation.')
@@ -62,7 +68,7 @@ export function useAddReportNote() {
     mutationFn: ({ id, note }) => reportApi.addNote(id, note),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Investigation note added.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reports.all })
+      invalidateReportCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to add the investigation note.')
@@ -80,7 +86,7 @@ export function useResolveReport() {
     mutationFn: ({ id, resolutionNote }) => reportApi.resolve(id, resolutionNote),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Report resolved.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reports.all })
+      invalidateReportCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to resolve the report.')
@@ -98,7 +104,7 @@ export function useRejectReport() {
     mutationFn: ({ id, reason }) => reportApi.reject(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Report rejected.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reports.all })
+      invalidateReportCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to reject the report.')

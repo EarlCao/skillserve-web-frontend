@@ -34,15 +34,13 @@ export default function SupportTicketDetailsModal({
   const submitResponse = () => {
     const body = response.trim()
     if (!body || !ticket) return
-    onRespond(ticket.id, body)
-    setResponse('')
+    onRespond(ticket.id, body, () => setResponse(''))
   }
 
   const submitResolution = () => {
     const note = resolutionNote.trim()
     if (!note || !ticket) return
-    onResolve(ticket.id, note)
-    setResolutionNote('')
+    onResolve(ticket.id, note, () => setResolutionNote(''))
   }
 
   const filteredAssignees = assignees.filter((assignee) => {

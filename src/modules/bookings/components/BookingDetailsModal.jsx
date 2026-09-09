@@ -4,6 +4,7 @@ import Button from '../../../components/ui/Button'
 import BookingStatusBadge from './BookingStatusBadge'
 import PaymentStatusBadge from './PaymentStatusBadge'
 import DisputeStatusBadge from './DisputeStatusBadge'
+import ErrorState from '../../../components/common/ErrorState'
 import { useBooking, useBookingHistory } from '../hooks/useBookings'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
@@ -21,7 +22,7 @@ export default function BookingDetailsModal({
   onCancel,
   onManageDispute,
 }) {
-  const { data, isLoading, isError, error } = useBooking(bookingId)
+  const { data, isLoading, isError, error, refetch } = useBooking(bookingId)
   const { data: historyData } = useBookingHistory(bookingId)
   const booking = data?.data
   const history = historyData?.data ?? []
@@ -65,9 +66,7 @@ export default function BookingDetailsModal({
           ))}
         </div>
       ) : isError ? (
-        <div className="text-center text-error">
-          <p>{error?.message ?? 'Failed to load booking details.'}</p>
-        </div>
+        <ErrorState title="Could not load booking details" message={error?.message} onRetry={refetch} />
       ) : booking ? (
         <div className="flex flex-col gap-4">
           {/* Header */}

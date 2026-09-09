@@ -3,6 +3,14 @@ import { toast } from 'sonner'
 import { QUERY_KEYS } from '../../../constants'
 import { roleApi } from '../api/roleApi'
 
+function invalidateRoleCaches(queryClient) {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roles.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.permissions.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.auth.me })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.audit.all })
+}
+
 /**
  * Paginated role list (search/sort are server-side).
  */
@@ -26,9 +34,7 @@ export function useCreateRole() {
     mutationFn: roleApi.create,
     onSuccess: () => {
       toast.success('Role created.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roles.all })
-      // Role names appear on the administrators list; keep it fresh too.
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+      invalidateRoleCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to create the role.')
@@ -46,8 +52,7 @@ export function useUpdateRole() {
     mutationFn: ({ id, ...payload }) => roleApi.update(id, payload),
     onSuccess: () => {
       toast.success('Role updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roles.all })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+      invalidateRoleCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to update the role.')
@@ -65,8 +70,7 @@ export function useDeleteRole() {
     mutationFn: (id) => roleApi.remove(id),
     onSuccess: () => {
       toast.success('Role deleted.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roles.all })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+      invalidateRoleCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to delete the role.')
@@ -84,8 +88,7 @@ export function useSyncRolePermissions() {
     mutationFn: ({ id, permissions }) => roleApi.syncPermissions(id, permissions),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Role permissions updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roles.all })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+      invalidateRoleCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to update the role permissions.')

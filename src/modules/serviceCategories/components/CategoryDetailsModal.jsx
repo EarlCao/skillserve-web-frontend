@@ -39,7 +39,7 @@ export default function CategoryDetailsModal({ open, onClose, categoryId }) {
 
     deleteMutation.mutate(
       { categoryId, subcategoryId: deleteTarget.id },
-      { onSettled: () => deleteDisclosure.close() },
+      { onSuccess: () => deleteDisclosure.close() },
     )
   }
 

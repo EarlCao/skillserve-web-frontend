@@ -15,6 +15,8 @@ import { useDeleteRole, useRoles } from '../hooks/useRoles'
 import RoleDetailsModal from '../components/RoleDetailsModal'
 import RoleFormModal from '../components/RoleFormModal'
 import PermissionsModal from '../components/PermissionsModal'
+import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 
 const PER_PAGE = 10
 const SUPER_ADMIN = 'super-admin'
@@ -24,6 +26,8 @@ const SUPER_ADMIN = 'super-admin'
  * assignment via the permission matrix modal.
  */
 export default function RolesPage() {
+  const { user } = useAuth()
+  const canManageRoles = hasCapability(user, 'manage administrators')
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
   const pagination = usePagination({ perPage: PER_PAGE })
@@ -56,7 +60,7 @@ export default function RolesPage() {
   const confirmDelete = () => {
     if (!deleteTarget) return
 
-    deleteMutation.mutate(deleteTarget.id, { onSettled: () => deleteDisclosure.close() })
+    deleteMutation.mutate(deleteTarget.id, { onSuccess: () => deleteDisclosure.close() })
   }
 
   const columns = [
@@ -104,15 +108,15 @@ export default function RolesPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            <Button
+            {canManageRoles && <Button
               variant="ghost"
               size="sm"
               onClick={() => setViewing(role)}
               aria-label={`View ${role.name}`}
             >
               <Eye className="size-4" />
-            </Button>
-            <Button
+            </Button>}
+            {canManageRoles && <Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -122,8 +126,8 @@ export default function RolesPage() {
               aria-label={`Edit ${role.name}`}
             >
               <Pencil className="size-4" />
-            </Button>
-            <Button
+            </Button>}
+            {canManageRoles && <Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -133,8 +137,8 @@ export default function RolesPage() {
               aria-label={`Manage permissions for ${role.name}`}
             >
               <ShieldCheck className="size-4" />
-            </Button>
-            <Button
+            </Button>}
+            {canManageRoles && <Button
               variant="ghost"
               size="sm"
               disabled={isSystem}
@@ -146,7 +150,7 @@ export default function RolesPage() {
               title={isSystem ? 'The system role cannot be deleted' : 'Delete role'}
             >
               <Trash2 className={`size-4 ${isSystem ? 'text-base-content/30' : 'text-error'}`} />
-            </Button>
+            </Button>}
           </div>
         )
       },

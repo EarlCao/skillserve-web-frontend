@@ -3,6 +3,16 @@ import { toast } from 'sonner'
 import { QUERY_KEYS } from '../../../constants'
 import { serviceApi } from '../api/serviceApi'
 
+function invalidateServiceCaches(queryClient) {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reviews.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reports.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.analytics.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.audit.all })
+}
+
 /**
  * Paginated service list (search/filter/sort are server-side).
  */
@@ -37,7 +47,7 @@ export function useCreateService() {
     mutationFn: serviceApi.create,
     onSuccess: () => {
       toast.success('Service created.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+      invalidateServiceCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to create the service.')
@@ -55,7 +65,7 @@ export function useUpdateService() {
     mutationFn: ({ id, ...payload }) => serviceApi.update(id, payload),
     onSuccess: () => {
       toast.success('Service updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+      invalidateServiceCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to update the service.')
@@ -73,7 +83,7 @@ export function useApproveService() {
     mutationFn: ({ id, notes }) => serviceApi.approve(id, notes),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Service approved.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+      invalidateServiceCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to approve the service.')
@@ -91,7 +101,7 @@ export function useRejectService() {
     mutationFn: ({ id, reason }) => serviceApi.reject(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Service rejected.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+      invalidateServiceCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to reject the service.')
@@ -109,7 +119,7 @@ export function useHideService() {
     mutationFn: ({ id, isHidden }) => serviceApi.hide(id, isHidden),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Service visibility updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+      invalidateServiceCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to update service visibility.')
@@ -127,7 +137,7 @@ export function useFeatureService() {
     mutationFn: ({ id, isFeatured }) => serviceApi.feature(id, isFeatured),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Service featured status updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+      invalidateServiceCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to update service featured status.')
@@ -145,7 +155,7 @@ export function useDeleteService() {
     mutationFn: serviceApi.remove,
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Service deleted.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+      invalidateServiceCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to delete the service.')

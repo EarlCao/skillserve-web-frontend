@@ -1,6 +1,7 @@
 import { format } from 'date-fns'
 import Modal from '../../../components/ui/Modal'
 import Button from '../../../components/ui/Button'
+import ErrorState from '../../../components/common/ErrorState'
 import ApprovalStatusBadge from './ApprovalStatusBadge'
 import { useService } from '../hooks/useServices'
 
@@ -23,7 +24,7 @@ export default function ServiceDetailsModal({
   onDelete,
   onEdit,
 }) {
-  const { data, isLoading, isError, error } = useService(serviceId)
+  const { data, isLoading, isError, error, refetch } = useService(serviceId)
   const service = data?.data
 
   return (
@@ -87,9 +88,7 @@ export default function ServiceDetailsModal({
           ))}
         </div>
       ) : isError ? (
-        <div className="text-center text-error">
-          <p>{error?.message ?? 'Failed to load service details.'}</p>
-        </div>
+        <ErrorState title="Could not load service details" message={error?.message} onRetry={refetch} />
       ) : service ? (
         <div className="flex flex-col gap-4">
           {/* Title and status */}

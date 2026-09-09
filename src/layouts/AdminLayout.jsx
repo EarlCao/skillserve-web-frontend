@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useLogout } from '../modules/authentication/hooks/useLogout'
 import { useDisclosure } from '../hooks/useDisclosure'
 import ConfirmDialog from '../components/feedback/ConfirmDialog'
+import { hasAnyCapability } from '../utils/permissions'
 
 /**
  * Shared admin layout: responsive drawer sidebar + topbar + content outlet.
@@ -30,24 +31,22 @@ export default function AdminLayout() {
     .join('')
     .toUpperCase()
 
-  const canManageAdministrators = (user?.permissions ?? []).includes('manage administrators')
-  const permissions = user?.permissions ?? []
-  const isSuperAdmin = (user?.roles ?? []).includes('super-admin')
-  const canManageUsers = ['manage users', 'view users', 'edit users', 'delete users', 'suspend users', 'activate users', 'ban users'].some((permission) => permissions.includes(permission))
-  const canManageServiceCategories = ['manage service categories', 'view service categories', 'create service categories', 'edit service categories', 'delete service categories'].some((permission) => permissions.includes(permission))
-  const canManageProviders = ['manage providers', 'view providers', 'edit providers', 'delete providers', 'suspend providers', 'activate providers', 'verify providers', 'reject providers'].some((permission) => permissions.includes(permission))
-  const canManageServices = ['manage services', 'view services', 'create services', 'edit services', 'delete services', 'approve services', 'reject services', 'feature services'].some((permission) => permissions.includes(permission))
-  const canManageBookings = ['manage bookings', 'view bookings', 'cancel bookings', 'manage booking disputes'].some((permission) => permissions.includes(permission))
-  const canManageDisputes = ['manage bookings', 'view bookings', 'manage booking disputes'].some((permission) => permissions.includes(permission))
-  const canManageReviews = isSuperAdmin || ['manage reviews', 'view reviews', 'edit reviews', 'delete reviews'].some((permission) => permissions.includes(permission))
-  const canManageReports = ['manage reports', 'view reports', 'investigate reports', 'resolve reports', 'manage moderation'].some((permission) => permissions.includes(permission))
-  const canManageNotifications = isSuperAdmin || ['view notifications', 'send announcements', 'target notifications', 'schedule announcements'].some((permission) => permissions.includes(permission))
-  const canManageAnalytics = isSuperAdmin || ['view analytics', 'export analytics'].some((permission) => permissions.includes(permission))
-  const canManageRecognition = isSuperAdmin || ['view provider recognition', 'manage provider badges', 'assign provider badges', 'manage featured providers', 'view top rated providers'].some((permission) => permissions.includes(permission))
-  const canViewAudit = isSuperAdmin || ['view audit logs', 'view login activity', 'monitor security events'].some((permission) => permissions.includes(permission))
-  const canManageSettings = isSuperAdmin || permissions.includes('manage settings')
-  const canManageData = isSuperAdmin || ['manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records'].some((permission) => permissions.includes(permission))
-  const canManageSupport = ['view support', 'manage support', 'assign support tickets', 'respond to support tickets', 'resolve support tickets'].some((permission) => permissions.includes(permission))
+  const canManageAdministrators = hasAnyCapability(user, ['manage administrators', 'view administrators', 'create administrators', 'edit administrators'])
+  const canManageUsers = hasAnyCapability(user, ['manage users', 'view users', 'edit users', 'delete users', 'suspend users', 'activate users', 'ban users'])
+  const canManageServiceCategories = hasAnyCapability(user, ['manage service categories', 'view service categories', 'create service categories', 'edit service categories', 'delete service categories'])
+  const canManageProviders = hasAnyCapability(user, ['manage providers', 'view providers', 'edit providers', 'delete providers', 'suspend providers', 'activate providers', 'verify providers', 'reject providers'])
+  const canManageServices = hasAnyCapability(user, ['manage services', 'view services', 'create services', 'edit services', 'delete services', 'approve services', 'reject services', 'feature services'])
+  const canManageBookings = hasAnyCapability(user, ['manage bookings', 'view bookings', 'cancel bookings', 'manage booking disputes'])
+  const canManageDisputes = hasAnyCapability(user, ['manage bookings', 'view bookings', 'manage booking disputes'])
+  const canManageReviews = hasAnyCapability(user, ['manage reviews', 'view reviews', 'edit reviews', 'delete reviews'])
+  const canManageReports = hasAnyCapability(user, ['manage reports', 'view reports', 'investigate reports', 'resolve reports', 'manage moderation'])
+  const canManageNotifications = hasAnyCapability(user, ['view notifications', 'send announcements', 'target notifications', 'schedule announcements'])
+  const canManageAnalytics = hasAnyCapability(user, ['view analytics', 'export analytics'])
+  const canManageRecognition = hasAnyCapability(user, ['view provider recognition', 'manage provider badges', 'assign provider badges', 'manage featured providers', 'view top rated providers'])
+  const canViewAudit = hasAnyCapability(user, ['view audit logs', 'view login activity', 'monitor security events'])
+  const canManageSettings = hasAnyCapability(user, ['manage settings'])
+  const canManageData = hasAnyCapability(user, ['manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records'])
+  const canManageSupport = hasAnyCapability(user, ['view support', 'manage support', 'assign support tickets', 'respond to support tickets', 'resolve support tickets'])
 
   // Active nav item uses the primary color (not daisyUI's near-black
   // base-content that `menu-active` applies). When collapsed, icons center.
@@ -99,11 +98,11 @@ export default function AdminLayout() {
           </button>
 
           <div className="dropdown dropdown-end ml-1">
-            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar placeholder">
+            <button type="button" tabIndex={0} className="btn btn-ghost btn-circle avatar placeholder">
               <div className="w-10 rounded-full bg-primary text-primary-content">
                 <span className="text-sm font-semibold">{initials}</span>
               </div>
-            </div>
+            </button>
             <ul
               tabIndex={0}
               className="menu dropdown-content z-50 mt-2 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
@@ -356,7 +355,7 @@ export default function AdminLayout() {
         onCancel={logoutDisclosure.close}
         onConfirm={() =>
           logoutMutation.mutate(undefined, {
-            onSettled: () => logoutDisclosure.close(),
+            onSuccess: () => logoutDisclosure.close(),
           })
         }
         loading={logoutMutation.isPending}

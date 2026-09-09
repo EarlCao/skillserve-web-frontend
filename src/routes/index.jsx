@@ -79,7 +79,7 @@ export const router = createBrowserRouter([
           },
           {
             // Administrator Management — requires the module permission.
-            element: <RequirePermission permissions={['manage administrators']} />,
+            element: <RequirePermission permissions={['manage administrators', 'view administrators', 'create administrators', 'edit administrators']} />,
             children: [
               {
                 path: 'administrators',

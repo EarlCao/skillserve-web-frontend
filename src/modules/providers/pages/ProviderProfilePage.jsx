@@ -19,6 +19,7 @@ import ErrorState from '../../../components/common/ErrorState'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import Modal from '../../../components/ui/Modal'
 import Textarea from '../../../components/ui/Textarea'
+import { useAuth } from '../../../contexts/AuthContext'
 import {
   useProvider,
   useVerificationHistory,
@@ -32,6 +33,7 @@ import {
 import ProviderAvatar from '../components/ProviderAvatar'
 import ProviderStatusBadge from '../components/ProviderStatusBadge'
 import VerificationStatusBadge from '../components/VerificationStatusBadge'
+import { hasCapability } from '../../../utils/permissions'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : '—')
 
@@ -41,6 +43,8 @@ const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy 
  */
 export default function ProviderProfilePage() {
   const { providerId } = useParams()
+  const { user: currentUser } = useAuth()
+  const can = (permission) => hasCapability(currentUser, permission, 'manage providers')
 
   const { data, isLoading, isError, error, refetch } = useProvider(providerId)
   const provider = data?.data
@@ -72,7 +76,7 @@ export default function ProviderProfilePage() {
     approveMutation.mutate(
       { id: provider.id, notes: approveNotes.trim() || undefined },
       {
-        onSettled: () => {
+        onSuccess: () => {
           setShowApproveModal(false)
           setApproveNotes('')
         },
@@ -85,7 +89,7 @@ export default function ProviderProfilePage() {
     rejectMutation.mutate(
       { id: provider.id, reason: rejectReason.trim() },
       {
-        onSettled: () => {
+        onSuccess: () => {
           setShowRejectModal(false)
           setRejectReason('')
         },
@@ -98,7 +102,7 @@ export default function ProviderProfilePage() {
     requestInfoMutation.mutate(
       { id: provider.id, message: requestInfoMessage.trim() },
       {
-        onSettled: () => {
+        onSuccess: () => {
           setShowRequestInfoModal(false)
           setRequestInfoMessage('')
         },
@@ -111,7 +115,7 @@ export default function ProviderProfilePage() {
     suspendMutation.mutate(
       { id: provider.id, reason: suspendReason.trim() },
       {
-        onSettled: () => {
+        onSuccess: () => {
           setShowSuspendModal(false)
           setSuspendReason('')
         },
@@ -153,34 +157,34 @@ export default function ProviderProfilePage() {
             <>
               {isPending && (
                 <>
-                  <Button
+                  {can('verify providers') && <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowApproveModal(true)}
                   >
                     <CheckCircle className="size-4 text-success" />
                     Approve
-                  </Button>
-                  <Button
+                  </Button>}
+                  {can('reject providers') && <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowRejectModal(true)}
                   >
                     <XCircle className="size-4 text-error" />
                     Reject
-                  </Button>
-                  <Button
+                  </Button>}
+                  {can('verify providers') && <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowRequestInfoModal(true)}
                   >
                     <MessageSquare className="size-4" />
                     Request Info
-                  </Button>
+                  </Button>}
                 </>
               )}
               {provider.is_suspended ? (
-                <Button
+                can('activate providers') && <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowActivateConfirm(true)}
@@ -189,7 +193,7 @@ export default function ProviderProfilePage() {
                   Activate
                 </Button>
               ) : (
-                <Button
+                can('suspend providers') && <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowSuspendModal(true)}
@@ -198,7 +202,7 @@ export default function ProviderProfilePage() {
                   Suspend
                 </Button>
               )}
-              {provider.verification_status === 'verified' && (
+              {provider.verification_status === 'verified' && can('verify providers') && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -594,7 +598,7 @@ export default function ProviderProfilePage() {
         open={showActivateConfirm}
         onCancel={() => setShowActivateConfirm(false)}
         onConfirm={() => {
-          if (provider) activateMutation.mutate(provider.id, { onSettled: () => setShowActivateConfirm(false) })
+          if (provider) activateMutation.mutate(provider.id, { onSuccess: () => setShowActivateConfirm(false) })
         }}
         loading={activateMutation.isPending}
         title="Activate provider?"
@@ -608,7 +612,7 @@ export default function ProviderProfilePage() {
         open={showRemoveVerificationConfirm}
         onCancel={() => setShowRemoveVerificationConfirm(false)}
         onConfirm={() => {
-          if (provider) removeVerificationMutation.mutate(provider.id, { onSettled: () => setShowRemoveVerificationConfirm(false) })
+          if (provider) removeVerificationMutation.mutate(provider.id, { onSuccess: () => setShowRemoveVerificationConfirm(false) })
         }}
         loading={removeVerificationMutation.isPending}
         title="Remove verification?"

@@ -3,6 +3,12 @@ import { toast } from 'sonner'
 import { QUERY_KEYS } from '../../../constants'
 import { administratorApi } from '../api/administratorApi'
 
+function invalidateAdministratorCaches(queryClient) {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.audit.all })
+}
+
 /**
  * Paginated administrator list (search/filter/sort are server-side).
  */
@@ -26,7 +32,7 @@ export function useCreateAdministrator() {
     mutationFn: administratorApi.create,
     onSuccess: () => {
       toast.success('Administrator created.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+      invalidateAdministratorCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to create the administrator.')
@@ -44,7 +50,7 @@ export function useUpdateAdministrator() {
     mutationFn: ({ id, ...payload }) => administratorApi.update(id, payload),
     onSuccess: () => {
       toast.success('Administrator updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+      invalidateAdministratorCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to update the administrator.')
@@ -63,7 +69,7 @@ export function useResetAdministratorPassword() {
       administratorApi.resetPassword(id, { password, password_confirmation }),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Administrator password updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+      invalidateAdministratorCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to reset the password.')
@@ -81,7 +87,7 @@ export function useUpdateAdministratorStatus() {
     mutationFn: ({ id, status }) => administratorApi.updateStatus(id, status),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Administrator status updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.administrators.all })
+      invalidateAdministratorCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to update the administrator status.')

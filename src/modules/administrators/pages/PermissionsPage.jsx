@@ -9,6 +9,8 @@ import PermissionGroupList from '../components/PermissionGroupList'
 import { usePermissionMatrix } from '../hooks/usePermissions'
 import { useRoles, useSyncRolePermissions } from '../hooks/useRoles'
 import { usePermissionSelection } from '../hooks/usePermissionSelection'
+import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 
 const SUPER_ADMIN = 'super-admin'
 
@@ -17,6 +19,8 @@ const SUPER_ADMIN = 'super-admin'
  * module. Saving syncs the selection to the backend.
  */
 export default function PermissionsPage() {
+  const { user } = useAuth()
+  const canManageAdministrators = hasCapability(user, 'manage administrators')
   const rolesQuery = useRoles({ per_page: 100, sort: 'name', direction: 'asc' })
   const matrixQuery = usePermissionMatrix()
   const syncMutation = useSyncRolePermissions()
@@ -120,7 +124,7 @@ export default function PermissionsPage() {
           onToggleGroup={toggleGroup}
           onSelectAll={onSelectAll}
           onClearAll={clearAll}
-          readOnly={isSuperAdmin}
+          readOnly={!canManageAdministrators || isSuperAdmin}
           collapsedModules={collapsedModules}
           onToggleModule={toggleModule}
           isLoading={matrixQuery.isLoading}
@@ -130,7 +134,7 @@ export default function PermissionsPage() {
           <Button
             onClick={() => setConfirmSaveOpen(true)}
             loading={syncMutation.isPending}
-            disabled={isSuperAdmin || matrixQuery.isLoading}
+            disabled={!canManageAdministrators || isSuperAdmin || matrixQuery.isLoading}
           >
             Save permissions
           </Button>

@@ -3,6 +3,13 @@ import { toast } from 'sonner'
 import { QUERY_KEYS } from '../../../constants'
 import { userApi } from '../api/userApi'
 
+function invalidateUserCaches(queryClient) {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reports.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.audit.all })
+}
+
 /**
  * Paginated user list (search/filter/sort are server-side).
  */
@@ -48,7 +55,7 @@ export function useUpdateUser() {
     mutationFn: ({ id, ...payload }) => userApi.update(id, payload),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'User updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
+      invalidateUserCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to update the user.')
@@ -66,7 +73,7 @@ export function useSuspendUser() {
     mutationFn: ({ id, reason }) => userApi.suspend(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'User suspended.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
+      invalidateUserCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to suspend the user.')
@@ -84,7 +91,7 @@ export function useActivateUser() {
     mutationFn: (id) => userApi.activate(id),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'User activated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
+      invalidateUserCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to activate the user.')
@@ -102,7 +109,7 @@ export function useBanUser() {
     mutationFn: ({ id, reason, duration, days }) => userApi.ban(id, { reason, duration, days }),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'User banned.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
+      invalidateUserCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to ban the user.')
@@ -120,7 +127,7 @@ export function useUnbanUser() {
     mutationFn: ({ id, reason }) => userApi.unban(id, { reason }),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'User unbanned.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
+      invalidateUserCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to unban the user.')
@@ -138,7 +145,7 @@ export function useDeleteUser() {
     mutationFn: (id) => userApi.remove(id),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'User deleted.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.all })
+      invalidateUserCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to delete the user.')

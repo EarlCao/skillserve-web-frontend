@@ -63,9 +63,9 @@ export default function SettingsPage() {
                 <span className="font-medium">{labelFor(name)}</span>
                 <input type="checkbox" className="toggle toggle-primary" checked={value} onChange={(event) => updateField(name, event.target.checked)} aria-label={labelFor(name)} />
               </label>
-            ) : (
-              <div key={name} className={activeGroup === 'policies' ? 'md:col-span-2' : ''}>
-                {activeGroup === 'policies' || name.includes('description') ? <label className="form-control"><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} type={name.includes('email') ? 'email' : typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
+              ) : (
+                <div key={name} className={activeGroup === 'policies' ? 'md:col-span-2' : ''}>
+                {activeGroup === 'policies' || name.includes('description') ? <label className="form-control" htmlFor={`setting-${activeGroup}-${name}`}><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea id={`setting-${activeGroup}-${name}`} className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} id={`setting-${activeGroup}-${name}`} type={name.includes('email') ? 'email' : typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
               </div>
             ))}
           </div>

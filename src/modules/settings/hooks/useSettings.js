@@ -14,6 +14,8 @@ export function useUpdateSettings() {
     mutationFn: settingsApi.update,
     onSuccess: (response) => {
       queryClient.setQueryData(QUERY_KEYS.settings.detail, response)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard.all })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.audit.all })
       toast.success(response?.message ?? 'Settings updated.')
     },
     onError: (error) => toast.error(error?.message ?? 'Unable to update settings.'),

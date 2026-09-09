@@ -3,6 +3,16 @@ import { toast } from 'sonner'
 import { QUERY_KEYS } from '../../../constants'
 import { reviewApi } from '../api/reviewApi'
 
+function invalidateReviewCaches(queryClient) {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reviews.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reports.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.analytics.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.audit.all })
+}
+
 /**
  * Paginated review list (search/filter/sort are server-side).
  */
@@ -35,7 +45,7 @@ export function useHideReview() {
     mutationFn: ({ id, isHidden }) => reviewApi.hide(id, isHidden),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Review visibility updated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reviews.all })
+      invalidateReviewCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to update review visibility.')
@@ -53,7 +63,7 @@ export function useRemoveReview() {
     mutationFn: reviewApi.remove,
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Review removed.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reviews.all })
+      invalidateReviewCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to remove the review.')

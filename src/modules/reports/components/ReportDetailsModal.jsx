@@ -5,6 +5,7 @@ import Button from '../../../components/ui/Button'
 import ReportStatusBadge from './ReportStatusBadge'
 import ReportTypeBadge from './ReportTypeBadge'
 import { useReport } from '../hooks/useReports'
+import ErrorState from '../../../components/common/ErrorState'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
 
@@ -24,7 +25,7 @@ export default function ReportDetailsModal({
   onResolve,
   onReject,
 }) {
-  const { data, isLoading, isError, error } = useReport(reportId)
+  const { data, isLoading, isError, error, refetch } = useReport(reportId)
   const report = data?.data
   const terminal = report?.status === 'resolved' || report?.status === 'rejected'
 
@@ -85,9 +86,7 @@ export default function ReportDetailsModal({
           ))}
         </div>
       ) : isError ? (
-        <div className="text-center text-error">
-          <p>{error?.message ?? 'Failed to load report details.'}</p>
-        </div>
+        <ErrorState title="Could not load report details" message={error?.message} onRetry={refetch} />
       ) : report ? (
         <div className="flex flex-col gap-4">
           {/* Type, status and reason */}

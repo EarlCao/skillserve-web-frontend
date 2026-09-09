@@ -3,6 +3,15 @@ import { toast } from 'sonner'
 import { QUERY_KEYS } from '../../../constants'
 import { providerApi } from '../api/providerApi'
 
+function invalidateProviderCaches(queryClient) {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.services.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.reviews.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.analytics.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.audit.all })
+}
+
 /**
  * Paginated provider list (search/filter/sort are server-side).
  */
@@ -48,7 +57,7 @@ export function useApproveVerification() {
     mutationFn: ({ id, notes }) => providerApi.approveVerification(id, notes),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Provider verification approved.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+      invalidateProviderCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to approve verification.')
@@ -66,7 +75,7 @@ export function useRejectVerification() {
     mutationFn: ({ id, reason }) => providerApi.rejectVerification(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Provider verification rejected.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+      invalidateProviderCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to reject verification.')
@@ -84,7 +93,7 @@ export function useRequestAdditionalInfo() {
     mutationFn: ({ id, message }) => providerApi.requestAdditionalInfo(id, message),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Additional information requested.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+      invalidateProviderCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to request additional information.')
@@ -102,7 +111,7 @@ export function useRemoveVerification() {
     mutationFn: (id) => providerApi.removeVerification(id),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Provider verification removed.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+      invalidateProviderCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to remove verification.')
@@ -120,7 +129,7 @@ export function useSuspendProvider() {
     mutationFn: ({ id, reason }) => providerApi.suspend(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Provider suspended.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+      invalidateProviderCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to suspend provider.')
@@ -138,7 +147,7 @@ export function useActivateProvider() {
     mutationFn: (id) => providerApi.activate(id),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Provider activated.')
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.providers.all })
+      invalidateProviderCaches(queryClient)
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Unable to activate provider.')

@@ -41,10 +41,11 @@ export default function ReportActionModal({
   onClose,
   report,
   loading = false,
+  canAction,
   onConfirm,
 }) {
   const type = report?.type
-  const actions = ACTIONS_BY_TYPE[type] ?? []
+  const actions = (ACTIONS_BY_TYPE[type] ?? []).filter((item) => canAction?.(type, item) ?? true)
   const [action, setAction] = useState(actions[0] ?? 'warning')
   const [reason, setReason] = useState('')
   const [duration, setDuration] = useState('days') // 'days' | 'forever'
@@ -94,7 +95,7 @@ export default function ReportActionModal({
             variant={action === 'ban' || action === 'remove' ? 'error' : 'warning'}
             onClick={submit}
             loading={loading}
-            disabled={loading || (touched && invalid)}
+            disabled={loading || actions.length === 0 || (touched && invalid)}
           >
             Take action
           </Button>
@@ -102,6 +103,7 @@ export default function ReportActionModal({
       }
     >
       <div className="flex flex-col gap-4">
+        {actions.length === 0 && <p className="text-sm text-error">You do not have permission to take an action on this reported item.</p>}
         {actions.length > 1 && (
           <div>
             <span className="text-sm font-medium">Action</span>

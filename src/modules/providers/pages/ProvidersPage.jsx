@@ -9,6 +9,7 @@ import ErrorState from '../../../components/common/ErrorState'
 import DataTable from '../../../components/tables/DataTable'
 import Pagination from '../../../components/tables/Pagination'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useDisclosure } from '../../../hooks/useDisclosure'
@@ -22,6 +23,7 @@ import ProviderAvatar from '../components/ProviderAvatar'
 import ProviderStatusBadge from '../components/ProviderStatusBadge'
 import VerificationStatusBadge from '../components/VerificationStatusBadge'
 import ProviderActionModal from '../components/ProviderActionModal'
+import { hasCapability } from '../../../utils/permissions'
 
 const PER_PAGE = 10
 
@@ -33,6 +35,8 @@ const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy 
  */
 export default function ProvidersPage() {
   const navigate = useNavigate()
+  const { user: currentUser } = useAuth()
+  const can = (permission) => hasCapability(currentUser, permission, 'manage providers')
 
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
@@ -82,9 +86,9 @@ export default function ProvidersPage() {
     if (!target) return
 
     if (target.action === 'suspend') {
-      suspendMutation.mutate({ id: target.provider.id, reason: payload }, { onSettled: () => actionDisclosure.close() })
+      suspendMutation.mutate({ id: target.provider.id, reason: payload }, { onSuccess: () => actionDisclosure.close() })
     } else if (target.action === 'activate') {
-      activateMutation.mutate(target.provider.id, { onSettled: () => actionDisclosure.close() })
+      activateMutation.mutate(target.provider.id, { onSuccess: () => actionDisclosure.close() })
     }
   }
 
@@ -92,7 +96,7 @@ export default function ProvidersPage() {
     const target = confirmTarget
     if (!target) return
 
-    removeVerificationMutation.mutate(target.provider.id, { onSettled: () => confirmDisclosure.close() })
+    removeVerificationMutation.mutate(target.provider.id, { onSuccess: () => confirmDisclosure.close() })
   }
 
   const columns = [
@@ -160,16 +164,16 @@ export default function ProvidersPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            <Button
+            {can('view providers') && <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(`/admin/providers/${provider.id}`)}
               aria-label={`View ${provider.business_name || provider.user?.name}`}
             >
               <Eye className="size-4" />
-            </Button>
+            </Button>}
             {isSuspended ? (
-              <Button
+              can('activate providers') && <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -181,7 +185,7 @@ export default function ProvidersPage() {
                 <Power className="size-4 text-success" />
               </Button>
             ) : (
-              <Button
+              can('suspend providers') && <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -193,7 +197,7 @@ export default function ProvidersPage() {
                 <Ban className="size-4 text-warning" />
               </Button>
             )}
-            {provider.verification_status === 'verified' && (
+            {provider.verification_status === 'verified' && can('verify providers') && (
               <Button
                 variant="ghost"
                 size="sm"

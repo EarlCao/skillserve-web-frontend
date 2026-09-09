@@ -79,14 +79,14 @@ export default function ServiceCategoriesPage() {
 
     statusMutation.mutate(
       { id: statusTarget.category.id, status: statusTarget.to },
-      { onSettled: () => statusDisclosure.close() },
+      { onSuccess: () => statusDisclosure.close() },
     )
   }
 
   const confirmDelete = () => {
     if (!deleteTarget) return
 
-    deleteMutation.mutate(deleteTarget.id, { onSettled: () => deleteDisclosure.close() })
+    deleteMutation.mutate(deleteTarget.id, { onSuccess: () => deleteDisclosure.close() })
   }
 
   const columns = [

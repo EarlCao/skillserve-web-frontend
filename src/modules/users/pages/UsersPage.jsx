@@ -9,6 +9,7 @@ import ErrorState from '../../../components/common/ErrorState'
 import DataTable from '../../../components/tables/DataTable'
 import Pagination from '../../../components/tables/Pagination'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useDisclosure } from '../../../hooks/useDisclosure'
@@ -18,6 +19,7 @@ import UserStatusBadge from '../components/UserStatusBadge'
 import VerificationBadge from '../components/VerificationBadge'
 import UserFormModal from '../components/UserFormModal'
 import UserActionModal from '../components/UserActionModal'
+import { hasCapability } from '../../../utils/permissions'
 
 const PER_PAGE = 10
 
@@ -39,6 +41,8 @@ const banCountdown = (bannedUntil) => {
  */
 export default function UsersPage() {
   const navigate = useNavigate()
+  const { user: currentUser } = useAuth()
+  const can = (permission) => hasCapability(currentUser, permission, 'manage users')
 
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
@@ -100,11 +104,11 @@ export default function UsersPage() {
     if (!target) return
 
     if (target.action === 'ban') {
-      banMutation.mutate({ id: target.user.id, ...payload }, { onSettled: () => actionDisclosure.close() })
+      banMutation.mutate({ id: target.user.id, ...payload }, { onSuccess: () => actionDisclosure.close() })
     } else if (target.action === 'unban') {
-      unbanMutation.mutate({ id: target.user.id, reason: payload || undefined }, { onSettled: () => actionDisclosure.close() })
+      unbanMutation.mutate({ id: target.user.id, reason: payload || undefined }, { onSuccess: () => actionDisclosure.close() })
     } else {
-      suspendMutation.mutate({ id: target.user.id, reason: payload }, { onSettled: () => actionDisclosure.close() })
+      suspendMutation.mutate({ id: target.user.id, reason: payload }, { onSuccess: () => actionDisclosure.close() })
     }
   }
 
@@ -113,9 +117,9 @@ export default function UsersPage() {
     if (!target) return
 
     if (target.action === 'activate') {
-      activateMutation.mutate(target.user.id, { onSettled: () => confirmDisclosure.close() })
+      activateMutation.mutate(target.user.id, { onSuccess: () => confirmDisclosure.close() })
     } else {
-      deleteMutation.mutate(target.user.id, { onSettled: () => confirmDisclosure.close() })
+      deleteMutation.mutate(target.user.id, { onSuccess: () => confirmDisclosure.close() })
     }
   }
 
@@ -191,25 +195,25 @@ export default function UsersPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            <Button
+            {can('view users') && <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(`/admin/users/${user.id}`)}
               aria-label={`View ${user.name}`}
             >
               <Eye className="size-4" />
-            </Button>
-            <Button
+            </Button>}
+            {can('edit users') && <Button
               variant="ghost"
               size="sm"
               onClick={() => setEditing(user)}
               aria-label={`Edit ${user.name}`}
             >
               <Pencil className="size-4" />
-            </Button>
+            </Button>}
             {!isBanned &&
               (isSuspended ? (
-                <Button
+                can('activate users') && <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
@@ -221,7 +225,7 @@ export default function UsersPage() {
                   <Power className="size-4 text-success" />
                 </Button>
               ) : (
-                <Button
+                can('suspend users') && <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
@@ -233,7 +237,7 @@ export default function UsersPage() {
                   <CirclePause className="size-4 text-warning" />
                 </Button>
               ))}
-            {!isBanned && (
+            {!isBanned && can('ban users') && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -246,7 +250,7 @@ export default function UsersPage() {
                 <Ban className="size-4 text-error" />
               </Button>
             )}
-            {isBanned && (
+            {isBanned && can('ban users') && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -260,7 +264,7 @@ export default function UsersPage() {
                 <UserCheck className="size-4 text-success" />
               </Button>
             )}
-            <Button
+            {can('delete users') && <Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -270,7 +274,7 @@ export default function UsersPage() {
               aria-label={`Delete ${user.name}`}
             >
               <Trash2 className="size-4 text-error" />
-            </Button>
+            </Button>}
           </div>
         )
       },

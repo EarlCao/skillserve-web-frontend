@@ -8,6 +8,8 @@ import PermissionsPage from './PermissionsPage'
 import AdministratorFormModal from '../components/AdministratorFormModal'
 import RoleFormModal from '../components/RoleFormModal'
 import { useRoles } from '../hooks/useRoles'
+import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 
 const TABS = [
   { id: 'administrators', label: 'Administrators', Component: AdministratorsPage },
@@ -25,6 +27,9 @@ const TABS = [
  * and "Add role" actions live in the page header — always on the right.
  */
 export default function AdministratorManagementPage() {
+  const { user } = useAuth()
+  const canCreateAdministrator = hasCapability(user, 'create administrators', 'manage administrators')
+  const canManageRoles = hasCapability(user, 'manage administrators')
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedTab = searchParams.get('tab')
   const activeTab = TABS.find((tab) => tab.id === requestedTab)?.id ?? 'administrators'
@@ -48,13 +53,13 @@ export default function AdministratorManagementPage() {
           <p className="text-sm text-base-content/60">Manage administrator accounts, roles and permissions.</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {activeTab === 'roles' && (
+          {activeTab === 'roles' && canManageRoles && (
             <Button onClick={() => setRoleFormOpen(true)}>
               <Plus className="size-4" />
               Add role
             </Button>
           )}
-          {activeTab === 'administrators' && (
+          {activeTab === 'administrators' && canCreateAdministrator && (
             <Button onClick={() => setAdminFormOpen(true)}>
               <UserPlus className="size-4" />
               Add administrator

@@ -93,7 +93,7 @@ export default function BookingsPage() {
     if (!disputeTarget) return
     disputeMutation.mutate(
       { id: disputeTarget.id, action: disputeTarget.action, resolution: disputeTarget.resolution },
-      { onSettled: () => { disputeActionDisclosure.close(); setDisputeTarget(null); setViewing(null); } },
+      { onSuccess: () => { disputeActionDisclosure.close(); setDisputeTarget(null); setViewing(null); } },
     )
   }
 

@@ -8,6 +8,7 @@ import Badge from '../../../components/ui/Badge'
 import Skeleton from '../../../components/ui/Skeleton'
 import ErrorState from '../../../components/common/ErrorState'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useDisclosure } from '../../../hooks/useDisclosure'
 import { useUser, useActivateUser, useBanUser, useBanHistory, useDeleteUser, useSuspendUser, useUnbanUser } from '../hooks/useUsers'
 import UserAvatar from '../components/UserAvatar'
@@ -15,6 +16,7 @@ import UserStatusBadge from '../components/UserStatusBadge'
 import VerificationBadge from '../components/VerificationBadge'
 import UserFormModal from '../components/UserFormModal'
 import UserActionModal from '../components/UserActionModal'
+import { hasCapability } from '../../../utils/permissions'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : '—')
 
@@ -30,6 +32,8 @@ const prettyActivity = (description) =>
 export default function UserProfilePage() {
   const { userId } = useParams()
   const navigate = useNavigate()
+  const { user: currentUser } = useAuth()
+  const can = (permission) => hasCapability(currentUser, permission, 'manage users')
   const { data, isLoading, isError, error, refetch } = useUser(userId)
   const user = data?.data
   const banHistoryQuery = useBanHistory(userId)
@@ -67,11 +71,11 @@ export default function UserProfilePage() {
     if (!target) return
 
     if (target.action === 'ban') {
-      banMutation.mutate({ id: target.user.id, ...payload }, { onSettled: () => actionDisclosure.close() })
+      banMutation.mutate({ id: target.user.id, ...payload }, { onSuccess: () => actionDisclosure.close() })
     } else if (target.action === 'unban') {
-      unbanMutation.mutate({ id: target.user.id, reason: payload || undefined }, { onSettled: () => actionDisclosure.close() })
+      unbanMutation.mutate({ id: target.user.id, reason: payload || undefined }, { onSuccess: () => actionDisclosure.close() })
     } else {
-      suspendMutation.mutate({ id: target.user.id, reason: payload }, { onSettled: () => actionDisclosure.close() })
+      suspendMutation.mutate({ id: target.user.id, reason: payload }, { onSuccess: () => actionDisclosure.close() })
     }
   }
 
@@ -80,11 +84,13 @@ export default function UserProfilePage() {
     if (!target) return
 
     if (target.action === 'activate') {
-      activateMutation.mutate(target.user.id, { onSettled: () => confirmDisclosure.close() })
+      activateMutation.mutate(target.user.id, { onSuccess: () => confirmDisclosure.close() })
     } else {
       deleteMutation.mutate(target.user.id, {
-        onSuccess: () => navigate('/admin/users'),
-        onSettled: () => confirmDisclosure.close(),
+        onSuccess: () => {
+          navigate('/admin/users')
+          confirmDisclosure.close()
+        },
       })
     }
   }
@@ -118,13 +124,13 @@ export default function UserProfilePage() {
         <div className="ml-auto flex items-center gap-2">
           {user && (
             <>
-              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+              {can('edit users') && <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
                 <Pencil className="size-4" />
                 Edit
-              </Button>
+              </Button>}
               {!isBanned &&
                 (isSuspended ? (
-                  <Button
+                  can('activate users') && <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
@@ -136,7 +142,7 @@ export default function UserProfilePage() {
                     Activate
                   </Button>
                 ) : (
-                  <Button
+                  can('suspend users') && <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
@@ -148,7 +154,7 @@ export default function UserProfilePage() {
                     Suspend
                   </Button>
                 ))}
-              {!isBanned && (
+              {!isBanned && can('ban users') && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -161,7 +167,7 @@ export default function UserProfilePage() {
                   Ban
                 </Button>
               )}
-              {isBanned && (
+              {isBanned && can('ban users') && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -174,7 +180,7 @@ export default function UserProfilePage() {
                   Unban
                 </Button>
               )}
-              <Button
+              {can('delete users') && <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
@@ -184,7 +190,7 @@ export default function UserProfilePage() {
               >
                 <Trash2 className="size-4 text-error" />
                 Delete
-              </Button>
+              </Button>}
             </>
           )}
         </div>

@@ -11,6 +11,7 @@ import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useDisclosure } from '../../../hooks/useDisclosure'
 import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 import SupportTicketStatusBadge from '../components/SupportTicketStatusBadge'
 import SupportTicketPriorityBadge from '../components/SupportTicketPriorityBadge'
 import SupportTicketDetailsModal from '../components/SupportTicketDetailsModal'
@@ -21,8 +22,7 @@ const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy 
 
 export default function SupportTicketsPage() {
   const { user } = useAuth()
-  const permissions = user?.permissions ?? []
-  const can = (permission) => permissions.includes('manage support') || permissions.includes(permission)
+  const can = (permission) => hasCapability(user, permission, 'manage support')
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
   const [status, setStatus] = useState('')
@@ -96,8 +96,8 @@ export default function SupportTicketsPage() {
         canResolve={can('resolve support tickets')}
         actionLoading={actionLoading}
         onAssign={(id, assignedToValue) => assign.mutate({ id, assignedTo: assignedToValue })}
-        onRespond={(id, body) => respond.mutate({ id, body })}
-        onResolve={(id, resolutionNote) => resolve.mutate({ id, resolutionNote })}
+        onRespond={(id, body, onSuccess) => respond.mutate({ id, body }, { onSuccess })}
+        onResolve={(id, resolutionNote, onSuccess) => resolve.mutate({ id, resolutionNote }, { onSuccess })}
       />
     </div>
   )

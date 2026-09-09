@@ -18,6 +18,8 @@ import {
 } from '../hooks/useReviews'
 import ReviewStatusBadge from '../components/ReviewStatusBadge'
 import ReviewDetailsModal from '../components/ReviewDetailsModal'
+import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 
 const PER_PAGE = 10
 
@@ -29,6 +31,8 @@ const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy 
  * and the administrative actions to view, hide, restore, and remove reviews.
  */
 export default function ReviewsPage() {
+  const { user: currentUser } = useAuth()
+  const can = (permission) => hasCapability(currentUser, permission, 'manage reviews')
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
   const [ratingFilter, setRatingFilter] = useState('')
@@ -78,14 +82,14 @@ export default function ReviewsPage() {
     const isCurrentlyHidden = hideTarget.status === 'hidden'
     hideMutation.mutate(
       { id: hideTarget.id, isHidden: !isCurrentlyHidden },
-      { onSettled: () => { hideDisclosure.close(); setHideTarget(null); setViewing(null); } },
+      { onSuccess: () => { hideDisclosure.close(); setHideTarget(null); setViewing(null); } },
     )
   }
 
   const confirmDelete = () => {
     if (!deleteTarget) return
     deleteMutation.mutate(deleteTarget.id, {
-      onSettled: () => { deleteDisclosure.close(); setDeleteTarget(null); setViewing(null); },
+      onSuccess: () => { deleteDisclosure.close(); setDeleteTarget(null); setViewing(null); },
     })
   }
 
@@ -165,7 +169,7 @@ export default function ReviewsPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            <Button
+            {can('view reviews') && <Button
               variant="ghost"
               size="sm"
               onClick={() => setViewing(review.id)}
@@ -173,8 +177,8 @@ export default function ReviewsPage() {
               title="View details"
             >
               <Eye className="size-4" />
-            </Button>
-            {review.status !== 'removed' && (
+            </Button>}
+            {review.status !== 'removed' && can('edit reviews') && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -192,7 +196,7 @@ export default function ReviewsPage() {
                 )}
               </Button>
             )}
-            {review.status !== 'removed' && (
+            {review.status !== 'removed' && can('delete reviews') && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -322,8 +326,8 @@ export default function ReviewsPage() {
         open={Boolean(viewing)}
         onClose={() => setViewing(null)}
         reviewId={viewing}
-        onHide={(review) => { setHideTarget(review); hideDisclosure.open(); }}
-        onRemove={(review) => { setDeleteTarget(review); deleteDisclosure.open(); }}
+        onHide={can('edit reviews') ? (review) => { setHideTarget(review); hideDisclosure.open(); } : undefined}
+        onRemove={can('delete reviews') ? (review) => { setDeleteTarget(review); deleteDisclosure.open(); } : undefined}
       />
 
       <ConfirmDialog

@@ -38,6 +38,8 @@ import ServiceDetailsModal from '../components/ServiceDetailsModal'
 import Textarea from '../../../components/ui/Textarea'
 import { rejectServiceSchema } from '../schemas/serviceSchema'
 import { toast } from 'sonner'
+import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 
 const PER_PAGE = 10
 
@@ -51,6 +53,8 @@ const formatCurrency = (value, currency = 'USD') =>
  * actions to review, approve, reject, edit, hide, feature, and delete services.
  */
 export default function ServicesPage() {
+  const { user: currentUser } = useAuth()
+  const can = (permission) => hasCapability(currentUser, permission, 'manage services')
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
   const [statusFilter, setStatusFilter] = useState('')
@@ -116,7 +120,7 @@ export default function ServicesPage() {
     if (!approveTarget) return
     approveMutation.mutate(
       { id: approveTarget.id },
-      { onSettled: () => { approveDisclosure.close(); setApproveTarget(null); setViewing(null); } },
+      { onSuccess: () => { approveDisclosure.close(); setApproveTarget(null); setViewing(null); } },
     )
   }
 
@@ -137,7 +141,7 @@ export default function ServicesPage() {
     if (!hideTarget) return
     hideMutation.mutate(
       { id: hideTarget.id, isHidden: !hideTarget.is_hidden },
-      { onSettled: () => { hideDisclosure.close(); setHideTarget(null); setViewing(null); } },
+      { onSuccess: () => { hideDisclosure.close(); setHideTarget(null); setViewing(null); } },
     )
   }
 
@@ -145,14 +149,14 @@ export default function ServicesPage() {
     if (!featureTarget) return
     featureMutation.mutate(
       { id: featureTarget.id, isFeatured: !featureTarget.is_featured },
-      { onSettled: () => { featureDisclosure.close(); setFeatureTarget(null); setViewing(null); } },
+      { onSuccess: () => { featureDisclosure.close(); setFeatureTarget(null); setViewing(null); } },
     )
   }
 
   const confirmDelete = () => {
     if (!deleteTarget) return
     deleteMutation.mutate(deleteTarget.id, {
-      onSettled: () => { deleteDisclosure.close(); setDeleteTarget(null); setViewing(null); },
+      onSuccess: () => { deleteDisclosure.close(); setDeleteTarget(null); setViewing(null); },
     })
   }
 
@@ -217,7 +221,7 @@ export default function ServicesPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            <Button
+            {can('view services') && <Button
               variant="ghost"
               size="sm"
               onClick={() => setViewing(service.id)}
@@ -225,8 +229,8 @@ export default function ServicesPage() {
               title="View details"
             >
               <Eye className="size-4" />
-            </Button>
-            <Button
+            </Button>}
+            {can('edit services') && <Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -237,36 +241,36 @@ export default function ServicesPage() {
               title="Edit service"
             >
               <Pencil className="size-4" />
-            </Button>
-            {service.approval_status === 'pending' && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setApproveTarget(service)
-                    approveDisclosure.open()
-                  }}
-                  aria-label={`Approve ${service.title}`}
-                  title="Approve"
-                >
-                  <CheckCircle className="size-4 text-success" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setRejectTarget(service)
-                    rejectDisclosure.open()
-                  }}
-                  aria-label={`Reject ${service.title}`}
-                  title="Reject"
-                >
-                  <XCircle className="size-4 text-error" />
-                </Button>
-              </>
+            </Button>}
+            {service.approval_status === 'pending' && can('approve services') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setApproveTarget(service)
+                  approveDisclosure.open()
+                }}
+                aria-label={`Approve ${service.title}`}
+                title="Approve"
+              >
+                <CheckCircle className="size-4 text-success" />
+              </Button>
             )}
-            <Button
+            {service.approval_status === 'pending' && can('reject services') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setRejectTarget(service)
+                  rejectDisclosure.open()
+                }}
+                aria-label={`Reject ${service.title}`}
+                title="Reject"
+              >
+                <XCircle className="size-4 text-error" />
+              </Button>
+            )}
+            {can('edit services') && <Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -281,8 +285,8 @@ export default function ServicesPage() {
               ) : (
                 <EyeOff className="size-4 text-warning" />
               )}
-            </Button>
-            <Button
+            </Button>}
+            {can('feature services') && <Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -297,8 +301,8 @@ export default function ServicesPage() {
               ) : (
                 <Star className="size-4" />
               )}
-            </Button>
-            <Button
+            </Button>}
+            {can('delete services') && <Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -309,7 +313,7 @@ export default function ServicesPage() {
               title="Delete"
             >
               <Trash2 className="size-4 text-error" />
-            </Button>
+            </Button>}
           </div>
         )
       },
@@ -325,10 +329,10 @@ export default function ServicesPage() {
             Review, approve, and manage services submitted by providers.
           </p>
         </div>
-        <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+        {can('create services') && <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
           <FileText className="size-4" />
           Add service
-        </Button>
+        </Button>}
       </div>
 
       <Card bodyClassName="p-0">
@@ -442,12 +446,12 @@ export default function ServicesPage() {
         open={Boolean(viewing)}
         onClose={() => setViewing(null)}
         serviceId={viewing}
-        onApprove={(service) => { setApproveTarget(service); approveDisclosure.open(); }}
-        onReject={(service) => { setRejectTarget(service); rejectDisclosure.open(); }}
-        onHide={(service) => { setHideTarget(service); hideDisclosure.open(); }}
-        onFeature={(service) => { setFeatureTarget(service); featureDisclosure.open(); }}
-        onDelete={(service) => { setDeleteTarget(service); deleteDisclosure.open(); }}
-        onEdit={(service) => { setEditing(service); setFormOpen(true); }}
+        onApprove={can('approve services') ? (service) => { setApproveTarget(service); approveDisclosure.open(); } : undefined}
+        onReject={can('reject services') ? (service) => { setRejectTarget(service); rejectDisclosure.open(); } : undefined}
+        onHide={can('edit services') ? (service) => { setHideTarget(service); hideDisclosure.open(); } : undefined}
+        onFeature={can('feature services') ? (service) => { setFeatureTarget(service); featureDisclosure.open(); } : undefined}
+        onDelete={can('delete services') ? (service) => { setDeleteTarget(service); deleteDisclosure.open(); } : undefined}
+        onEdit={can('edit services') ? (service) => { setEditing(service); setFormOpen(true); } : undefined}
       />
 
       <ConfirmDialog
