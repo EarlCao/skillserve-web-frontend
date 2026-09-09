@@ -16,6 +16,7 @@ export const THEMES = ['light', 'dark']
 /** Window events the app listens to. */
 export const APP_EVENTS = {
   unauthorized: 'skillserve:unauthorized',
+  realtimeNotification: 'skillserve:realtime-notification',
 }
 
 /** React Query cache keys (grow as modules are added). */

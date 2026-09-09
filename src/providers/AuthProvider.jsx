@@ -5,6 +5,7 @@ import { APP_EVENTS, QUERY_KEYS, STORAGE_KEYS } from '../constants'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { queryClient } from '../lib/queryClient'
 import { api } from '../services/api'
+import { connectRealtime, disconnectRealtime, subscribeToUserNotifications } from '../services/echo'
 
 /**
  * Provides the auth context backed by the backend API.
@@ -32,6 +33,25 @@ export default function AuthProvider({ children }) {
 
     return () => window.removeEventListener(APP_EVENTS.unauthorized, onUnauthorized)
   }, [setToken])
+
+  useEffect(() => {
+    const userId = meQuery.data?.data?.id
+
+    if (!token || !userId) {
+      disconnectRealtime()
+      return undefined
+    }
+
+    connectRealtime(token)
+    const unsubscribe = subscribeToUserNotifications(userId, (event) => {
+      window.dispatchEvent(new CustomEvent(APP_EVENTS.realtimeNotification, { detail: event }))
+    })
+
+    return () => {
+      unsubscribe()
+      disconnectRealtime()
+    }
+  }, [token, meQuery.data?.data?.id])
 
   const login = useCallback(
     async (credentials) => {
