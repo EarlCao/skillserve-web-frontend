@@ -60,13 +60,24 @@ axiosInstance.interceptors.response.use(
       window.dispatchEvent(new Event(APP_EVENTS.unauthorized))
     }
 
+    // Provide a clear message when the device is offline or the server
+    // is unreachable (common on mobile with flaky connectivity).
+    let message
+    if (!error.response && error.code === 'ERR_NETWORK') {
+      message = 'No internet connection. Please check your network and try again.'
+    } else if (error.code === 'ECONNABORTED') {
+      message = 'Request timed out. The server took too long to respond.'
+    } else {
+      message =
+        (data && (data.message || getErrorMessage(data.errors))) ||
+        error.message ||
+        'Something went wrong. Please try again.'
+    }
+
     // Normalize the error so every caller gets a consistent shape.
     error.normalized = {
       status,
-      message:
-        (data && (data.message || getErrorMessage(data.errors))) ||
-        error.message ||
-        'Network error. Please try again.',
+      message,
       errors: data?.errors ?? null,
       data,
     }

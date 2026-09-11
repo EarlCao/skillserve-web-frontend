@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useLogout } from '../modules/authentication/hooks/useLogout'
 import { useDisclosure } from '../hooks/useDisclosure'
 import ConfirmDialog from '../components/feedback/ConfirmDialog'
+import OfflineBanner from '../components/common/OfflineBanner'
 import { hasAnyCapability } from '../utils/permissions'
 
 /**
@@ -62,6 +63,7 @@ export default function AdminLayout() {
 
       {/* Content */}
       <div className="drawer-content flex min-h-svh flex-col">
+        <OfflineBanner />
         <header className="navbar sticky top-0 z-30 border-b border-base-300 bg-base-100">
           {/* Mobile: open the overlay drawer. */}
           <div className="flex-none lg:hidden">
