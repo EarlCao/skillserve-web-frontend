@@ -1,0 +1,17 @@
+{
+  "name": "SkillServe Admin",
+  "short_name": "SkillServe",
+  "description": "SkillServe Administrator Dashboard",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
