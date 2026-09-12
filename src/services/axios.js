@@ -11,7 +11,7 @@ import { getErrorMessage } from '../lib/errors'
  */
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30_000,
+  timeout: 120_000,
   withCredentials: true,
   headers: {
     Accept: 'application/json',
