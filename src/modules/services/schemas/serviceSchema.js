@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { DEFAULT_CURRENCY } from '../../../constants'
 
 /**
  * Schema for the service create/edit form.
@@ -11,7 +12,7 @@ export const serviceFormSchema = z.object({
   subcategory_id: z.string().optional().nullable(),
   price: z.string().optional().nullable(),
   price_type: z.enum(['fixed', 'hourly', 'custom']).default('fixed'),
-  currency: z.string().max(3).default('USD'),
+  currency: z.string().max(3).default(DEFAULT_CURRENCY),
   duration: z.string().max(100).optional().nullable(),
   location: z.string().max(255).optional().nullable(),
 })

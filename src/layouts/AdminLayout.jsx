@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
-import { Archive, Award, Bell, BarChart3, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, LayoutDashboard, LifeBuoy, LogOut, Menu, Moon, Settings, ShieldAlert, Star, Sun, UserCheck, Users, UsersRound } from 'lucide-react'
+import { Link, NavLink, Outlet, matchPath, useLocation } from 'react-router-dom'
+import { Archive, Award, Bell, BarChart3, CalendarCheck, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, Layers, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareWarning, Moon, Settings, ShieldAlert, Star, Sun, User, UserCheck, UserCog, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -9,6 +9,66 @@ import { useDisclosure } from '../hooks/useDisclosure'
 import ConfirmDialog from '../components/feedback/ConfirmDialog'
 import OfflineBanner from '../components/common/OfflineBanner'
 import { hasAnyCapability } from '../utils/permissions'
+
+// Active nav item uses the primary color (not daisyUI's near-black
+// base-content that `menu-active` applies). When collapsed, icons center.
+function navLinkClass(collapsed) {
+  return ({ isActive }) => {
+    const base = collapsed ? 'lg:justify-center lg:px-0' : ''
+
+    return isActive ? `bg-primary/10 text-primary font-semibold ${base}`.trim() : base.trim() || undefined
+  }
+}
+
+function NavItem({ to, end, icon: Icon, label, collapsed }) {
+  return (
+    <li>
+      <NavLink to={to} end={end} className={navLinkClass(collapsed)} title={collapsed ? label : undefined}>
+        <Icon className="size-4 shrink-0" />
+        <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>{label}</span>
+      </NavLink>
+    </li>
+  )
+}
+
+/**
+ * Collapsible sidebar section. Hidden when the user can access none of its
+ * items; starts expanded when one of its pages is active. In the collapsed
+ * icon rail (desktop) the header is hidden and the items render as plain icons.
+ */
+function NavGroup({ icon: Icon, label, items, collapsed }) {
+  const { pathname } = useLocation()
+  const visibleItems = items.filter(Boolean)
+  const hasActiveItem = visibleItems.some((item) => matchPath({ path: item.to, end: false }, pathname))
+  // null = follow the active route; boolean = the user toggled it explicitly.
+  const [expanded, setExpanded] = useState(null)
+
+  if (visibleItems.length === 0) return null
+
+  const isOpen = collapsed || (expanded ?? hasActiveItem)
+
+  return (
+    <li>
+      <details open={isOpen}>
+        <summary
+          className={`${collapsed ? 'lg:hidden' : ''} ${hasActiveItem ? 'text-primary' : ''}`.trim() || undefined}
+          onClick={(event) => {
+            event.preventDefault()
+            setExpanded(!isOpen)
+          }}
+        >
+          <Icon className="size-4 shrink-0" />
+          <span className="whitespace-nowrap">{label}</span>
+        </summary>
+        <ul className={collapsed ? 'lg:ms-0 lg:ps-0 lg:before:hidden' : undefined}>
+          {visibleItems.map((item) => (
+            <NavItem key={item.to} {...item} collapsed={collapsed} />
+          ))}
+        </ul>
+      </details>
+    </li>
+  )
+}
 
 /**
  * Shared admin layout: responsive drawer sidebar + topbar + content outlet.
@@ -49,13 +109,10 @@ export default function AdminLayout() {
   const canManageData = hasAnyCapability(user, ['manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records'])
   const canManageSupport = hasAnyCapability(user, ['view support', 'manage support', 'assign support tickets', 'respond to support tickets', 'resolve support tickets'])
 
-  // Active nav item uses the primary color (not daisyUI's near-black
-  // base-content that `menu-active` applies). When collapsed, icons center.
-  const navLinkClass = ({ isActive }) => {
-    const base = collapsed ? 'lg:justify-center lg:px-0' : ''
-
-    return isActive ? `bg-primary/10 text-primary font-semibold ${base}`.trim() : base.trim() || undefined
-  }
+  const showAdministration = canManageUsers || canManageProviders || canManageAdministrators
+    || canManageServices || canManageServiceCategories || canManageBookings || canManageDisputes
+    || canManageReviews || canManageReports || canManageRecognition || canManageSupport
+    || canManageAnalytics || canManageNotifications || canManageData || canViewAudit || canManageSettings
 
   return (
     <div className="drawer lg:drawer-open">
@@ -155,185 +212,69 @@ export default function AdminLayout() {
           </div>
 
           <li className={`menu-title ${collapsed ? 'lg:hidden' : undefined}`}>Main</li>
-          <li>
-            {(user?.permissions?.includes('view dashboard') || user?.roles?.includes('super-admin')) && (
-            <NavLink to="/admin" end className={navLinkClass} title={collapsed ? 'Dashboard' : undefined}>
-              <LayoutDashboard className="size-4 shrink-0" />
-              <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Dashboard</span>
-            </NavLink>
-            )}
-          </li>
-          {(canManageAdministrators || canManageServiceCategories || canManageBookings || canManageReports || canManageNotifications || canManageAnalytics || canManageRecognition || canViewAudit || canManageSettings || canManageData || canManageSupport) && (
-            <>
-              <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
-              {canManageAdministrators && (
-                <li>
-                  <NavLink
-                    to="/admin/administrators"
-                    className={navLinkClass}
-                    title={collapsed ? 'Administrator management' : undefined}
-                  >
-                    <Users className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
-                      Administrator Management
-                    </span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageServiceCategories && (
-                <li>
-                  <NavLink
-                    to="/admin/service-categories"
-                    className={navLinkClass}
-                    title={collapsed ? 'Service categories' : undefined}
-                  >
-                    <FolderTree className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
-                      Service Categories
-                    </span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageServices && (
-                <li>
-                  <NavLink
-                    to="/admin/services"
-                    className={navLinkClass}
-                    title={collapsed ? 'Service management' : undefined}
-                  >
-                    <FileText className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
-                      Services
-                    </span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageBookings && (
-                <li>
-                  <NavLink
-                    to="/admin/bookings"
-                    className={navLinkClass}
-                    title={collapsed ? 'Booking management' : undefined}
-                  >
-                    <CalendarDays className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
-                      Bookings
-                    </span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageDisputes && (
-                <li>
-                  <NavLink to="/admin/disputes" className={navLinkClass} title={collapsed ? 'Dispute management' : undefined}>
-                    <Gavel className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Dispute Management</span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageReviews && (
-                <li>
-                  <NavLink
-                    to="/admin/reviews"
-                    className={navLinkClass}
-                    title={collapsed ? 'Reviews and ratings' : undefined}
-                  >
-                    <Star className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
-                      Reviews and Ratings
-                    </span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageReports && (
-                <li>
-                  <NavLink
-                    to="/admin/reports"
-                    className={navLinkClass}
-                    title={collapsed ? 'Reports and moderation' : undefined}
-                  >
-                    <ShieldAlert className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>
-                      Reports and Moderation
-                    </span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageNotifications && (
-                <li>
-                  <NavLink to="/admin/notifications" className={navLinkClass} title={collapsed ? 'Notifications and announcements' : undefined}>
-                    <Bell className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Notifications</span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageAnalytics && (
-                <li>
-                  <NavLink to="/admin/analytics" className={navLinkClass} title={collapsed ? 'Reports and analytics' : undefined}>
-                    <BarChart3 className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Reports & Analytics</span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageRecognition && (
-                <li>
-                  <NavLink to="/admin/provider-recognition" className={navLinkClass} title={collapsed ? 'Provider recognition' : undefined}>
-                    <Award className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Provider Recognition</span>
-                  </NavLink>
-                </li>
-              )}
-              {canViewAudit && (
-                <li>
-                  <NavLink to="/admin/audit-logs" className={navLinkClass} title={collapsed ? 'Security and audit logs' : undefined}>
-                    <ClipboardList className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Security & Audit</span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageSettings && (
-                <li>
-                  <NavLink to="/admin/settings" className={navLinkClass} title={collapsed ? 'System settings' : undefined}>
-                    <Settings className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>System Settings</span>
-                  </NavLink>
-                </li>
-              )}
-              {canManageData && (
-                <li><NavLink to="/admin/data-management" className={navLinkClass} title={collapsed ? 'Data management' : undefined}><Archive className="size-4 shrink-0" /><span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Data Management</span></NavLink></li>
-              )}
-              {canManageSupport && (
-                <li>
-                  <NavLink to="/admin/support" className={navLinkClass} title={collapsed ? 'Support management' : undefined}>
-                    <LifeBuoy className="size-4 shrink-0" />
-                    <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Support Management</span>
-                  </NavLink>
-                </li>
-              )}
-            </>
+          {(user?.permissions?.includes('view dashboard') || user?.roles?.includes('super-admin')) && (
+            <NavItem to="/admin" end icon={LayoutDashboard} label="Dashboard" collapsed={collapsed} />
           )}
-          {canManageUsers && (
-            <li>
-              <NavLink
-                to="/admin/users"
-                className={navLinkClass}
-                title={collapsed ? 'User management' : undefined}
-              >
-                <UsersRound className="size-4 shrink-0" />
-                <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>User Management</span>
-              </NavLink>
-            </li>
+
+          {showAdministration && (
+            <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
           )}
-          {canManageProviders && (
-            <li>
-              <NavLink
-                to="/admin/providers"
-                className={navLinkClass}
-                title={collapsed ? 'Provider management' : undefined}
-              >
-                <UserCheck className="size-4 shrink-0" />
-                <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>Provider Management</span>
-              </NavLink>
-            </li>
+
+          <NavGroup
+            icon={UsersRound}
+            label="User Management"
+            collapsed={collapsed}
+            items={[
+              canManageUsers && { to: '/admin/users', icon: User, label: 'Customer Management' },
+              canManageProviders && { to: '/admin/providers', icon: UserCheck, label: 'Provider Management' },
+              canManageAdministrators && { to: '/admin/administrators', icon: UserCog, label: 'Admin Management' },
+            ]}
+          />
+          <NavGroup
+            icon={Layers}
+            label="Services & Categories"
+            collapsed={collapsed}
+            items={[
+              canManageServices && { to: '/admin/services', icon: FileText, label: 'Services' },
+              canManageServiceCategories && { to: '/admin/service-categories', icon: FolderTree, label: 'Service Categories' },
+            ]}
+          />
+          <NavGroup
+            icon={CalendarDays}
+            label="Bookings & Disputes"
+            collapsed={collapsed}
+            items={[
+              canManageBookings && { to: '/admin/bookings', icon: CalendarCheck, label: 'Bookings' },
+              canManageDisputes && { to: '/admin/disputes', icon: Gavel, label: 'Dispute Management' },
+            ]}
+          />
+          <NavGroup
+            icon={MessageSquareWarning}
+            label="Reviews & Moderation"
+            collapsed={collapsed}
+            items={[
+              canManageReviews && { to: '/admin/reviews', icon: Star, label: 'Reviews and Ratings' },
+              canManageReports && { to: '/admin/reports', icon: ShieldAlert, label: 'Reports and Moderation' },
+              canManageRecognition && { to: '/admin/provider-recognition', icon: Award, label: 'Provider Recognition' },
+            ]}
+          />
+          {canManageSupport && (
+            <NavItem to="/admin/support" icon={LifeBuoy} label="Support Management" collapsed={collapsed} />
+          )}
+          {canManageAnalytics && (
+            <NavItem to="/admin/analytics" icon={BarChart3} label="Reports & Analytics" collapsed={collapsed} />
+          )}
+          {canManageNotifications && (
+            <NavItem to="/admin/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
+          )}
+          {canManageData && (
+            <NavItem to="/admin/data-management" icon={Archive} label="Data Management" collapsed={collapsed} />
+          )}
+          {canViewAudit && (
+            <NavItem to="/admin/audit-logs" icon={ClipboardList} label="Security & Audit" collapsed={collapsed} />
+          )}
+          {canManageSettings && (
+            <NavItem to="/admin/settings" icon={Settings} label="System Settings" collapsed={collapsed} />
           )}
 
           {/* Sign out — pinned to the bottom of the sidebar. */}

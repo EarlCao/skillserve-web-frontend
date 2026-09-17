@@ -4,11 +4,9 @@ import Button from '../../../components/ui/Button'
 import ErrorState from '../../../components/common/ErrorState'
 import ApprovalStatusBadge from './ApprovalStatusBadge'
 import { useService } from '../hooks/useServices'
+import { formatCurrency } from '../../../utils'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
-const formatCurrency = (value, currency = 'USD') =>
-  value != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value) : '—'
-
 /**
  * Modal that displays the full details of a service, used for review
  * and performing administrative actions.
@@ -129,7 +127,7 @@ export default function ServiceDetailsModal({
             <div>
               <span className="text-base-content/60">Price</span>
               <p className="font-medium">
-                {formatCurrency(service.price, service.currency)}
+                {formatCurrency(service.price)}
                 {service.price_type !== 'fixed' && (
                   <span className="text-xs text-base-content/60 ml-1">({service.price_type})</span>
                 )}

@@ -4,6 +4,9 @@ export const APP_NAME = APP_CONFIG.name
 
 export const API_BASE_URL = APP_CONFIG.apiBaseUrl
 
+/** The platform operates in the Philippines; all amounts are in pesos. */
+export const DEFAULT_CURRENCY = 'PHP'
+
 /** LocalStorage keys. */
 export const STORAGE_KEYS = {
   theme: 'skillserve:theme',

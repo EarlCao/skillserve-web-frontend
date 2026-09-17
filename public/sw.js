@@ -1,6 +1,6 @@
-const CACHE_NAME = 'skillserve-admin-v1'
-const STATIC_CACHE = 'skillserve-static-v1'
-const API_CACHE = 'skillserve-api-v1'
+// Bump versions to purge caches written by older workers on activate.
+const STATIC_CACHE = 'skillserve-static-v2'
+const API_CACHE = 'skillserve-api-v2'
 
 const PRECACHE_URLS = [
   '/',
@@ -30,7 +30,7 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// Fetch — network-first for API calls, cache-first for static assets
+// Fetch — network-first everywhere; the cache is only an offline fallback.
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
@@ -46,16 +46,18 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Static assets: cache-first
+  // Leave other cross-origin requests (fonts, CDNs) to the browser.
+  if (url.origin !== self.location.origin) return
+
+  // App shell and assets: network-first so a new deploy is picked up
+  // immediately (cache-first kept serving an index.html that referenced
+  // assets which no longer exist).
   event.respondWith(
-    cacheFirst(request, STATIC_CACHE),
+    networkFirstStatic(request, STATIC_CACHE),
   )
 })
 
-async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request)
-  if (cached) return cached
-
+async function networkFirstStatic(request, cacheName) {
   try {
     const response = await fetch(request)
     if (response.ok) {
@@ -64,6 +66,8 @@ async function cacheFirst(request, cacheName) {
     }
     return response
   } catch {
+    const cached = await caches.match(request)
+    if (cached) return cached
     if (request.mode === 'navigate') {
       const offlineResponse = await caches.match('/')
       return offlineResponse || new Response('Offline', { status: 503 })

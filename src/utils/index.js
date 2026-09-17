@@ -1,4 +1,14 @@
 import { format } from 'date-fns'
+import { DEFAULT_CURRENCY } from '../constants'
+
+const currencyFormat = new Intl.NumberFormat('en-PH', { style: 'currency', currency: DEFAULT_CURRENCY })
+
+/** Format an amount in Philippine pesos, e.g. "₱1,500.00". */
+export function formatCurrency(value) {
+  if (value == null || value === '') return '—'
+  const amount = Number(value)
+  return Number.isNaN(amount) ? '—' : currencyFormat.format(amount)
+}
 
 /** Format a date as e.g. "Jan 15, 2026". */
 export function formatDate(date, pattern = 'MMM d, yyyy') {

@@ -6,11 +6,9 @@ import PaymentStatusBadge from './PaymentStatusBadge'
 import DisputeStatusBadge from './DisputeStatusBadge'
 import ErrorState from '../../../components/common/ErrorState'
 import { useBooking, useBookingHistory } from '../hooks/useBookings'
+import { formatCurrency } from '../../../utils'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
-const formatCurrency = (value, currency = 'USD') =>
-  value != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value) : '—'
-
 /**
  * Modal that displays the full details of a booking, including its history
  * and available admin actions (cancel, manage dispute).
@@ -90,7 +88,7 @@ export default function BookingDetailsModal({
               <p className="mt-1 text-sm">
                 {booking.service.title}
                 <span className="text-base-content/60 ml-2">
-                  {formatCurrency(booking.service_price, booking.service.currency)}
+                  {formatCurrency(booking.service_price)}
                 </span>
               </p>
             </div>
@@ -118,11 +116,11 @@ export default function BookingDetailsModal({
           <div className="grid grid-cols-3 gap-3 text-sm">
             <div>
               <span className="text-base-content/60">Total Price</span>
-              <p className="font-medium">{formatCurrency(booking.total_price, booking.currency)}</p>
+              <p className="font-medium">{formatCurrency(booking.total_price)}</p>
             </div>
             <div>
               <span className="text-base-content/60">Platform Fee</span>
-              <p className="font-medium">{formatCurrency(booking.platform_fee, booking.currency)}</p>
+              <p className="font-medium">{formatCurrency(booking.platform_fee)}</p>
             </div>
             <div>
               <span className="text-base-content/60">Payment Method</span>

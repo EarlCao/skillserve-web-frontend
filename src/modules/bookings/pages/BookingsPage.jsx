@@ -20,13 +20,11 @@ import {
 import BookingStatusBadge from '../components/BookingStatusBadge'
 import PaymentStatusBadge from '../components/PaymentStatusBadge'
 import BookingDetailsModal from '../components/BookingDetailsModal'
+import { formatCurrency } from '../../../utils'
 
 const PER_PAGE = 10
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
-const formatCurrency = (value, currency = 'USD') =>
-  value != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value) : '—'
-
 /**
  * Booking management list: server-side search (booking ID, client, provider, service),
  * status/payment/dispute filters, date range, sorting, pagination, and the
@@ -135,7 +133,7 @@ export default function BookingsPage() {
       header: 'Amount',
       cell: ({ row }) => (
         <span className="whitespace-nowrap">
-          {formatCurrency(row.original.total_price, row.original.currency)}
+          {formatCurrency(row.original.total_price)}
         </span>
       ),
     },

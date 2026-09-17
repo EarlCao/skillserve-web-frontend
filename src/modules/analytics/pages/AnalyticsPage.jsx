@@ -11,6 +11,7 @@ import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useExportReport, useReport } from '../hooks/useAnalytics'
+import { formatCurrency } from '../../../utils'
 
 const PER_PAGE = 15
 
@@ -44,7 +45,6 @@ const STATUS_OPTIONS = {
 }
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : '—')
-const formatMoney = (value) => (value == null ? '—' : Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 }))
 
 const STATUS_BADGES = {
   active: 'badge-success', suspended: 'badge-warning', banned: 'badge-error',
@@ -97,7 +97,7 @@ const COLUMNS = {
     { accessorKey: 'category', header: 'Category', cell: cell('category') },
     { accessorKey: 'status', header: 'Status', cell: ({ row }) => badge(row.original.status) },
     { accessorKey: 'approval_status', header: 'Approval', cell: ({ row }) => badge(row.original.approval_status) },
-    { accessorKey: 'price', header: 'Price', cell: ({ row }) => formatMoney(row.original.price) },
+    { accessorKey: 'price', header: 'Price', cell: ({ row }) => formatCurrency(row.original.price) },
     { accessorKey: 'total_bookings', header: 'Bookings', cell: cell('total_bookings') },
     { accessorKey: 'average_rating', header: 'Rating', cell: cell('average_rating') },
     { accessorKey: 'is_featured', header: 'Featured', cell: ({ row }) => (row.original.is_featured ? 'Yes' : 'No') },
@@ -111,7 +111,7 @@ const COLUMNS = {
     { accessorKey: 'service', header: 'Service', cell: cell('service') },
     { accessorKey: 'status', header: 'Status', cell: ({ row }) => badge(row.original.status) },
     { accessorKey: 'payment_status', header: 'Payment', cell: ({ row }) => badge(row.original.payment_status) },
-    { accessorKey: 'total_price', header: 'Total', cell: ({ row }) => formatMoney(row.original.total_price) },
+    { accessorKey: 'total_price', header: 'Total', cell: ({ row }) => formatCurrency(row.original.total_price) },
     { accessorKey: 'scheduled_date', header: 'Scheduled', cell: dateCell('scheduled_date') },
     { accessorKey: 'created_at', header: 'Created', cell: dateCell('created_at') },
   ],

@@ -10,6 +10,7 @@ import { useCreateService, useUpdateService } from '../hooks/useServices'
 import { serviceFormSchema } from '../schemas/serviceSchema'
 import { useProviders } from '../../providers/hooks/useProviders'
 import { useServiceCategory } from '../../serviceCategories/hooks/useServiceCategories'
+import { DEFAULT_CURRENCY } from '../../../constants'
 
 /**
  * Modal form for creating or editing a service.
@@ -37,7 +38,7 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
       subcategory_id: '',
       price: '',
       price_type: 'fixed',
-      currency: 'USD',
+      currency: DEFAULT_CURRENCY,
       duration: '',
       location: '',
     },
@@ -59,7 +60,7 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
           subcategory_id: service.subcategory_id ?? '',
           price: service.price ?? '',
           price_type: service.price_type ?? 'fixed',
-          currency: service.currency ?? 'USD',
+          currency: service.currency ?? DEFAULT_CURRENCY,
           duration: service.duration ?? '',
           location: service.location ?? '',
         })
@@ -72,7 +73,7 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
           subcategory_id: '',
           price: '',
           price_type: 'fixed',
-          currency: 'USD',
+          currency: DEFAULT_CURRENCY,
           duration: '',
           location: '',
         })

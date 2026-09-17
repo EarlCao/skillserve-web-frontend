@@ -40,13 +40,11 @@ import { rejectServiceSchema } from '../schemas/serviceSchema'
 import { toast } from 'sonner'
 import { useAuth } from '../../../contexts/AuthContext'
 import { hasCapability } from '../../../utils/permissions'
+import { formatCurrency } from '../../../utils'
 
 const PER_PAGE = 10
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
-const formatCurrency = (value, currency = 'USD') =>
-  value != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value) : '—'
-
 /**
  * Service management list: server-side search (title, provider, category),
  * status/approval filters, sorting, pagination, and the administrative
@@ -182,7 +180,7 @@ export default function ServicesPage() {
       accessorKey: 'price',
       header: 'Price',
       cell: ({ row }) => (
-        <span className="whitespace-nowrap">{formatCurrency(row.original.price, row.original.currency)}</span>
+        <span className="whitespace-nowrap">{formatCurrency(row.original.price)}</span>
       ),
     },
     {
