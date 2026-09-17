@@ -6,21 +6,24 @@ import Button from '../../../components/ui/Button'
 import FormField from '../../../components/forms/FormField'
 import Input from '../../../components/ui/Input'
 import Textarea from '../../../components/ui/Textarea'
-import { useCreateService, useUpdateService } from '../hooks/useServices'
+import { useUpdateService } from '../hooks/useServices'
 import { serviceFormSchema } from '../schemas/serviceSchema'
-import { useProviders } from '../../providers/hooks/useProviders'
 import { useServiceCategory } from '../../serviceCategories/hooks/useServiceCategories'
-import { DEFAULT_CURRENCY } from '../../../constants'
+
+const toDefaults = (service) => ({
+  title: service?.title ?? '',
+  description: service?.description ?? '',
+  category_id: service?.category_id ? String(service.category_id) : '',
+  subcategory_id: service?.subcategory_id ? String(service.subcategory_id) : '',
+})
 
 /**
- * Modal form for creating or editing a service.
+ * Modal form for correcting a provider's service listing. Providers own the
+ * offer itself (pricing, duration, location); administrators can only fix the
+ * listing details, and the provider is notified of every change.
  */
 export default function ServiceFormModal({ open, onClose, service, categories = [] }) {
-  const isEditing = Boolean(service)
-  const createMutation = useCreateService()
   const updateMutation = useUpdateService()
-  const { data: providersData } = useProviders({ status: 'active', verification: 'verified', per_page: 100 })
-  const providers = providersData?.data ?? []
 
   const {
     register,
@@ -30,94 +33,46 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
     formState: { errors },
   } = useForm({
     resolver: zodResolver(serviceFormSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      provider_id: '',
-      category_id: '',
-      subcategory_id: '',
-      price: '',
-      price_type: 'fixed',
-      currency: DEFAULT_CURRENCY,
-      duration: '',
-      location: '',
-    },
+    defaultValues: toDefaults(service),
   })
 
   const selectedCategoryId = useWatch({ control, name: 'category_id' })
   const { data: selectedCategoryData } = useServiceCategory(selectedCategoryId)
   const subcategories = selectedCategoryData?.data?.subcategories ?? []
 
-  // Reset form when service or open state changes.
+  // Re-seed the form whenever the target (or the modal) changes.
   useEffect(() => {
-    if (open) {
-      if (service) {
-        reset({
-          title: service.title ?? '',
-          description: service.description ?? '',
-          provider_id: service.provider_id ? String(service.provider_id) : '',
-          category_id: service.category_id ?? '',
-          subcategory_id: service.subcategory_id ?? '',
-          price: service.price ?? '',
-          price_type: service.price_type ?? 'fixed',
-          currency: service.currency ?? DEFAULT_CURRENCY,
-          duration: service.duration ?? '',
-          location: service.location ?? '',
-        })
-      } else {
-        reset({
-          title: '',
-          description: '',
-          provider_id: '',
-          category_id: '',
-          subcategory_id: '',
-          price: '',
-          price_type: 'fixed',
-          currency: DEFAULT_CURRENCY,
-          duration: '',
-          location: '',
-        })
-      }
-    }
+    if (open) reset(toDefaults(service))
   }, [open, service, reset])
 
   const onSubmit = (data) => {
-    const payload = {
-      ...data,
-      price: data.price ? Number(data.price) : null,
-      provider_id: Number(data.provider_id),
-      category_id: Number(data.category_id),
-      subcategory_id: data.subcategory_id ? Number(data.subcategory_id) : null,
-    }
+    if (!service) return
 
-    const mutation = isEditing ? updateMutation : createMutation
-
-    mutation.mutate(
-      isEditing ? { id: service.id, ...payload } : payload,
+    updateMutation.mutate(
       {
-        onSuccess: () => {
-          reset()
-          onClose()
-        },
+        id: service.id,
+        title: data.title,
+        description: data.description || null,
+        category_id: Number(data.category_id),
+        subcategory_id: data.subcategory_id ? Number(data.subcategory_id) : null,
       },
+      { onSuccess: onClose },
     )
   }
-
-  const isPending = createMutation.isPending || updateMutation.isPending
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={isEditing ? 'Edit Service' : 'Create Service'}
-      description={isEditing ? 'Update the service information below.' : 'Fill in the details to create a new service.'}
+      title="Edit Service"
+      description="Correct the listing details. The provider will be notified of your changes."
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={isPending}>
+          <Button variant="ghost" onClick={onClose} disabled={updateMutation.isPending}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit(onSubmit)} loading={isPending}>
-            {isEditing ? 'Update Service' : 'Create Service'}
+          <Button onClick={handleSubmit(onSubmit)} loading={updateMutation.isPending}>
+            Save changes
           </Button>
         </>
       }
@@ -131,22 +86,8 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
           <Textarea {...register('description')} placeholder="Describe the service..." rows={3} />
         </FormField>
 
-        <FormField label="Provider" error={errors.provider_id?.message} required>
-          <select {...register('provider_id')} className="select select-bordered w-full">
-            <option value="">Select a verified provider</option>
-            {providers.map((provider) => (
-              <option key={provider.id} value={provider.id}>
-                {provider.business_name || provider.user?.name || `Provider #${provider.id}`}
-              </option>
-            ))}
-          </select>
-        </FormField>
-
         <FormField label="Category" error={errors.category_id?.message} required>
-          <select
-            {...register('category_id')}
-            className="select select-bordered w-full"
-          >
+          <select {...register('category_id')} className="select select-bordered w-full">
             <option value="">Select a category</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
@@ -167,32 +108,9 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
           </select>
         </FormField>
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Price" error={errors.price?.message}>
-            <Input {...register('price')} type="number" step="0.01" min="0" placeholder="0.00" />
-          </FormField>
-
-          <FormField label="Price Type" error={errors.price_type?.message}>
-            <select
-              {...register('price_type')}
-              className="select select-bordered w-full"
-            >
-              <option value="fixed">Fixed</option>
-              <option value="hourly">Hourly</option>
-              <option value="custom">Custom</option>
-            </select>
-          </FormField>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Duration" error={errors.duration?.message}>
-            <Input {...register('duration')} placeholder="e.g. 2 hours" />
-          </FormField>
-
-          <FormField label="Location" error={errors.location?.message}>
-            <Input {...register('location')} placeholder="Service location" />
-          </FormField>
-        </div>
+        <p className="text-xs text-base-content/60">
+          Price, price type, duration and location are set by the provider and cannot be changed here.
+        </p>
       </form>
     </Modal>
   )

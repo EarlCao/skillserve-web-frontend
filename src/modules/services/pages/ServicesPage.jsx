@@ -4,7 +4,6 @@ import {
   CheckCircle,
   Eye,
   EyeOff,
-  FileText,
   Pencil,
   RefreshCw,
   Star,
@@ -49,6 +48,8 @@ const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy 
  * Service management list: server-side search (title, provider, category),
  * status/approval filters, sorting, pagination, and the administrative
  * actions to review, approve, reject, edit, hide, feature, and delete services.
+ * Providers create services and set pricing from the mobile app; every action
+ * here notifies the provider.
  */
 export default function ServicesPage() {
   const { user: currentUser } = useAuth()
@@ -62,7 +63,6 @@ export default function ServicesPage() {
   const [direction, setDirection] = useState('desc')
   const pagination = usePagination({ perPage: PER_PAGE })
 
-  const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [viewing, setViewing] = useState(null)
   const [approveTarget, setApproveTarget] = useState(null)
@@ -231,10 +231,7 @@ export default function ServicesPage() {
             {can('edit services') && <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                setEditing(service)
-                setFormOpen(true)
-              }}
+              onClick={() => setEditing(service)}
               aria-label={`Edit ${service.title}`}
               title="Edit service"
             >
@@ -324,13 +321,9 @@ export default function ServicesPage() {
         <div>
           <h1 className="text-2xl font-bold">Service Management</h1>
           <p className="text-sm text-base-content/60">
-            Review, approve, and manage services submitted by providers.
+            Review, approve, and manage services submitted by providers. Providers are notified of every action.
           </p>
         </div>
-        {can('create services') && <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
-          <FileText className="size-4" />
-          Add service
-        </Button>}
       </div>
 
       <Card bodyClassName="p-0">
@@ -421,7 +414,7 @@ export default function ServicesPage() {
             data={services}
             isLoading={isLoading}
             emptyTitle="No services found"
-            emptyDescription="Try adjusting your search or filters, or add a new service."
+            emptyDescription="Try adjusting your search or filters. New services appear here when providers submit them."
           />
         )}
 
@@ -434,8 +427,8 @@ export default function ServicesPage() {
       </Card>
 
       <ServiceFormModal
-        open={formOpen}
-        onClose={() => { setFormOpen(false); setEditing(null); }}
+        open={Boolean(editing)}
+        onClose={() => setEditing(null)}
         service={editing}
         categories={categories}
       />
@@ -449,7 +442,7 @@ export default function ServicesPage() {
         onHide={can('edit services') ? (service) => { setHideTarget(service); hideDisclosure.open(); } : undefined}
         onFeature={can('feature services') ? (service) => { setFeatureTarget(service); featureDisclosure.open(); } : undefined}
         onDelete={can('delete services') ? (service) => { setDeleteTarget(service); deleteDisclosure.open(); } : undefined}
-        onEdit={can('edit services') ? (service) => { setEditing(service); setFormOpen(true); } : undefined}
+        onEdit={can('edit services') ? (service) => setEditing(service) : undefined}
       />
 
       <ConfirmDialog
@@ -460,7 +453,7 @@ export default function ServicesPage() {
         title="Approve service?"
         description={
           approveTarget
-            ? `This will approve "${approveTarget.title}" and make it available to clients.`
+            ? `This will approve "${approveTarget.title}" and make it available to clients. The provider will be notified.`
             : ''
         }
         confirmText="Approve"
@@ -500,8 +493,8 @@ export default function ServicesPage() {
         description={
           hideTarget
             ? hideTarget.is_hidden
-              ? `This will make "${hideTarget.title}" visible to clients again.`
-              : `This will temporarily remove "${hideTarget.title}" from public visibility.`
+              ? `This will make "${hideTarget.title}" visible to clients again. The provider will be notified.`
+              : `This will temporarily remove "${hideTarget.title}" from public visibility. The provider will be notified.`
             : ''
         }
         confirmText={hideTarget?.is_hidden ? 'Unhide' : 'Hide'}
@@ -517,8 +510,8 @@ export default function ServicesPage() {
         description={
           featureTarget
             ? featureTarget.is_featured
-              ? `This will remove "${featureTarget.title}" from featured services.`
-              : `This will highlight "${featureTarget.title}" to increase its visibility.`
+              ? `This will remove "${featureTarget.title}" from featured services. The provider will be notified.`
+              : `This will highlight "${featureTarget.title}" to increase its visibility. The provider will be notified.`
             : ''
         }
         confirmText={featureTarget?.is_featured ? 'Unfeature' : 'Feature'}
@@ -533,7 +526,7 @@ export default function ServicesPage() {
         title="Delete service?"
         description={
           deleteTarget
-            ? `This will permanently delete "${deleteTarget.title}". This action cannot be undone.`
+            ? `This will delete "${deleteTarget.title}". The provider will be notified. This action cannot be undone.`
             : ''
         }
         confirmText="Delete"

@@ -41,6 +41,52 @@ export function getRealtime() {
   return echo
 }
 
+const ADMIN_DATA_CHANNEL = 'admin.data'
+const ADMIN_DATA_EVENT = '.admin.data.changed'
+
+/**
+ * Listen for "admin data changed" signals. `onLiveChange(isLive)` reports
+ * whether events can currently arrive (socket connected and channel joined),
+ * so callers can fall back to polling when they cannot.
+ */
+export function subscribeToAdminDataChanges({ onChange, onLiveChange }) {
+  if (!echo) {
+    onLiveChange(false)
+    return () => {}
+  }
+
+  const connection = echo.connector.pusher.connection
+  let connected = connection.state === 'connected'
+  let subscribed = false
+  const report = () => onLiveChange(connected && subscribed)
+
+  const handleStateChange = ({ current }) => {
+    connected = current === 'connected'
+    if (!connected) subscribed = false
+    report()
+  }
+  connection.bind('state_change', handleStateChange)
+
+  const channel = echo.private(ADMIN_DATA_CHANNEL)
+  channel
+    .subscribed(() => {
+      subscribed = true
+      report()
+    })
+    .error(() => {
+      subscribed = false
+      report()
+    })
+    .listen(ADMIN_DATA_EVENT, onChange)
+
+  report()
+
+  return () => {
+    connection.unbind('state_change', handleStateChange)
+    channel.stopListening(ADMIN_DATA_EVENT)
+  }
+}
+
 export function subscribeToUserNotifications(userId, onNotification) {
   if (!echo || !userId) return () => {}
 

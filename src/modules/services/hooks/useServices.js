@@ -38,24 +38,6 @@ export function useService(id) {
 }
 
 /**
- * Create-service mutation.
- */
-export function useCreateService() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: serviceApi.create,
-    onSuccess: () => {
-      toast.success('Service created.')
-      invalidateServiceCaches(queryClient)
-    },
-    onError: (error) => {
-      toast.error(error?.message ?? 'Unable to create the service.')
-    },
-  })
-}
-
-/**
  * Update-service mutation.
  */
 export function useUpdateService() {
@@ -64,7 +46,7 @@ export function useUpdateService() {
   return useMutation({
     mutationFn: ({ id, ...payload }) => serviceApi.update(id, payload),
     onSuccess: () => {
-      toast.success('Service updated.')
+      toast.success('Service updated. The provider has been notified.')
       invalidateServiceCaches(queryClient)
     },
     onError: (error) => {

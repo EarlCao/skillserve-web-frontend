@@ -6,6 +6,7 @@ import { useLocalStorage } from '../hooks/useLocalStorage'
 import { queryClient } from '../lib/queryClient'
 import { api } from '../services/api'
 import { connectRealtime, disconnectRealtime, subscribeToUserNotifications } from '../services/echo'
+import { startLiveUpdates } from '../services/liveUpdates'
 
 /**
  * Provides the auth context backed by the backend API.
@@ -46,8 +47,10 @@ export default function AuthProvider({ children }) {
     const unsubscribe = subscribeToUserNotifications(userId, (event) => {
       window.dispatchEvent(new CustomEvent(APP_EVENTS.realtimeNotification, { detail: event }))
     })
+    const stopLiveUpdates = startLiveUpdates()
 
     return () => {
+      stopLiveUpdates()
       unsubscribe()
       disconnectRealtime()
     }

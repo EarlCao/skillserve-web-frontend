@@ -215,7 +215,7 @@ export default function UserProfilePage() {
                 <UserStatusBadge status={user.status} bannedUntil={user.banned_until} />
                 <VerificationBadge verified={user.verification === 'verified'} />
                 <Badge variant="secondary" className="capitalize">
-                  {user.user_type}
+                  {user.role_name ?? user.user_type}
                 </Badge>
               </div>
               <p className="text-sm text-base-content/60">{user.email}</p>
@@ -255,7 +255,7 @@ export default function UserProfilePage() {
             </div>
           ) : (
             <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <ProfileField label="User type" value={user.user_type} capitalize />
+              <ProfileField label="Role" value={user.role_name ?? user.user_type} capitalize />
               <ProfileField label="Status" value={user.status} capitalize />
               <ProfileField label="Verification" value={user.verification} capitalize />
               <ProfileField label="Roles" value={user.roles?.length ? user.roles.join(', ') : 'None'} />

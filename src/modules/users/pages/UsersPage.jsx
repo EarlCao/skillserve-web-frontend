@@ -149,9 +149,9 @@ export default function UsersPage() {
         row.original.phone ?? <span className="text-base-content/40">—</span>,
     },
     {
-      accessorKey: 'user_type',
-      header: 'User type',
-      cell: ({ row }) => <span className="capitalize">{row.original.user_type}</span>,
+      accessorKey: 'role_name',
+      header: 'Role',
+      cell: ({ row }) => <span className="capitalize">{row.original.role_name ?? row.original.user_type}</span>,
     },
     {
       accessorKey: 'status',

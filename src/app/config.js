@@ -27,10 +27,13 @@ function resolveApiBaseUrl() {
 function resolveRealtime() {
   const { hostname, protocol } = window.location
   const wsScheme = protocol === 'https:' ? 'wss' : 'ws'
+  const host = import.meta.env.VITE_REVERB_HOST || hostname
 
   return {
     key: import.meta.env.VITE_REVERB_APP_KEY ?? '5854c89dcedeece0181cb0c6cb75c711',
-    host: import.meta.env.VITE_REVERB_HOST || (hostname === 'localhost' || hostname === '127.0.0.1' ? 'localhost' : hostname),
+    // WebSockets to `localhost` fail on Windows + WSL (it resolves to ::1,
+    // which WSL does not forward), so connect over IPv4 instead.
+    host: host === 'localhost' ? '127.0.0.1' : host,
     port: Number(import.meta.env.VITE_REVERB_PORT ?? 8080),
     scheme: import.meta.env.VITE_REVERB_SCHEME ?? (wsScheme === 'wss' ? 'https' : 'http'),
   }
