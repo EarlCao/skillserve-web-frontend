@@ -23,7 +23,7 @@ const PER_PAGE = 10
 const formatDate = (value) => (value ? format(new Date(value), 'MMM d, yyyy') : '—')
 
 function badgeVariant(color) {
-  return ['primary', 'secondary', 'accent', 'success', 'warning', 'error', 'outline'].includes(color) ? color : 'neutral'
+  return ['primary', 'secondary', 'accent', 'success', 'info', 'warning', 'error', 'outline'].includes(color) ? color : 'neutral'
 }
 
 export default function ProviderRecognitionPage() {

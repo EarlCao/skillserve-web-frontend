@@ -33,3 +33,18 @@ export function useCreateAnnouncement() {
     },
   })
 }
+
+export function useRemoveAnnouncement() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: notificationApi.removeAnnouncement,
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Announcement removed.')
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all })
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to remove the announcement.')
+    },
+  })
+}

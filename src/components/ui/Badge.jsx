@@ -6,6 +6,7 @@ const VARIANTS = {
   secondary: 'badge-secondary',
   accent: 'badge-accent',
   success: 'badge-success',
+  info: 'badge-info',
   warning: 'badge-warning',
   error: 'badge-error',
   outline: 'badge-outline',

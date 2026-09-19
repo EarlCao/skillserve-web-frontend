@@ -30,7 +30,6 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
 
   const {
     control,
-    register,
     handleSubmit,
     reset,
     setError,
@@ -166,7 +165,11 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
         </div>
 
         <FormField label="Email" required error={errors.email?.message}>
-          <Input type="email" autoComplete="off" {...register('email')} />
+          <Controller
+            control={control}
+            name="email"
+            render={({ field }) => <Input type="email" autoComplete="off" {...field} />}
+          />
         </FormField>
 
         {!isEditing && (
@@ -194,14 +197,21 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
           error={errors.role?.message}
           hint={isSuperAdmin ? 'Super administrator role is fixed and cannot be changed.' : undefined}
         >
-          <select className="select select-bordered w-full" {...register('role')} disabled={isSuperAdmin}>
-            <option value="">Select a role…</option>
-            {roles.map((role) => (
-              <option key={role} value={role}>
-                {role}
-              </option>
-            ))}
-          </select>
+          <Controller
+            control={control}
+            name="role"
+            disabled={isSuperAdmin}
+            render={({ field }) => (
+              <select className="select select-bordered w-full" {...field}>
+                <option value="">Select a role…</option>
+                {roles.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
         </FormField>
 
         {isEditing && (
@@ -211,10 +221,17 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
             error={errors.status?.message}
             hint={isSuperAdmin ? 'Super administrator status is fixed and cannot be changed.' : undefined}
           >
-            <select className="select select-bordered w-full" {...register('status')} disabled={isSuperAdmin}>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            <Controller
+              control={control}
+              name="status"
+              disabled={isSuperAdmin}
+              render={({ field }) => (
+                <select className="select select-bordered w-full" {...field}>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              )}
+            />
           </FormField>
         )}
       </form>

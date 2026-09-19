@@ -4,6 +4,17 @@ import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
 import Textarea from '../../../components/ui/Textarea'
 
+// Full class names so Tailwind keeps them; each option shows its own color.
+const COLOR_CLASSES = {
+  primary: 'bg-primary',
+  secondary: 'bg-secondary',
+  accent: 'bg-accent',
+  success: 'bg-success',
+  info: 'bg-info',
+  warning: 'bg-warning',
+  error: 'bg-error',
+}
+
 export default function BadgeModal({ open, onClose, badge, mutation }) {
   const [form, setForm] = useState(() => ({
     name: badge?.name ?? '',
@@ -33,8 +44,8 @@ export default function BadgeModal({ open, onClose, badge, mutation }) {
         <Textarea label="Description" value={form.description} onChange={update('description')} maxLength={1000} rows={3} placeholder="What does this badge recognize?" />
         <div>
           <label className="mb-1 block text-sm font-medium" htmlFor="badge-color">Color</label>
-          <select id="badge-color" className="select select-bordered w-full" value={form.color} onChange={update('color')}>
-            {['primary', 'secondary', 'accent', 'success', 'info', 'warning', 'error'].map((color) => <option key={color} value={color}>{color}</option>)}
+          <select id="badge-color" className={`select select-bordered w-full capitalize text-white ${COLOR_CLASSES[form.color] ?? ''}`} value={form.color} onChange={update('color')}>
+            {Object.entries(COLOR_CLASSES).map(([color, className]) => <option key={color} value={color} className={`${className} text-white`}>{color}</option>)}
           </select>
         </div>
         <label className="flex items-center gap-3 text-sm"><input type="checkbox" className="checkbox checkbox-sm" checked={form.is_active} onChange={(event) => setForm((current) => ({ ...current, is_active: event.target.checked }))} /> Active badge</label>

@@ -35,8 +35,8 @@ const banCountdown = (bannedUntil) => {
 }
 
 /**
- * User management list: server-side search (name/email/ID), user-type,
- * status and verification filters, sorting, pagination and the moderation
+ * Customer management list: server-side search (name/email/ID), status
+ * and verification filters, sorting, pagination and the moderation
  * actions (suspend / activate / ban / delete).
  */
 export default function UsersPage() {
@@ -46,7 +46,6 @@ export default function UsersPage() {
 
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
-  const [userTypeFilter, setUserTypeFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [verificationFilter, setVerificationFilter] = useState('')
   const [sort, setSort] = useState('created_at')
@@ -67,7 +66,6 @@ export default function UsersPage() {
 
   const { data, isLoading, isFetching, isError, error, refetch } = useUsers({
     search: debouncedSearch || undefined,
-    user_type: userTypeFilter || undefined,
     status: statusFilter || undefined,
     verification: verificationFilter || undefined,
     sort,
@@ -298,16 +296,6 @@ export default function UsersPage() {
             placeholder="Search by name, email or ID…"
             className="w-44 shrink min-w-0 sm:w-60"
           />
-
-          <select
-            className="select select-bordered select-sm w-32 shrink-0"
-            value={userTypeFilter}
-            onChange={(event) => applyFilter(setUserTypeFilter)(event.target.value)}
-            aria-label="Filter by user type"
-          >
-            <option value="">All types</option>
-            <option value="customer">Customer</option>
-          </select>
 
           <select
             className="select select-bordered select-sm w-32 shrink-0"

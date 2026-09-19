@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Bell, Plus, RefreshCw } from 'lucide-react'
+import { Bell, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
 import SearchInput from '../../../components/common/SearchInput'
 import ErrorState from '../../../components/common/ErrorState'
+import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import DataTable from '../../../components/tables/DataTable'
 import Pagination from '../../../components/tables/Pagination'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useDisclosure } from '../../../hooks/useDisclosure'
 import { useAuth } from '../../../contexts/AuthContext'
-import { useCreateAnnouncement, useNotifications } from '../hooks/useNotifications'
+import { useCreateAnnouncement, useNotifications, useRemoveAnnouncement } from '../hooks/useNotifications'
 import AnnouncementModal from '../components/AnnouncementModal'
 
 const PER_PAGE = 10
@@ -34,6 +35,9 @@ export default function NotificationsPage() {
   const canTarget = permissions.includes('target notifications') || user?.roles?.includes('super-admin')
   const canSchedule = permissions.includes('schedule announcements') || user?.roles?.includes('super-admin')
   const createMutation = useCreateAnnouncement()
+  const removeMutation = useRemoveAnnouncement()
+  const removeDisclosure = useDisclosure()
+  const [removing, setRemoving] = useState(null)
   const { data, isLoading, isFetching, isError, error, refetch } = useNotifications({
     search: debouncedSearch || undefined,
     status: status || undefined,
@@ -62,6 +66,7 @@ export default function NotificationsPage() {
     { accessorKey: 'status', header: 'Status', cell: ({ row }) => <span className={`badge ${statusClass(row.original.status)} badge-sm capitalize`}>{row.original.status}</span> },
     { accessorKey: 'created_at', header: 'Created', cell: ({ row }) => <span className="whitespace-nowrap">{formatDateTime(row.original.created_at)}</span> },
     { accessorKey: 'scheduled_at', header: 'Scheduled / sent', cell: ({ row }) => <span className="whitespace-nowrap">{formatDateTime(row.original.scheduled_at ?? row.original.sent_at)}</span> },
+    ...(canSend ? [{ id: 'actions', header: () => <span className="sr-only">Actions</span>, cell: ({ row }) => <div className="flex justify-end"><Button variant="ghost" size="sm" onClick={() => { setRemoving(row.original); removeDisclosure.open() }} aria-label={`Remove ${row.original.title}`}><Trash2 className="size-4 text-error" /></Button></div> }] : []),
   ]
 
   return (
@@ -80,6 +85,18 @@ export default function NotificationsPage() {
         {isError ? <ErrorState title="Could not load notification history" message={error?.message} onRetry={refetch} /> : announcements.length === 0 && !isLoading ? <div className="p-8"><div className="mx-auto flex max-w-sm flex-col items-center text-center"><Bell className="size-10 text-base-content/30" /><p className="mt-3 font-medium">No notifications found</p><p className="text-sm text-base-content/60">Create an announcement to notify your users.</p></div></div> : <DataTable columns={columns} data={announcements} isLoading={isLoading} emptyTitle="No notifications found" />}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-base-200 p-4"><p className="text-sm text-base-content/60">{meta ? `${meta.from ?? 0}–${meta.to ?? 0} of ${meta.total}` : ''}</p><Pagination totalItems={meta?.total ?? 0} perPage={PER_PAGE} pagination={pagination} /></div>
       </Card>
+      <ConfirmDialog
+        open={removeDisclosure.isOpen}
+        onCancel={removeDisclosure.close}
+        onConfirm={() => removeMutation.mutate(removing?.id, { onSuccess: () => { removeDisclosure.close(); setRemoving(null) } })}
+        loading={removeMutation.isPending}
+        title="Remove announcement?"
+        description={removing?.status === 'sent'
+          ? `Remove "${removing?.title ?? ''}" from the history? Recipients keep the notification they already received.`
+          : `Remove "${removing?.title ?? ''}"? It will not be sent.`}
+        confirmText="Remove"
+        variant="error"
+      />
       <AnnouncementModal key={modal.isOpen ? 'open' : 'closed'} open={modal.isOpen} onClose={modal.close} mutation={createMutation} canTarget={canTarget} canSchedule={canSchedule} />
     </div>
   )
