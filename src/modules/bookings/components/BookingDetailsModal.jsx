@@ -195,6 +195,11 @@ export default function BookingDetailsModal({
             <div className="rounded-md bg-error/10 p-3">
               <span className="text-sm font-medium text-error">Cancellation Reason</span>
               <p className="mt-1 text-sm">{booking.cancellation_reason}</p>
+              {Number(booking.cancellation_fee) > 0 && (
+                <p className="mt-1 text-sm">
+                  Late-cancellation fee: <span className="font-medium">{formatCurrency(booking.cancellation_fee)}</span>
+                </p>
+              )}
               {booking.cancelled_by_user && (
                 <p className="mt-1 text-xs text-base-content/60">
                   Cancelled by: {booking.cancelled_by_user.name}

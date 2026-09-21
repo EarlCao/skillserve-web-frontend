@@ -10,10 +10,10 @@ import { useSettings, useUpdateSettings } from '../hooks/useSettings'
 const GROUPS = [
   ['general', 'General', 'Platform identity and preferences.'],
   ['marketplace', 'Marketplace', 'Rules for providers, services, and marketplace operations.'],
-  ['booking', 'Booking', 'Booking and cancellation rules.'],
+  ['booking', 'Booking', 'Booking and cancellation rules. A confirmed booking cancelled inside the window records the fee of whoever cancelled.'],
   ['notifications', 'Notifications', 'System notification preferences.'],
-  ['policies', 'Platform policies', 'Terms, privacy, and community guidance.'],
-  ['system', 'System', 'Technical and operational settings.'],
+  ['policies', 'Platform policies', 'Terms, privacy, and community guidance — shown in the mobile app.'],
+  ['system', 'System', 'Technical and operational settings. Maintenance mode closes the mobile app (the admin web keeps working).'],
 ]
 
 const labelFor = (name) => name.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
@@ -69,7 +69,7 @@ export default function SettingsPage() {
               </label>
               ) : (
                 <div key={name} className={activeGroup === 'policies' ? 'md:col-span-2' : ''}>
-                {activeGroup === 'policies' || name.includes('description') ? <label className="form-control" htmlFor={`setting-${activeGroup}-${name}`}><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea id={`setting-${activeGroup}-${name}`} className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} id={`setting-${activeGroup}-${name}`} type={name.includes('email') ? 'email' : typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} disabled={isReadOnly(name)} hint={isReadOnly(name) ? 'Set by the server configuration (APP_TIMEZONE); bookings are stored in this timezone.' : undefined} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
+                {activeGroup === 'policies' || name.includes('description') ? <label className="form-control" htmlFor={`setting-${activeGroup}-${name}`}><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea id={`setting-${activeGroup}-${name}`} className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} id={`setting-${activeGroup}-${name}`} type={name.includes('email') ? 'email' : typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} disabled={isReadOnly(name)} hint={isReadOnly(name) ? 'Set by the server configuration (BUSINESS_TIMEZONE); provider hours and booking times use this timezone.' : undefined} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
               </div>
             ))}
           </div>
