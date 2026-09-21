@@ -6,7 +6,7 @@ import Button from '../../../components/ui/Button'
 import DisputeStatusBadge from '../../bookings/components/DisputeStatusBadge'
 import BookingStatusBadge from '../../bookings/components/BookingStatusBadge'
 import PaymentStatusBadge from '../../bookings/components/PaymentStatusBadge'
-import { useDispute, useDisputeHistory } from '../hooks/useDisputes'
+import { useDispute, useDisputeHistory, useOpenDisputeEvidence } from '../hooks/useDisputes'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
 
@@ -74,7 +74,7 @@ export default function DisputeDetailsModal({ open, onClose, bookingId, onAction
           </div>
 
           {booking.dispute_evidence?.length > 0 && (
-            <div><span className="flex items-center gap-2 text-sm font-medium"><FileText className="size-4" />Evidence</span><div className="mt-2 flex flex-col gap-2">{booking.dispute_evidence.map((item, index) => <div key={index} className="rounded border border-base-200 p-2 text-sm"><p>{item.label ?? item.name ?? 'Evidence item'}</p>{item.content && <p className="mt-1 text-xs text-base-content/70">{item.content}</p>}{item.url && <a className="link link-primary mt-1 inline-block text-xs" href={item.url} target="_blank" rel="noreferrer">Open evidence</a>}</div>)}</div></div>
+            <div><span className="flex items-center gap-2 text-sm font-medium"><FileText className="size-4" />Evidence</span><div className="mt-2 flex flex-col gap-2">{booking.dispute_evidence.map((item, index) => <EvidenceItem key={item.id ?? index} item={item} />)}</div></div>
           )}
 
           {booking.dispute_notes?.length > 0 && (
@@ -87,5 +87,31 @@ export default function DisputeDetailsModal({ open, onClose, bookingId, onAction
         </div>
       ) : null}
     </Modal>
+  )
+}
+
+function EvidenceItem({ item }) {
+  const openEvidence = useOpenDisputeEvidence()
+  const uploadedBy = item.uploaded_by_role ? `From the ${item.uploaded_by_role}` : null
+
+  return (
+    <div className="rounded border border-base-200 p-2 text-sm">
+      <p>{item.label ?? item.name ?? 'Evidence item'}</p>
+      {item.content && item.content !== item.label && <p className="mt-1 text-xs text-base-content/70">{item.content}</p>}
+      {(uploadedBy || item.uploaded_at) && (
+        <p className="mt-1 text-xs text-base-content/60">{[uploadedBy, formatDateTime(item.uploaded_at)].filter(Boolean).join(' · ')}</p>
+      )}
+      {item.download_path && (
+        <button
+          type="button"
+          className="link link-primary mt-1 inline-block text-xs"
+          onClick={() => openEvidence.mutate(item.download_path)}
+          disabled={openEvidence.isPending}
+        >
+          {openEvidence.isPending ? 'Opening…' : 'Open evidence'}
+        </button>
+      )}
+      {!item.download_path && item.url && <a className="link link-primary mt-1 inline-block text-xs" href={item.url} target="_blank" rel="noreferrer">Open evidence</a>}
+    </div>
   )
 }

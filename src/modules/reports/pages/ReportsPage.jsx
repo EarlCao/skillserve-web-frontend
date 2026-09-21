@@ -29,13 +29,20 @@ import { hasCapability } from '../../../utils/permissions'
 
 const PER_PAGE = 10
 
+// Every reason a report can carry: the ones moderators have always used, plus
+// those the mobile app files (StoreClientReportRequest::REASONS on the API).
 const REASONS = [
   'spam',
   'harassment',
   'inappropriate_content',
   'fraud',
   'misleading',
+  'misleading_information',
   'offensive',
+  'service_quality',
+  'no_show',
+  'safety_concern',
+  'payment_dispute',
   'other',
 ]
 

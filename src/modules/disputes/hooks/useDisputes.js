@@ -60,3 +60,22 @@ export function useRejectDispute() {
 export function useCloseDispute() {
   return useDisputeMutation(({ id, note }) => disputeApi.close(id, note), 'Dispute closed.')
 }
+
+/**
+ * Open a photo a party attached to a dispute in a new tab. The file is
+ * private, so it is downloaded with the admin's token and shown from memory.
+ */
+export function useOpenDisputeEvidence() {
+  return useMutation({
+    mutationFn: (downloadPath) => disputeApi.evidence(downloadPath),
+    onSuccess: (blob) => {
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank', 'noopener,noreferrer')
+      // Long enough for the new tab to load it.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to open this evidence.')
+    },
+  })
+}

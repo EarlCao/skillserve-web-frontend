@@ -9,4 +9,7 @@ export const disputeApi = {
   resolve: (id, resolution) => api.patch(`/disputes/${id}/resolve`, { resolution }),
   reject: (id, note) => api.patch(`/disputes/${id}/reject`, { note }),
   close: (id, note) => api.patch(`/disputes/${id}/close`, { note }),
+  // Evidence lives in private storage behind the admin's token, so it is
+  // fetched as a blob rather than opened as a plain link.
+  evidence: (downloadPath) => api.get(downloadPath, { responseType: 'blob' }),
 }
