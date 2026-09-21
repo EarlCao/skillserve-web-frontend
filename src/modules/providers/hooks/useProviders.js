@@ -50,6 +50,25 @@ export function useVerificationHistory(id) {
 /**
  * Approve provider verification mutation.
  */
+/**
+ * Opens a verification document in a new tab. Same approach as
+ * useOpenDisputeEvidence: fetch with the admin's token, open a blob URL.
+ */
+export function useOpenVerificationDocument() {
+  return useMutation({
+    mutationFn: ({ providerId, documentId }) => providerApi.verificationDocument(providerId, documentId),
+    onSuccess: (blob) => {
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank', 'noopener,noreferrer')
+      // Long enough for the new tab to load it.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to open this document.')
+    },
+  })
+}
+
 export function useApproveVerification() {
   const queryClient = useQueryClient()
 

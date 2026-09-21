@@ -22,6 +22,7 @@ import Textarea from '../../../components/ui/Textarea'
 import { useAuth } from '../../../contexts/AuthContext'
 import {
   useProvider,
+  useOpenVerificationDocument,
   useVerificationHistory,
   useApproveVerification,
   useRejectVerification,
@@ -70,6 +71,7 @@ export default function ProviderProfilePage() {
   const suspendMutation = useSuspendProvider()
   const activateMutation = useActivateProvider()
   const removeVerificationMutation = useRemoveVerification()
+  const openDocumentMutation = useOpenVerificationDocument()
 
   const handleApprove = () => {
     if (!provider) return
@@ -386,14 +388,16 @@ export default function ProviderProfilePage() {
                       </p>
                     </div>
                   </div>
-                  <a
-                    href={doc.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-ghost btn-sm"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openDocumentMutation.mutate({ providerId: provider.id, documentId: doc.id })}
+                    loading={openDocumentMutation.isPending && openDocumentMutation.variables?.documentId === doc.id}
+                    disabled={openDocumentMutation.isPending}
+                    aria-label={`View ${doc.file_name}`}
                   >
                     View
-                  </a>
+                  </Button>
                 </div>
               ))}
             </div>

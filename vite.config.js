@@ -17,6 +17,21 @@ export default defineConfig({
       host: '127.0.0.1',
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        // Route pages are already lazy chunks (src/routes/lazyPages.jsx). Split
+        // the shared runtime too, so no single chunk crosses Vite's 500 kB
+        // warning and vendor code stays cached across app deploys.
+        codeSplitting: {
+          groups: [
+            { name: 'react', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/ },
+            { name: 'realtime', test: /node_modules[\\/](laravel-echo|pusher-js)[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   optimizeDeps: {
     // The React Compiler injects this import during transform, so the dependency
     // scanner misses it. Pre-bundle it with React to avoid a late re-optimization

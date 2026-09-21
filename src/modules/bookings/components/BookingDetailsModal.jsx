@@ -9,9 +9,13 @@ import { useBooking, useBookingHistory } from '../hooks/useBookings'
 import { formatCurrency } from '../../../utils'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
+
+// Mirrors BookingPaymentService::PAYABLE_STATUSES: work was agreed or done.
+const PAYABLE_STATUSES = ['confirmed', 'active', 'completed', 'disputed']
+
 /**
  * Modal that displays the full details of a booking, including its history
- * and available admin actions (cancel, manage dispute).
+ * and available admin actions (cancel, record payment or refund, manage dispute).
  */
 export default function BookingDetailsModal({
   open,
@@ -19,6 +23,7 @@ export default function BookingDetailsModal({
   bookingId,
   onCancel,
   onManageDispute,
+  onRecordPayment,
 }) {
   const { data, isLoading, isError, error, refetch } = useBooking(bookingId)
   const { data: historyData } = useBookingHistory(bookingId)
@@ -39,6 +44,16 @@ export default function BookingDetailsModal({
           {booking && booking.status !== 'cancelled' && booking.status !== 'completed' && onCancel && (
             <Button variant="error" onClick={() => onCancel(booking)}>
               Cancel Booking
+            </Button>
+          )}
+          {booking && onRecordPayment && booking.payment_status === 'unpaid' && PAYABLE_STATUSES.includes(booking.status) && (
+            <Button variant="success" onClick={() => onRecordPayment(booking, 'paid')}>
+              Mark as Paid
+            </Button>
+          )}
+          {booking && onRecordPayment && ['paid', 'partially_refunded'].includes(booking.payment_status) && (
+            <Button variant="warning" onClick={() => onRecordPayment(booking, 'refund')}>
+              Record Refund
             </Button>
           )}
           {booking && booking.dispute_reason && booking.dispute_status === 'pending' && onManageDispute && (
@@ -127,6 +142,26 @@ export default function BookingDetailsModal({
               <p className="font-medium">{booking.payment_method ?? '—'}</p>
             </div>
           </div>
+
+          {/* Settlement — recorded by hand; nothing is charged through the platform. */}
+          {(booking.paid_at || Number(booking.refunded_amount) > 0) && (
+            <div className="rounded-md bg-base-200/50 p-3 text-sm">
+              <span className="font-medium">Payment</span>
+              {booking.paid_at && (
+                <p className="mt-1">
+                  Paid {formatDateTime(booking.paid_at)}
+                  {booking.payment_recorded_by && ` · recorded by ${booking.payment_recorded_by.name}`}
+                  {booking.payment_reference && ` · ref ${booking.payment_reference}`}
+                </p>
+              )}
+              {Number(booking.refunded_amount) > 0 && (
+                <p className="mt-1">
+                  Refunded {formatCurrency(booking.refunded_amount)} — {formatDateTime(booking.refunded_at)}
+                  {booking.refund_reason && <span className="block text-base-content/70">{booking.refund_reason}</span>}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Schedule */}
           <div className="grid grid-cols-2 gap-3 text-sm">

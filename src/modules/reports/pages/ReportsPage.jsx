@@ -12,6 +12,7 @@ import { usePagination } from '../../../hooks/usePagination'
 import { useDisclosure } from '../../../hooks/useDisclosure'
 import {
   useReports,
+  useReportReasons,
   useInvestigateReport,
   useAddReportNote,
   useResolveReport,
@@ -28,23 +29,6 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { hasCapability } from '../../../utils/permissions'
 
 const PER_PAGE = 10
-
-// Every reason a report can carry: the ones moderators have always used, plus
-// those the mobile app files (StoreClientReportRequest::REASONS on the API).
-const REASONS = [
-  'spam',
-  'harassment',
-  'inappropriate_content',
-  'fraud',
-  'misleading',
-  'misleading_information',
-  'offensive',
-  'service_quality',
-  'no_show',
-  'safety_concern',
-  'payment_dispute',
-  'other',
-]
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
 
@@ -105,6 +89,8 @@ export default function ReportsPage() {
   })
 
   const reports = data?.data ?? []
+  const { data: reasonsResponse } = useReportReasons()
+  const reasons = reasonsResponse?.data ?? []
   const paginationMeta = data?.meta?.pagination
 
   const applyFilter = (setter) => (value) => {
@@ -245,7 +231,7 @@ export default function ReportsPage() {
             aria-label="Filter by reason"
           >
             <option value="">All reasons</option>
-            {REASONS.map((reason) => (
+            {reasons.map((reason) => (
               <option key={reason} value={reason}>
                 {reason.replaceAll('_', ' ')}
               </option>

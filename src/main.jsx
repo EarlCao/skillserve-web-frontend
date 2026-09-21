@@ -20,6 +20,22 @@ if ('serviceWorker' in navigator) {
   }
 }
 
+// Route pages are lazy chunks. After a deploy, a tab still running the old
+// build asks for chunk names that no longer exist; reload to pick up the new one.
+// At most once a minute, so a chunk that is genuinely broken reaches the error
+// boundary instead of reloading forever.
+window.addEventListener('vite:preloadError', (event) => {
+  try {
+    const lastReload = Number(sessionStorage.getItem('chunk-reload-at') ?? 0)
+    if (Date.now() - lastReload < 60_000) return
+    sessionStorage.setItem('chunk-reload-at', String(Date.now()))
+  } catch {
+    return
+  }
+  event.preventDefault()
+  window.location.reload()
+})
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>

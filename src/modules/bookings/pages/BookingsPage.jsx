@@ -20,6 +20,9 @@ import {
 import BookingStatusBadge from '../components/BookingStatusBadge'
 import PaymentStatusBadge from '../components/PaymentStatusBadge'
 import BookingDetailsModal from '../components/BookingDetailsModal'
+import BookingPaymentModal from '../components/BookingPaymentModal'
+import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 import { formatCurrency } from '../../../utils'
 
 const PER_PAGE = 10
@@ -31,6 +34,8 @@ const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy 
  * administrative actions to view, cancel, and manage booking disputes.
  */
 export default function BookingsPage() {
+  const { user: currentUser } = useAuth()
+  const canRecordPayments = hasCapability(currentUser, 'manage booking payments', 'manage bookings')
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
   const [statusFilter, setStatusFilter] = useState('')
@@ -45,6 +50,7 @@ export default function BookingsPage() {
   const [viewing, setViewing] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
   const [disputeTarget, setDisputeTarget] = useState(null)
+  const [paymentTarget, setPaymentTarget] = useState(null)
 
   const cancelDisclosure = useDisclosure()
   const disputeActionDisclosure = useDisclosure()
@@ -337,6 +343,14 @@ export default function BookingsPage() {
         bookingId={viewing}
         onCancel={handleCancelFromDetails}
         onManageDispute={handleDisputeFromDetails}
+        onRecordPayment={canRecordPayments ? (booking, mode) => setPaymentTarget({ booking, mode }) : undefined}
+      />
+
+      <BookingPaymentModal
+        open={Boolean(paymentTarget)}
+        mode={paymentTarget?.mode}
+        booking={paymentTarget?.booking}
+        onClose={() => setPaymentTarget(null)}
       />
 
       <ConfirmDialog

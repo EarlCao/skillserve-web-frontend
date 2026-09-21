@@ -6,6 +6,7 @@ import { api } from '../../../services/api'
  */
 export const reportApi = {
   list: (params) => api.get('/reports', { params }),
+  reasons: () => api.get('/reports/reasons'),
   show: (id) => api.get(`/reports/${id}`),
   investigate: (id, note) => api.patch(`/reports/${id}/investigate`, { note }),
   addNote: (id, note) => api.patch(`/reports/${id}/notes`, { note }),

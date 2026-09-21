@@ -3,27 +3,29 @@ import AdminLayout from '../layouts/AdminLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import BlankLayout from '../layouts/BlankLayout'
 import { GuestOnly, RequireAuth, RequirePermission } from '../modules/authentication/routes/guards'
-import ChangePasswordPage from '../modules/authentication/pages/ChangePasswordPage'
 import LoginPage from '../modules/authentication/pages/LoginPage'
-import AdministratorManagementPage from '../modules/administrators/pages/AdministratorManagementPage'
-import UsersPage from '../modules/users/pages/UsersPage'
-import UserProfilePage from '../modules/users/pages/UserProfilePage'
-import ServiceCategoriesPage from '../modules/serviceCategories/pages/ServiceCategoriesPage'
-import ServicesPage from '../modules/services/pages/ServicesPage'
-import BookingsPage from '../modules/bookings/pages/BookingsPage'
-import ReviewsPage from '../modules/reviews/pages/ReviewsPage'
-import ReportsPage from '../modules/reports/pages/ReportsPage'
-import DisputesPage from '../modules/disputes/pages/DisputesPage'
-import ProvidersPage from '../modules/providers/pages/ProvidersPage'
-import ProviderProfilePage from '../modules/providers/pages/ProviderProfilePage'
-import NotificationsPage from '../modules/notifications/pages/NotificationsPage'
-import DashboardPage from '../modules/dashboard/pages/DashboardPage'
-import AnalyticsPage from '../modules/analytics/pages/AnalyticsPage'
-import ProviderRecognitionPage from '../modules/providerRecognition/pages/ProviderRecognitionPage'
-import AuditLogsPage from '../modules/audit/pages/AuditLogsPage'
-import SettingsPage from '../modules/settings/pages/SettingsPage'
-import DataManagementPage from '../modules/dataManagement/pages/DataManagementPage'
-import SupportTicketsPage from '../modules/support/pages/SupportTicketsPage'
+import {
+  ChangePasswordPage,
+  AdministratorManagementPage,
+  UsersPage,
+  UserProfilePage,
+  ServiceCategoriesPage,
+  ServicesPage,
+  BookingsPage,
+  ReviewsPage,
+  ReportsPage,
+  DisputesPage,
+  ProvidersPage,
+  ProviderProfilePage,
+  NotificationsPage,
+  DashboardPage,
+  AnalyticsPage,
+  ProviderRecognitionPage,
+  AuditLogsPage,
+  SettingsPage,
+  DataManagementPage,
+  SupportTicketsPage,
+} from './lazyPages'
 
 /**
  * Application routing.

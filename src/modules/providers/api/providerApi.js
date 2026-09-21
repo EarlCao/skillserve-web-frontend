@@ -12,6 +12,10 @@ export const providerApi = {
   requestAdditionalInfo: (id, message) => api.patch(`/providers/${id}/verification/request-info`, { message }),
   removeVerification: (id) => api.patch(`/providers/${id}/verification/remove`),
   verificationHistory: (id) => api.get(`/providers/${id}/verification-history`),
+  // Private file behind the admin's token, so it is fetched as a blob rather
+  // than opened as a plain link.
+  verificationDocument: (providerId, documentId) =>
+    api.get(`/providers/${providerId}/verification-documents/${documentId}/download`, { responseType: 'blob' }),
   suspend: (id, reason) => api.patch(`/providers/${id}/suspend`, { reason }),
   activate: (id) => api.patch(`/providers/${id}/activate`),
 }

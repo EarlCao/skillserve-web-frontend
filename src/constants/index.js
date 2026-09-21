@@ -87,6 +87,7 @@ export const QUERY_KEYS = {
     all: ['reports'],
     list: (params) => ['reports', 'list', params],
     detail: (id) => ['reports', 'detail', id],
+    reasons: ['reports', 'reasons'],
   },
   notifications: {
     all: ['notifications'],

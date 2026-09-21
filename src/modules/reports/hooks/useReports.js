@@ -15,6 +15,18 @@ export function useReports(params) {
 }
 
 /**
+ * Every reason key a report can carry, for the reason filter. The API owns
+ * the list (Report::REASONS plus legacy keys), so it rarely changes.
+ */
+export function useReportReasons() {
+  return useQuery({
+    queryKey: QUERY_KEYS.reports.reasons,
+    queryFn: reportApi.reasons,
+    staleTime: 300_000,
+  })
+}
+
+/**
  * Single report with its reported item and moderation stamps.
  */
 export function useReport(id) {

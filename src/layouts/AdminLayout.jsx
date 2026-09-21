@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { Link, NavLink, Outlet, matchPath, useLocation } from 'react-router-dom'
 import { Archive, Award, Bell, BarChart3, CalendarCheck, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, Layers, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareWarning, Moon, Settings, ShieldAlert, Star, Sun, User, UserCheck, UserCog, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
@@ -8,6 +8,7 @@ import { useLogout } from '../modules/authentication/hooks/useLogout'
 import { useDisclosure } from '../hooks/useDisclosure'
 import ConfirmDialog from '../components/feedback/ConfirmDialog'
 import OfflineBanner from '../components/common/OfflineBanner'
+import PageSkeleton from '../components/common/PageSkeleton'
 import { hasAnyCapability } from '../utils/permissions'
 
 // Active nav item uses the primary color (not daisyUI's near-black
@@ -189,7 +190,10 @@ export default function AdminLayout() {
         </header>
 
         <main className="flex-1 p-4 md:p-6">
-          <Outlet />
+          {/* Route pages are lazy-loaded chunks (see src/routes). */}
+          <Suspense fallback={<PageSkeleton />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
 

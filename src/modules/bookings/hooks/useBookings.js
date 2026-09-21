@@ -55,6 +55,42 @@ export function useCancelBooking() {
 }
 
 /**
+ * Record an off-platform payment. Form errors (422/409) are left to the caller.
+ */
+export function useMarkBookingPaid() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, paymentReference }) => bookingApi.markPaid(id, paymentReference),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Booking marked as paid.')
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bookings.all })
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to mark the booking as paid.')
+    },
+  })
+}
+
+/**
+ * Record a full or partial refund on a paid booking.
+ */
+export function useRefundBooking() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, amount, reason }) => bookingApi.refund(id, amount, reason),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Refund recorded.')
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bookings.all })
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to record the refund.')
+    },
+  })
+}
+
+/**
  * Manage-dispute mutation.
  */
 export function useManageDispute() {
