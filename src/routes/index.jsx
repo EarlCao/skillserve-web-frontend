@@ -4,6 +4,8 @@ import AuthLayout from '../layouts/AuthLayout'
 import BlankLayout from '../layouts/BlankLayout'
 import { GuestOnly, RequireAuth, RequirePermission } from '../modules/authentication/routes/guards'
 import LoginPage from '../modules/authentication/pages/LoginPage'
+import ForgotPasswordPage from '../modules/authentication/pages/ForgotPasswordPage'
+import ResetPasswordPage from '../modules/authentication/pages/ResetPasswordPage'
 import {
   ChangePasswordPage,
   AdministratorManagementPage,
@@ -54,6 +56,14 @@ export const router = createBrowserRouter([
           {
             path: '/login',
             element: <LoginPage />,
+          },
+          {
+            path: '/forgot-password',
+            element: <ForgotPasswordPage />,
+          },
+          {
+            path: '/reset-password',
+            element: <ResetPasswordPage />,
           },
         ],
       },

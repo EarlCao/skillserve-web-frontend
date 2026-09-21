@@ -67,6 +67,9 @@ axiosInstance.interceptors.response.use(
       message = 'No internet connection. Please check your network and try again.'
     } else if (error.code === 'ECONNABORTED') {
       message = 'Request timed out. The server took too long to respond.'
+    } else if (status === 429) {
+      // Rate-limited (login, password reset): say what to do next.
+      message = 'Too many attempts. Please wait a minute and try again.'
     } else {
       message =
         (data && (data.message || getErrorMessage(data.errors))) ||

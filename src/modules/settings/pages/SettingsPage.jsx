@@ -25,6 +25,10 @@ export default function SettingsPage() {
   const [changes, setChanges] = useState({})
 
   const fields = { ...(data?.data?.[activeGroup] ?? {}), ...(changes[activeGroup] ?? {}) }
+  // Values that come from server configuration (e.g. the timezone): shown,
+  // never sent back.
+  const readOnly = new Set(data?.meta?.read_only ?? [])
+  const isReadOnly = (name) => readOnly.has(`${activeGroup}.${name}`)
   const updateField = (name, value) => setChanges((current) => ({
     ...current,
     [activeGroup]: { ...current[activeGroup], [name]: value },
@@ -65,7 +69,7 @@ export default function SettingsPage() {
               </label>
               ) : (
                 <div key={name} className={activeGroup === 'policies' ? 'md:col-span-2' : ''}>
-                {activeGroup === 'policies' || name.includes('description') ? <label className="form-control" htmlFor={`setting-${activeGroup}-${name}`}><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea id={`setting-${activeGroup}-${name}`} className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} id={`setting-${activeGroup}-${name}`} type={name.includes('email') ? 'email' : typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
+                {activeGroup === 'policies' || name.includes('description') ? <label className="form-control" htmlFor={`setting-${activeGroup}-${name}`}><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea id={`setting-${activeGroup}-${name}`} className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} id={`setting-${activeGroup}-${name}`} type={name.includes('email') ? 'email' : typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} disabled={isReadOnly(name)} hint={isReadOnly(name) ? 'Set by the server configuration (APP_TIMEZONE); bookings are stored in this timezone.' : undefined} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
               </div>
             ))}
           </div>

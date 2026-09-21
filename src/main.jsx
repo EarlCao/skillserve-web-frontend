@@ -1,10 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
+import { z } from 'zod'
 import './index.css'
 import AppProvider from './providers'
 import { router } from './routes'
 import ErrorBoundary from './components/feedback/ErrorBoundary'
+
+// Zod otherwise compiles validators with `new Function`, which the production
+// Content-Security-Policy (no 'unsafe-eval') forbids.
+z.config({ jitless: true })
 
 if ('serviceWorker' in navigator) {
   if (import.meta.env.PROD) {
