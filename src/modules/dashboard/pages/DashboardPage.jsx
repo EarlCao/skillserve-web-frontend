@@ -1,7 +1,6 @@
 import { format } from 'date-fns'
-import { Activity, AlertTriangle, CalendarCheck, CheckCircle2, Clock3, RefreshCw, ShieldCheck, TrendingUp, UserCheck, Users } from 'lucide-react'
+import { Activity, AlertTriangle, CalendarCheck, CheckCircle2, Clock3, ShieldCheck, TrendingUp, UserCheck, Users } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
 import ErrorState from '../../../components/common/ErrorState'
 import Skeleton from '../../../components/ui/Skeleton'
@@ -58,7 +57,7 @@ function DashboardLoading() {
 }
 
 export default function DashboardPage() {
-  const { data, isLoading, isError, error, refetch, isFetching } = useDashboard()
+  const { data, isLoading, isError, error, refetch } = useDashboard()
   const dashboard = data?.data
 
   if (isLoading) return <DashboardLoading />
@@ -83,9 +82,6 @@ export default function DashboardPage() {
           <h1 className="mt-1 text-3xl font-bold tracking-tight">Admin Dashboard</h1>
           <p className="mt-1 text-sm text-base-content/60">A live overview of users, marketplace activity, bookings, and platform health.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh dashboard">
-          <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} /> Refresh
-        </Button>
       </div>
 
       <section aria-labelledby="dashboard-summary-heading">

@@ -266,7 +266,7 @@ export default function AdminLayout() {
             <NavItem to="/admin/support" icon={LifeBuoy} label="Support Management" collapsed={collapsed} />
           )}
           {canManageAnalytics && (
-            <NavItem to="/admin/analytics" icon={BarChart3} label="Reports & Analytics" collapsed={collapsed} />
+            <NavItem to="/admin/analytics" icon={BarChart3} label="Reports" collapsed={collapsed} />
           )}
           {canManageNotifications && (
             <NavItem to="/admin/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
