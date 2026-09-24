@@ -109,8 +109,10 @@ export default function AdminLayout() {
   const canManageSettings = hasAnyCapability(user, ['manage settings'])
   const canManageData = hasAnyCapability(user, ['manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records'])
   const canManageSupport = hasAnyCapability(user, ['view support', 'manage support', 'assign support tickets', 'respond to support tickets', 'resolve support tickets'])
-  const canManageCommissions = hasAnyCapability(user, ['manage commissions', 'view commissions', 'settle commissions'])
-  const canReviewIdentities = hasAnyCapability(user, ['view identity verifications', 'verify identities', 'reject identities'])
+  // Mirrors the backend viewAny policies: holding only an action permission
+  // (settle / verify / reject) does not let you load either list.
+  const canManageCommissions = hasAnyCapability(user, ['manage commissions', 'view commissions'])
+  const canReviewIdentities = hasAnyCapability(user, ['view identity verifications'])
 
   const showAdministration = canManageUsers || canManageProviders || canManageAdministrators
     || canManageServices || canManageServiceCategories || canManageBookings || canManageDisputes

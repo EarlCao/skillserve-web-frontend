@@ -167,7 +167,7 @@ export const router = createBrowserRouter([
           {
             // Commission Management — configuring rates and settling what
             // providers owe.
-            element: <RequirePermission permissions={['manage commissions', 'view commissions', 'settle commissions']} />,
+            element: <RequirePermission permissions={['manage commissions', 'view commissions']} />,
             children: [
               {
                 path: 'commissions',
@@ -177,7 +177,7 @@ export const router = createBrowserRouter([
           },
           {
             // Identity Verification — reviewing National ID submissions.
-            element: <RequirePermission permissions={['view identity verifications', 'verify identities', 'reject identities']} />,
+            element: <RequirePermission permissions={['view identity verifications']} />,
             children: [
               {
                 path: 'identity-verifications',
