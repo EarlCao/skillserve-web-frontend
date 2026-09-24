@@ -1,6 +1,6 @@
 import { Suspense, useState } from 'react'
 import { Link, NavLink, Outlet, matchPath, useLocation } from 'react-router-dom'
-import { Archive, Award, Bell, BarChart3, CalendarCheck, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, Layers, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareWarning, Moon, Settings, ShieldAlert, Star, Sun, User, UserCheck, UserCog, UsersRound } from 'lucide-react'
+import { Archive, Award, BadgeCheck, Bell, BarChart3, CalendarCheck, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, Layers, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareWarning, Moon, Percent, Settings, ShieldAlert, Star, Sun, User, UserCheck, UserCog, UsersRound } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -109,11 +109,14 @@ export default function AdminLayout() {
   const canManageSettings = hasAnyCapability(user, ['manage settings'])
   const canManageData = hasAnyCapability(user, ['manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records'])
   const canManageSupport = hasAnyCapability(user, ['view support', 'manage support', 'assign support tickets', 'respond to support tickets', 'resolve support tickets'])
+  const canManageCommissions = hasAnyCapability(user, ['manage commissions', 'view commissions', 'settle commissions'])
+  const canReviewIdentities = hasAnyCapability(user, ['view identity verifications', 'verify identities', 'reject identities'])
 
   const showAdministration = canManageUsers || canManageProviders || canManageAdministrators
     || canManageServices || canManageServiceCategories || canManageBookings || canManageDisputes
     || canManageReviews || canManageReports || canManageRecognition || canManageSupport
     || canManageAnalytics || canManageNotifications || canManageData || canViewAudit || canManageSettings
+    || canManageCommissions || canReviewIdentities
 
   return (
     <div className="drawer lg:drawer-open">
@@ -250,8 +253,12 @@ export default function AdminLayout() {
             items={[
               canManageBookings && { to: '/admin/bookings', icon: CalendarCheck, label: 'Bookings' },
               canManageDisputes && { to: '/admin/disputes', icon: Gavel, label: 'Dispute Management' },
+              canManageCommissions && { to: '/admin/commissions', icon: Percent, label: 'Commissions' },
             ]}
           />
+          {canReviewIdentities && (
+            <NavItem to="/admin/identity-verifications" icon={BadgeCheck} label="Identity Verification" collapsed={collapsed} />
+          )}
           <NavGroup
             icon={MessageSquareWarning}
             label="Reviews & Moderation"

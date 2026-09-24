@@ -25,3 +25,5 @@ export const AuditLogsPage = lazy(() => import('../modules/audit/pages/AuditLogs
 export const SettingsPage = lazy(() => import('../modules/settings/pages/SettingsPage'))
 export const DataManagementPage = lazy(() => import('../modules/dataManagement/pages/DataManagementPage'))
 export const SupportTicketsPage = lazy(() => import('../modules/support/pages/SupportTicketsPage'))
+export const CommissionsPage = lazy(() => import('../modules/commissions/pages/CommissionsPage'))
+export const IdentityVerificationsPage = lazy(() => import('../modules/identityVerifications/pages/IdentityVerificationsPage'))

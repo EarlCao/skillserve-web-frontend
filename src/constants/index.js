@@ -124,6 +124,19 @@ export const QUERY_KEYS = {
     detail: (id) => ['support-tickets', 'detail', id],
     assignees: (search) => ['support-tickets', 'assignees', search],
   },
+  commissionTiers: {
+    all: ['commission-tiers'],
+    list: (params) => ['commission-tiers', 'list', params],
+  },
+  commissions: {
+    all: ['commissions'],
+    list: (params) => ['commissions', 'list', params],
+  },
+  identityVerifications: {
+    all: ['identity-verifications'],
+    list: (params) => ['identity-verifications', 'list', params],
+    detail: (id) => ['identity-verifications', 'detail', id],
+  },
 }
 
 /** Common HTTP status codes. */
