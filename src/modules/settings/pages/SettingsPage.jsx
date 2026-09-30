@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Save, Settings as SettingsIcon } from 'lucide-react'
+import { Save, Settings as SettingsIcon, TriangleAlert } from 'lucide-react'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
 import ErrorState from '../../../components/common/ErrorState'
@@ -10,6 +10,7 @@ import { useSettings, useUpdateSettings } from '../hooks/useSettings'
 const GROUPS = [
   ['general', 'General', 'Platform identity and preferences.'],
   ['marketplace', 'Marketplace', 'Rules for providers, services, and marketplace operations.'],
+  ['identity', 'Identity', 'National ID verification. The requirement ships off; turning it on stops unverified accounts booking or taking work.'],
   ['booking', 'Booking', 'Booking and cancellation rules. A confirmed booking cancelled inside the window records the fee of whoever cancelled.'],
   ['notifications', 'Notifications', 'System notification preferences.'],
   ['policies', 'Platform policies', 'Terms, privacy, and community guidance — shown in the mobile app.'],
@@ -17,6 +18,20 @@ const GROUPS = [
 ]
 
 const labelFor = (name) => name.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+
+// Settings whose consequence is not obvious from the label. Keyed by
+// "group.name" so a name reused in another group cannot pick up the wrong one.
+const HINTS = {
+  'general.timezone': 'Set by the server configuration (BUSINESS_TIMEZONE); provider hours and booking times use this timezone.',
+  'identity.identity_verification_enforced_from': 'Accounts created before this date keep transacting unverified. Leave it empty and the requirement covers every existing account too.',
+  'identity.identity_document_retention_days': 'How long National ID images are kept after a decision.',
+  'marketplace.commission_block_min_amount': 'In pesos. A provider who owes less keeps taking new bookings; 0 blocks on any unpaid commission. Finishing agreed jobs is never blocked.',
+  'marketplace.commission_block_after_days': 'Blocks even a small debt once the oldest unpaid commission is this many days old; 0 turns this off. Whichever limit is reached first applies.',
+}
+
+// Text inputs the browser should render as a date picker. The API sends values,
+// not types, so the one date setting is named here rather than guessed at.
+const DATE_FIELDS = new Set(['identity.identity_verification_enforced_from'])
 
 export default function SettingsPage() {
   const { data, isLoading, isError, error, refetch } = useSettings()
@@ -29,6 +44,17 @@ export default function SettingsPage() {
   // never sent back.
   const readOnly = new Set(data?.meta?.read_only ?? [])
   const isReadOnly = (name) => readOnly.has(`${activeGroup}.${name}`)
+  const inputType = (name, value) => {
+    if (DATE_FIELDS.has(`${activeGroup}.${name}`)) return 'date'
+    if (name.includes('email')) return 'email'
+    return typeof value === 'number' ? 'number' : 'text'
+  }
+  // Turning the requirement on with no cutover date applies it to every
+  // existing account at once, which stops the live marketplace until the
+  // review queue is cleared. Say so before it is saved, not afterwards.
+  const freezesExistingAccounts = activeGroup === 'identity'
+    && fields.identity_verification_required === true
+    && !String(fields.identity_verification_enforced_from ?? '').trim()
   const updateField = (name, value) => setChanges((current) => ({
     ...current,
     [activeGroup]: { ...current[activeGroup], [name]: value },
@@ -61,6 +87,12 @@ export default function SettingsPage() {
         </div>
         <form onSubmit={save} className="flex flex-col gap-5 p-4 md:p-6">
           <div><h2 className="text-lg font-semibold">{GROUPS.find(([key]) => key === activeGroup)?.[1]}</h2><p className="text-sm text-base-content/60">{GROUPS.find(([key]) => key === activeGroup)?.[2]}</p></div>
+          {freezesExistingAccounts && (
+            <div role="alert" className="alert alert-warning">
+              <TriangleAlert className="size-5" />
+              <span>Without a cutover date, every existing account must verify before it can book or take work — the marketplace stops until the review queue is cleared. Set &ldquo;Require it for accounts created from&rdquo; to the date you are switching over.</span>
+            </div>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
             {Object.entries(fields).map(([name, value]) => typeof value === 'boolean' ? (
               <label key={name} className="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-base-300 p-4">
@@ -69,7 +101,7 @@ export default function SettingsPage() {
               </label>
               ) : (
                 <div key={name} className={activeGroup === 'policies' ? 'md:col-span-2' : ''}>
-                {activeGroup === 'policies' || name.includes('description') ? <label className="form-control" htmlFor={`setting-${activeGroup}-${name}`}><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea id={`setting-${activeGroup}-${name}`} className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} id={`setting-${activeGroup}-${name}`} type={name.includes('email') ? 'email' : typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} disabled={isReadOnly(name)} hint={isReadOnly(name) ? 'Set by the server configuration (BUSINESS_TIMEZONE); provider hours and booking times use this timezone.' : undefined} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
+                {activeGroup === 'policies' || name.includes('description') ? <label className="form-control" htmlFor={`setting-${activeGroup}-${name}`}><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea id={`setting-${activeGroup}-${name}`} className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} id={`setting-${activeGroup}-${name}`} type={inputType(name, value)} value={value ?? ''} disabled={isReadOnly(name)} hint={HINTS[`${activeGroup}.${name}`]} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
               </div>
             ))}
           </div>
