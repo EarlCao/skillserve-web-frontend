@@ -75,6 +75,7 @@ function RateRow({ tier, canManage }) {
   )
 }
 
+/** Mounted only while a preset is chosen, so `preset` is never null here. */
 function PresetConfirmModal({ preset, activeCount, onClose }) {
   const applyPreset = useApplyCommissionPreset()
 
@@ -82,9 +83,9 @@ function PresetConfirmModal({ preset, activeCount, onClose }) {
 
   return (
     <Modal
-      open={Boolean(preset)}
+      open
       onClose={onClose}
-      title={preset ? `Apply the ${preset.name} rates?` : ''}
+      title={`Apply the ${preset.name} rates?`}
       description={activeCount > 0
         ? `This retires the ${activeCount} active tier${activeCount === 1 ? '' : 's'} and charges new bookings as follows. Bookings already made keep their own rate.`
         : 'New bookings will be charged as follows. Bookings already made keep their own rate.'}
@@ -95,16 +96,14 @@ function PresetConfirmModal({ preset, activeCount, onClose }) {
         </>
       )}
     >
-      {preset && (
-        <ul className="flex flex-col">
-          {preset.tiers.map((band) => (
-            <li key={band.min_amount} className="flex justify-between border-b border-base-200 py-2 text-sm last:border-0">
-              <span>{rangeLabel(band)}</span>
-              <span className="font-semibold">{formatPercent(band.percentage)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul className="flex flex-col">
+        {preset.tiers.map((band) => (
+          <li key={band.min_amount} className="flex justify-between border-b border-base-200 py-2 text-sm last:border-0">
+            <span>{rangeLabel(band)}</span>
+            <span className="font-semibold">{formatPercent(band.percentage)}</span>
+          </li>
+        ))}
+      </ul>
     </Modal>
   )
 }
@@ -179,11 +178,13 @@ export default function CommissionCard({ summary }) {
         </div>
       </div>
 
-      <PresetConfirmModal
-        preset={selectedPreset}
-        activeCount={summary.tiers.length}
-        onClose={() => setSelectedPreset(null)}
-      />
+      {selectedPreset && (
+        <PresetConfirmModal
+          preset={selectedPreset}
+          activeCount={summary.tiers.length}
+          onClose={() => setSelectedPreset(null)}
+        />
+      )}
     </Card>
   )
 }
