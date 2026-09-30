@@ -24,6 +24,16 @@ export function useCommissionTiers(params) {
   })
 }
 
+/** Ready-made tier sets; they only change with a deploy. */
+export function useCommissionPresets({ enabled = true } = {}) {
+  return useQuery({
+    queryKey: QUERY_KEYS.commissionTiers.presets,
+    queryFn: commissionApi.listPresets,
+    staleTime: Infinity,
+    enabled,
+  })
+}
+
 export function useCommissions(params) {
   return useQuery({
     queryKey: QUERY_KEYS.commissions.list(params),
@@ -75,6 +85,20 @@ export function useDeleteCommissionTier() {
       invalidateCommissionCaches(queryClient)
     },
     onError: (error) => toast.error(error?.message ?? 'Unable to retire this tier.'),
+  })
+}
+
+/** Replaces every active tier with the preset's bands. */
+export function useApplyCommissionPreset() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (key) => commissionApi.applyPreset(key),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Commission preset applied.')
+      invalidateCommissionCaches(queryClient)
+    },
+    onError: (error) => toast.error(error?.message ?? 'Unable to apply this preset.'),
   })
 }
 

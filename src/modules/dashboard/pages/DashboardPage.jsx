@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, Res
 import Card from '../../../components/ui/Card'
 import ErrorState from '../../../components/common/ErrorState'
 import Skeleton from '../../../components/ui/Skeleton'
+import CommissionCard from '../components/CommissionCard'
 import { useDashboard } from '../hooks/useDashboard'
 
 const numberFormat = new Intl.NumberFormat()
@@ -99,6 +100,8 @@ export default function DashboardPage() {
           <SummaryCard label="Open reports" value={reports.pending + reports.investigating} detail="pending or investigating" icon={ShieldCheck} tone="error" />
         </div>
       </section>
+
+      {dashboard.commission_summary && <CommissionCard summary={dashboard.commission_summary} />}
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card title="Platform activity" description="New users, providers, services, and bookings over the last six months.">

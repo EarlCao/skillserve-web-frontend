@@ -10,6 +10,8 @@ export const commissionApi = {
   createTier: (payload) => api.post('/commission-tiers', payload),
   updateTier: (id, payload) => api.patch(`/commission-tiers/${id}`, payload),
   deleteTier: (id) => api.delete(`/commission-tiers/${id}`),
+  listPresets: () => api.get('/commission-tiers/presets'),
+  applyPreset: (key) => api.post(`/commission-tiers/presets/${key}/apply`),
 
   // Ledger — what each booking earned, and whether it has been remitted.
   list: (params) => api.get('/commissions', { params }),

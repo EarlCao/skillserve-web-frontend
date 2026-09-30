@@ -127,6 +127,7 @@ export const QUERY_KEYS = {
   commissionTiers: {
     all: ['commission-tiers'],
     list: (params) => ['commission-tiers', 'list', params],
+    presets: ['commission-tiers', 'presets'],
   },
   commissions: {
     all: ['commissions'],
