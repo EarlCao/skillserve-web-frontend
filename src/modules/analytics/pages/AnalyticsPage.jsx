@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Download, RefreshCw } from 'lucide-react'
+import { Download, FileSpreadsheet, RefreshCw } from 'lucide-react'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
 import SearchInput from '../../../components/common/SearchInput'
@@ -10,7 +10,7 @@ import Pagination from '../../../components/tables/Pagination'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
 import { useAuth } from '../../../contexts/AuthContext'
-import { useExportReport, useReport } from '../hooks/useAnalytics'
+import { useExportGeneralReport, useExportReport, useReport } from '../hooks/useAnalytics'
 import { formatCurrency } from '../../../utils'
 
 const PER_PAGE = 15
@@ -22,6 +22,7 @@ const REPORT_TYPES = [
   { value: 'bookings', label: 'Booking Reports', description: 'Booking activity and current status.' },
   { value: 'reviews', label: 'Review Reports', description: 'Ratings, reviews, and review moderation.' },
   { value: 'activity', label: 'System Activity Reports', description: 'Important actions performed within the system.' },
+  { value: 'commissions', label: 'Commission Reports', description: 'Commission charged on each booking and whether it was collected.' },
 ]
 
 const STATUS_OPTIONS = {
@@ -42,6 +43,10 @@ const STATUS_OPTIONS = {
     ['active', 'Active'], ['hidden', 'Hidden'], ['removed', 'Removed'],
   ],
   activity: [],
+  commissions: [
+    ['pending', 'Pending'], ['outstanding', 'Outstanding'], ['settled', 'Settled'],
+    ['waived', 'Waived'], ['voided', 'Voided'],
+  ],
 }
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : '—')
@@ -52,7 +57,8 @@ const STATUS_BADGES = {
   additional_info_required: 'badge-info', draft: 'badge-ghost', published: 'badge-success',
   archived: 'badge-ghost', confirmed: 'badge-info', completed: 'badge-success',
   cancelled: 'badge-error', disputed: 'badge-warning', hidden: 'badge-warning',
-  removed: 'badge-error',
+  removed: 'badge-error', outstanding: 'badge-warning', settled: 'badge-success', waived: 'badge-ghost',
+  voided: 'badge-ghost',
 }
 
 const badge = (status) => <span className={`badge ${STATUS_BADGES[status] ?? 'badge-ghost'} badge-sm capitalize`}>{String(status ?? '—').replaceAll('_', ' ')}</span>
@@ -134,6 +140,18 @@ const COLUMNS = {
     { accessorKey: 'subject_type', header: 'Subject', cell: ({ row }) => <span className="capitalize">{row.original.subject_type}</span> },
     { accessorKey: 'created_at', header: 'Logged at', cell: dateCell('created_at') },
   ],
+  commissions: [
+    { accessorKey: 'id', header: 'ID', cell: cell('id') },
+    { accessorKey: 'booking_number', header: 'Booking #', cell: cell('booking_number') },
+    { accessorKey: 'provider', header: 'Provider', cell: cell('provider') },
+    { accessorKey: 'service', header: 'Service', cell: cell('service') },
+    { accessorKey: 'total_price', header: 'Amount paid', cell: ({ row }) => formatCurrency(row.original.total_price) },
+    { accessorKey: 'commission_rate', header: 'Rate', cell: ({ row }) => (row.original.commission_rate == null ? '—' : `${Number(row.original.commission_rate)}%`) },
+    { accessorKey: 'platform_fee', header: 'Commission', cell: ({ row }) => formatCurrency(row.original.platform_fee) },
+    { accessorKey: 'commission_status', header: 'Status', cell: ({ row }) => badge(row.original.commission_status) },
+    { accessorKey: 'commission_settled_at', header: 'Settled at', cell: dateCell('commission_settled_at') },
+    { accessorKey: 'created_at', header: 'Booked', cell: dateCell('created_at') },
+  ],
 }
 
 /**
@@ -150,6 +168,7 @@ export default function AnalyticsPage() {
   const [to, setTo] = useState('')
   const pagination = usePagination({ perPage: PER_PAGE })
   const exportMutation = useExportReport()
+  const generalExportMutation = useExportGeneralReport()
 
   const { data, isLoading, isFetching, isError, error, refetch } = useReport(type, {
     search: debouncedSearch || undefined,
@@ -206,15 +225,25 @@ export default function AnalyticsPage() {
           <p className="text-sm text-base-content/60">{activeType?.description}</p>
         </div>
         {canExport && (
-          <Button
-            variant="outline"
-            size="sm"
-            loading={exportMutation.isPending}
-            onClick={() => exportMutation.mutate(currentParams)}
-            aria-label="Export report"
-          >
-            <Download className="size-4" /> Export CSV
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              loading={exportMutation.isPending}
+              onClick={() => exportMutation.mutate(currentParams)}
+              aria-label="Export report"
+            >
+              <Download className="size-4" /> Export CSV
+            </Button>
+            <Button
+              size="sm"
+              loading={generalExportMutation.isPending}
+              onClick={() => generalExportMutation.mutate({ from: from || undefined, to: to || undefined })}
+              title="Every report category in one Excel workbook, for the selected date range"
+            >
+              <FileSpreadsheet className="size-4" /> General report (Excel)
+            </Button>
+          </div>
         )}
       </div>
 

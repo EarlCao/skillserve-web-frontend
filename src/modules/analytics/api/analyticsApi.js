@@ -6,4 +6,7 @@ export const analyticsApi = {
   export: (params) => axiosInstance
     .get('/analytics/reports/export', { params, responseType: 'blob' })
     .then(({ data }) => data),
+  generalExport: (params) => axiosInstance
+    .get('/analytics/reports/general/export', { params, responseType: 'blob' })
+    .then(({ data }) => data),
 }
