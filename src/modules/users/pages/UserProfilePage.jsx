@@ -14,6 +14,7 @@ import { useUser, useActivateUser, useBanUser, useBanHistory, useDeleteUser, use
 import UserAvatar from '../components/UserAvatar'
 import UserStatusBadge from '../components/UserStatusBadge'
 import VerificationBadge from '../components/VerificationBadge'
+import IdentityStatusBadge from '../../identityVerifications/components/IdentityStatusBadge'
 import UserFormModal from '../components/UserFormModal'
 import UserActionModal from '../components/UserActionModal'
 import { hasCapability } from '../../../utils/permissions'
@@ -214,6 +215,11 @@ export default function UserProfilePage() {
                 <span className="text-lg font-semibold">{user.name}</span>
                 <UserStatusBadge status={user.status} bannedUntil={user.banned_until} />
                 <VerificationBadge verified={user.verification === 'verified'} />
+                {user.identity_status && (
+                  <span className="flex items-center gap-1 text-xs text-base-content/60">
+                    National ID <IdentityStatusBadge status={user.identity_status} />
+                  </span>
+                )}
                 <Badge variant="secondary" className="capitalize">
                   {user.role_name ?? user.user_type}
                 </Badge>
@@ -257,7 +263,8 @@ export default function UserProfilePage() {
             <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <ProfileField label="Role" value={user.role_name ?? user.user_type} capitalize />
               <ProfileField label="Status" value={user.status} capitalize />
-              <ProfileField label="Verification" value={user.verification} capitalize />
+              <ProfileField label="Email" value={user.verification === 'verified' ? 'Confirmed' : 'Not confirmed'} />
+              <ProfileField label="National ID" value={{ unverified: 'Not submitted', pending: 'Pending review', verified: 'Verified', rejected: 'Rejected' }[user.identity_status] ?? '—'} />
               <ProfileField label="Roles" value={user.roles?.length ? user.roles.join(', ') : 'None'} />
               <ProfileField label="Last login" value={formatDateTime(user.last_login_at)} />
               <ProfileField label="Created at" value={formatDateTime(user.created_at)} />

@@ -1,12 +1,13 @@
 import Badge from '../../../components/ui/Badge'
 
 /**
- * Email-verification status pill for platform users.
+ * Whether the account confirmed its email with the sign-up code. This is not
+ * the National ID review — that is IdentityStatusBadge.
  */
 export default function VerificationBadge({ verified }) {
   return verified ? (
-    <Badge variant="success">Verified</Badge>
+    <Badge variant="success">Email confirmed</Badge>
   ) : (
-    <Badge variant="secondary">Unverified</Badge>
+    <Badge variant="secondary">Email not confirmed</Badge>
   )
 }

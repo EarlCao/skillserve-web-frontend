@@ -17,6 +17,7 @@ import { useUsers, useActivateUser, useBanUser, useDeleteUser, useSuspendUser, u
 import UserAvatar from '../components/UserAvatar'
 import UserStatusBadge from '../components/UserStatusBadge'
 import VerificationBadge from '../components/VerificationBadge'
+import IdentityStatusBadge from '../../identityVerifications/components/IdentityStatusBadge'
 import UserFormModal from '../components/UserFormModal'
 import UserActionModal from '../components/UserActionModal'
 import { hasCapability } from '../../../utils/permissions'
@@ -171,8 +172,13 @@ export default function UsersPage() {
     },
     {
       accessorKey: 'verification',
-      header: 'Verification',
+      header: 'Email',
       cell: ({ row }) => <VerificationBadge verified={row.original.verification === 'verified'} />,
+    },
+    {
+      accessorKey: 'identity_status',
+      header: 'National ID',
+      cell: ({ row }) => <IdentityStatusBadge status={row.original.identity_status} />,
     },
     {
       accessorKey: 'created_at',
@@ -313,11 +319,11 @@ export default function UsersPage() {
             className="select select-bordered select-sm w-32 shrink-0"
             value={verificationFilter}
             onChange={(event) => applyFilter(setVerificationFilter)(event.target.value)}
-            aria-label="Filter by verification"
+            aria-label="Filter by email confirmation"
           >
-            <option value="">All verification</option>
-            <option value="verified">Verified</option>
-            <option value="unverified">Unverified</option>
+            <option value="">All emails</option>
+            <option value="verified">Email confirmed</option>
+            <option value="unverified">Email not confirmed</option>
           </select>
 
           <select
