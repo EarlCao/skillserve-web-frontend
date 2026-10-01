@@ -46,11 +46,26 @@ axiosInstance.interceptors.request.use((config) => {
   return config
 })
 
+/**
+ * A download requested with `responseType: 'blob'` gets its error body as a
+ * Blob too, so the API's `{ message }` would be lost. Read it back as JSON when
+ * it is one; anything else is returned untouched.
+ */
+async function readErrorBody(data) {
+  if (!(data instanceof Blob) || !data.type.includes('json')) return data
+
+  try {
+    return JSON.parse(await data.text())
+  } catch {
+    return data
+  }
+}
+
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error.response?.status ?? null
-    const data = error.response?.data
+    const data = await readErrorBody(error.response?.data)
     const isLoginRequest = error.config?.url?.includes('/auth/login')
 
     // Expired or revoked session → drop the stored token and let the
