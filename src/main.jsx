@@ -6,10 +6,16 @@ import './index.css'
 import AppProvider from './providers'
 import { router } from './routes'
 import ErrorBoundary from './components/feedback/ErrorBoundary'
+import { queryClient } from './lib/queryClient'
+import { persistQueryCacheOnPageHide, restoreQueryCache } from './lib/queryPersistence'
 
 // Zod otherwise compiles validators with `new Function`, which the production
 // Content-Security-Policy (no 'unsafe-eval') forbids.
 z.config({ jitless: true })
+
+// Before the first render, so a reload paints from cache instead of a loader.
+restoreQueryCache(queryClient)
+persistQueryCacheOnPageHide(queryClient)
 
 if ('serviceWorker' in navigator) {
   if (import.meta.env.PROD) {
