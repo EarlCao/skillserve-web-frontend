@@ -234,9 +234,13 @@ function TiersTab({ canManage }) {
       <ConfirmDialog
         open={confirmDisclosure.isOpen}
         onCancel={confirmDisclosure.close}
-        onConfirm={() =>
+        onConfirm={() => {
+          // Guarded: the React Compiler memoises this handler on what it
+          // reads, and an unguarded `deleting.id` was evaluated during render
+          // while nothing was selected, crashing the page.
+          if (!deleting) return
           deleteMutation.mutate(deleting.id, { onSuccess: () => confirmDisclosure.close() })
-        }
+        }}
         loading={deleteMutation.isPending}
         title="Retire this commission tier?"
         description={
