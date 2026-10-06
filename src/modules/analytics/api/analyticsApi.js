@@ -1,12 +1,8 @@
 import { api } from '../../../services/api'
-import axiosInstance from '../../../services/axios'
 
 export const analyticsApi = {
   list: (params) => api.get('/analytics/reports', { params }),
-  export: (params) => axiosInstance
-    .get('/analytics/reports/export', { params, responseType: 'blob' })
-    .then(({ data }) => data),
-  generalExport: (params) => axiosInstance
-    .get('/analytics/reports/general/export', { params, responseType: 'blob' })
-    .then(({ data }) => data),
+  // CSV downloads: with `responseType: 'blob'` the resolved value is the file.
+  export: (params) => api.get('/analytics/reports/export', { params, responseType: 'blob' }),
+  generalExport: (params) => api.get('/analytics/reports/general/export', { params, responseType: 'blob' }),
 }

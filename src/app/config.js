@@ -30,7 +30,9 @@ function resolveRealtime() {
   const host = import.meta.env.VITE_REVERB_HOST || hostname
 
   return {
-    key: import.meta.env.VITE_REVERB_APP_KEY ?? '5854c89dcedeece0181cb0c6cb75c711',
+    // The same public app key the mobile app defaults to and production's
+    // Reverb serves; must match REVERB_APP_KEY on the backend.
+    key: import.meta.env.VITE_REVERB_APP_KEY || 'skillserve',
     // WebSockets to `localhost` fail on Windows + WSL (it resolves to ::1,
     // which WSL does not forward), so connect over IPv4 instead.
     host: host === 'localhost' ? '127.0.0.1' : host,

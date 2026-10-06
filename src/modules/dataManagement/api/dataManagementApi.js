@@ -1,4 +1,3 @@
-import axiosInstance from '../../../services/axios'
 import { api } from '../../../services/api'
 
 export const dataManagementApi = {
@@ -8,5 +7,6 @@ export const dataManagementApi = {
   restoreArchive: (id) => api.post(`/data-management/archives/${id}/restore`),
   restoreDeleted: (type, id) => api.post(`/data-management/deleted/${type}/${id}/restore`),
   permanentlyDelete: (type, id) => api.delete(`/data-management/deleted/${type}/${id}`),
-  export: (type) => axiosInstance.get('/data-management/export', { params: { type }, responseType: 'blob' }),
+  // A CSV download: with `responseType: 'blob'` the resolved value is the file.
+  export: (type) => api.get('/data-management/export', { params: { type }, responseType: 'blob' }),
 }

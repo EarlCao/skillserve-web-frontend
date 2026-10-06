@@ -35,7 +35,7 @@ export default function DisputeDetailsModal({ open, onClose, bookingId, onAction
               <Button variant="error" onClick={() => onAction('reject')}>Reject</Button>
             </>
           )}
-          {booking && canManage && status === 'resolved' && <Button variant="neutral" onClick={() => onAction('close')}>Close dispute</Button>}
+          {booking && canManage && (status === 'resolved' || status === 'rejected') && <Button variant="neutral" onClick={() => onAction('close')}>Close dispute</Button>}
         </>
       )}
     >

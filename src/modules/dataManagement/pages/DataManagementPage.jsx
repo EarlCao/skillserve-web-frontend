@@ -49,8 +49,8 @@ export default function DataManagementPage() {
 
   const download = async () => {
     try {
-      const response = await dataManagementApi.export(exportType)
-      const url = URL.createObjectURL(response.data)
+      const file = await dataManagementApi.export(exportType)
+      const url = URL.createObjectURL(file)
       const link = document.createElement('a'); link.href = url; link.download = `${exportType}-export.csv`; link.click(); URL.revokeObjectURL(url)
       toast.success('Export downloaded.')
     } catch (error) { toast.error(error?.message ?? 'Unable to export data.') }

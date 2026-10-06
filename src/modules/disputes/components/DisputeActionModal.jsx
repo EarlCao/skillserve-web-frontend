@@ -42,7 +42,7 @@ export default function DisputeActionModal({ open, onClose, action, loading, onC
       <FormField
         label={meta.label}
         required={meta.required}
-        hint={action === 'close' ? 'Optional. The dispute must already be resolved.' : undefined}
+        hint={action === 'close' ? 'Optional. The dispute must already be resolved or rejected.' : undefined}
         error={touched && missing ? 'This field is required.' : undefined}
       >
         <textarea
