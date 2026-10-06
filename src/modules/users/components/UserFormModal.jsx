@@ -117,7 +117,7 @@ export default function UserFormModal({ open, onClose, user }) {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Phone" error={errors.phone?.message}>
-              <Input autoComplete="off" placeholder="+1 555 0100" {...register('phone')} />
+              <Input type="tel" inputMode="numeric" autoComplete="off" placeholder="09123456789" {...register('phone')} />
             </FormField>
             <FormField label="Birthday" error={errors.birthday?.message}>
               <Input type="date" {...register('birthday')} />
