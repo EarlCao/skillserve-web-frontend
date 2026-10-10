@@ -27,6 +27,8 @@ export const QUERY_KEYS = {
   dashboard: {
     all: ['dashboard'],
     summary: ['dashboard', 'summary'],
+    // Under `dashboard`, so every realtime change refetches it (liveUpdates).
+    attention: ['dashboard', 'attention'],
   },
   auth: {
     all: ['auth'],

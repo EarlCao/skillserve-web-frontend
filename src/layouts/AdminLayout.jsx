@@ -10,6 +10,7 @@ import ConfirmDialog from '../components/feedback/ConfirmDialog'
 import OfflineBanner from '../components/common/OfflineBanner'
 import PageSkeleton from '../components/common/PageSkeleton'
 import { hasAnyCapability } from '../utils/permissions'
+import { useAttentionCounts } from '../modules/dashboard/hooks/useAttentionCounts'
 
 // Active nav item uses the primary color (not daisyUI's near-black
 // base-content that `menu-active` applies). When collapsed, icons center.
@@ -21,12 +22,27 @@ function navLinkClass(collapsed) {
   }
 }
 
-function NavItem({ to, end, icon: Icon, label, collapsed }) {
+/** Count of items waiting on this page; nothing when there are none. */
+function CountBadge({ count, label, className = '' }) {
+  if (!count) return null
+  return (
+    <span className={`badge badge-error badge-sm ms-auto ${className}`.trim()} aria-label={`${count} ${label}`}>
+      {count > 99 ? '99+' : count}
+    </span>
+  )
+}
+
+function NavItem({ to, end, icon: Icon, label, badge, badgeLabel, collapsed }) {
   return (
     <li>
       <NavLink to={to} end={end} className={navLinkClass(collapsed)} title={collapsed ? label : undefined}>
-        <Icon className="size-4 shrink-0" />
+        <span className="relative">
+          <Icon className="size-4 shrink-0" />
+          {/* The icon rail has no room for the number, so a dot stands in. */}
+          {collapsed && badge > 0 && <span className="absolute -end-1 -top-1 hidden size-2 rounded-full bg-error lg:block" aria-hidden="true" />}
+        </span>
         <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : undefined}`}>{label}</span>
+        <CountBadge count={badge} label={badgeLabel} className={collapsed ? 'lg:hidden' : ''} />
       </NavLink>
     </li>
   )
@@ -47,6 +63,8 @@ function NavGroup({ icon: Icon, label, items, collapsed }) {
   if (visibleItems.length === 0) return null
 
   const isOpen = collapsed || (expanded ?? hasActiveItem)
+  // A closed group still shows that something inside is waiting.
+  const waiting = visibleItems.reduce((sum, item) => sum + (item.badge ?? 0), 0)
 
   return (
     <li>
@@ -60,6 +78,7 @@ function NavGroup({ icon: Icon, label, items, collapsed }) {
         >
           <Icon className="size-4 shrink-0" />
           <span className="whitespace-nowrap">{label}</span>
+          {!isOpen && <CountBadge count={waiting} label="waiting" />}
         </summary>
         <ul className={collapsed ? 'lg:ms-0 lg:ps-0 lg:before:hidden' : undefined}>
           {visibleItems.map((item) => (
@@ -113,6 +132,7 @@ export default function AdminLayout() {
   // (settle / verify / reject) does not let you load either list.
   const canManageCommissions = hasAnyCapability(user, ['manage commissions', 'view commissions'])
   const canReviewIdentities = hasAnyCapability(user, ['view identity verifications'])
+  const { openSupportTickets, pendingReports } = useAttentionCounts({ enabled: canManageSupport || canManageReports })
 
   const showAdministration = canManageUsers || canManageProviders || canManageAdministrators
     || canManageServices || canManageServiceCategories || canManageBookings || canManageDisputes
@@ -267,12 +287,12 @@ export default function AdminLayout() {
             collapsed={collapsed}
             items={[
               canManageReviews && { to: '/admin/reviews', icon: Star, label: 'Reviews and Ratings' },
-              canManageReports && { to: '/admin/reports', icon: ShieldAlert, label: 'Reports and Moderation' },
+              canManageReports && { to: '/admin/reports', icon: ShieldAlert, label: 'Reports and Moderation', badge: pendingReports, badgeLabel: 'pending reports' },
               canManageRecognition && { to: '/admin/provider-recognition', icon: Award, label: 'Provider Recognition' },
             ]}
           />
           {canManageSupport && (
-            <NavItem to="/admin/support" icon={LifeBuoy} label="Support Management" collapsed={collapsed} />
+            <NavItem to="/admin/support" icon={LifeBuoy} label="Support Management" badge={openSupportTickets} badgeLabel="new support tickets" collapsed={collapsed} />
           )}
           {canManageAnalytics && (
             <NavItem to="/admin/analytics" icon={BarChart3} label="Reports" collapsed={collapsed} />
