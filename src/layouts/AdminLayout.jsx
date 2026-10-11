@@ -1,11 +1,13 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, matchPath, useLocation } from 'react-router-dom'
-import { Archive, Award, BadgeCheck, Bell, BarChart3, CalendarCheck, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, Layers, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareWarning, Moon, Percent, Settings, ShieldAlert, Star, Sun, User, UserCheck, UserCog, UsersRound } from 'lucide-react'
+import { Archive, Award, BadgeCheck, Bell, BarChart3, CalendarCheck, Camera, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, ImageOff, KeyRound, Layers, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareWarning, Moon, Percent, Settings, ShieldAlert, Star, Sun, User, UserCheck, UserCog, UsersRound } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
+import { toast } from 'sonner'
 import { useLogout } from '../modules/authentication/hooks/useLogout'
+import { useProfilePhoto } from '../modules/authentication/hooks/useProfilePhoto'
 import { useDisclosure } from '../hooks/useDisclosure'
 import ConfirmDialog from '../components/feedback/ConfirmDialog'
 import OfflineBanner from '../components/common/OfflineBanner'
@@ -104,6 +106,8 @@ export default function AdminLayout() {
   const { user } = useAuth()
   const logoutMutation = useLogout()
   const logoutDisclosure = useDisclosure()
+  const photo = useProfilePhoto()
+  const photoInput = useRef(null)
   const [collapsed, setCollapsed] = useState(false)
 
   const initials = (user?.name ?? 'A')
@@ -186,9 +190,18 @@ export default function AdminLayout() {
           </button>
 
           <div className="dropdown dropdown-end ml-1">
-            <button type="button" tabIndex={0} className="btn btn-ghost btn-circle avatar placeholder">
+            <button
+              type="button"
+              tabIndex={0}
+              className={`btn btn-ghost btn-circle avatar ${user?.profile_photo_url ? '' : 'placeholder'}`}
+              aria-label="Account menu"
+            >
               <div className="w-10 rounded-full bg-primary text-primary-content">
-                <span className="text-sm font-semibold">{initials}</span>
+                {user?.profile_photo_url ? (
+                  <img src={user.profile_photo_url} alt="" className="size-10 rounded-full object-cover" />
+                ) : (
+                  <span className="text-sm font-semibold">{initials}</span>
+                )}
               </div>
             </button>
             <ul
@@ -201,6 +214,20 @@ export default function AdminLayout() {
                   <span className="truncate text-xs font-normal text-base-content/60">{user?.email}</span>
                 </div>
               </li>
+              <li>
+                <button type="button" onClick={() => photoInput.current?.click()} disabled={photo.isPending}>
+                  <Camera className="size-4" />
+                  {photo.isPending ? 'Saving…' : user?.profile_photo_url ? 'Change profile photo' : 'Add profile photo'}
+                </button>
+              </li>
+              {user?.profile_photo_url && (
+                <li>
+                  <button type="button" onClick={() => photo.remove.mutate()} disabled={photo.isPending}>
+                    <ImageOff className="size-4" />
+                    Remove photo
+                  </button>
+                </li>
+              )}
               <li>
                 <Link to="/admin/change-password">
                   <KeyRound className="size-4" />
@@ -215,6 +242,24 @@ export default function AdminLayout() {
               </li>
             </ul>
           </div>
+          {/* Picked from the account menu; uploads straight away. */}
+          <input
+            ref={photoInput}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            aria-label="Choose a profile photo"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              event.target.value = ''
+              if (!file) return
+              if (file.size > 5 * 1024 * 1024) {
+                toast.error('The photo must be 5 MB or smaller.')
+                return
+              }
+              photo.upload.mutate(file)
+            }}
+          />
         </header>
 
         <main className="flex-1 p-4 md:p-6">
