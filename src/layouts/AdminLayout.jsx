@@ -1,6 +1,7 @@
 import { Suspense, useState } from 'react'
 import { Link, NavLink, Outlet, matchPath, useLocation } from 'react-router-dom'
 import { Archive, Award, BadgeCheck, Bell, BarChart3, CalendarCheck, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, KeyRound, Layers, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareWarning, Moon, Percent, Settings, ShieldAlert, Star, Sun, User, UserCheck, UserCog, UsersRound } from 'lucide-react'
+import logo from '../assets/logo.png'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -238,7 +239,7 @@ export default function AdminLayout() {
               collapsed ? 'lg:justify-center lg:px-0' : 'px-2'
             }`}
           >
-            <LayoutDashboard className="size-6 shrink-0 text-primary" />
+            <img src={logo} alt="" className="size-8 shrink-0" />
             <span className={collapsed ? 'lg:hidden' : undefined}>{APP_NAME}</span>
           </div>
 

@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { APP_CONFIG } from '../app/config'
 import { queryClient } from '../lib/queryClient'
 import { Toaster } from '../components/feedback/Toaster'
+import AppearanceProvider from './AppearanceProvider'
 import AuthProvider from './AuthProvider'
 import ThemeProvider from './ThemeProvider'
 
@@ -16,11 +17,13 @@ export default function AppProvider({ children }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          {children}
-          <Toaster />
-          {APP_CONFIG.isDev && <ReactQueryDevtools initialIsOpen={false} />}
-        </AuthProvider>
+        <AppearanceProvider>
+          <AuthProvider>
+            {children}
+            <Toaster />
+            {APP_CONFIG.isDev && <ReactQueryDevtools initialIsOpen={false} />}
+          </AuthProvider>
+        </AppearanceProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )

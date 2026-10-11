@@ -10,6 +10,7 @@ export const DEFAULT_CURRENCY = 'PHP'
 /** LocalStorage keys. */
 export const STORAGE_KEYS = {
   theme: 'skillserve:theme',
+  appearance: 'skillserve:appearance',
   token: 'skillserve:token',
 }
 
@@ -114,6 +115,7 @@ export const QUERY_KEYS = {
   settings: {
     all: ['settings'],
     detail: ['settings', 'detail'],
+    appearance: ['settings', 'appearance'],
   },
   dataManagement: {
     all: ['data-management'],

@@ -1,10 +1,44 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* App-wide base styles */
+/*
+ * SkillServe green, from the official logo, in place of daisyUI's default
+ * blue. Only the primary pair changes; everything else comes from the built-in
+ * light and dark themes. daisyUI puts its themes in @layer base, and CSS
+ * outside a layer always wins over layered CSS, so these plain rules override
+ * them whatever the selectors' specificity. System Settings → Appearance can
+ * replace the colour at runtime (AppearanceProvider sets it inline on <html>).
+ */
+:root,
+[data-theme=light] {
+  --color-primary: #03833e;
+  --color-primary-content: #ffffff;
+}
+
+[data-theme=dark] {
+  --color-primary: #22c55e;
+  --color-primary-content: #052e16;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-primary: #22c55e;
+    --color-primary-content: #052e16;
+  }
+}
+
+/*
+ * App-wide base styles. The font and the text size come from System Settings
+ * → Appearance (AppearanceProvider sets --app-font and the root font size);
+ * every Tailwind size is in rem, so the whole interface scales with it.
+ */
+html,
+body {
+  font-family: var(--app-font, system-ui, 'Segoe UI', Roboto, sans-serif);
+}
+
 body {
   margin: 0;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

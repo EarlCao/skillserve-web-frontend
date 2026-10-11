@@ -5,11 +5,13 @@ import Card from '../../../components/ui/Card'
 import ErrorState from '../../../components/common/ErrorState'
 import Skeleton from '../../../components/ui/Skeleton'
 import Input from '../../../components/ui/Input'
+import AppearanceFields from '../components/AppearanceFields'
 import { useSettings, useUpdateSettings } from '../hooks/useSettings'
 
 const GROUPS = [
   ['general', 'General', 'Platform identity and preferences.'],
   ['marketplace', 'Marketplace', 'Rules for providers, services, and marketplace operations.'],
+  ['appearance', 'Appearance', 'The admin web\'s colour, font and text size — for every administrator and the sign-in page.'],
   ['identity', 'Identity', 'National ID verification. The requirement ships off; turning it on stops unverified accounts booking or taking work.'],
   ['booking', 'Booking', 'Booking and cancellation rules. A confirmed booking cancelled inside the window records the fee of whoever cancelled.'],
   ['notifications', 'Notifications', 'System notification preferences.'],
@@ -93,6 +95,7 @@ export default function SettingsPage() {
               <span>Without a cutover date, every existing account must verify before it can book or take work — the marketplace stops until the review queue is cleared. Set &ldquo;Require it for accounts created from&rdquo; to the date you are switching over.</span>
             </div>
           )}
+          {activeGroup === 'appearance' ? <AppearanceFields fields={fields} onChange={updateField} /> : (
           <div className="grid gap-4 md:grid-cols-2">
             {Object.entries(fields).map(([name, value]) => typeof value === 'boolean' ? (
               <label key={name} className="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-base-300 p-4">
@@ -105,6 +108,7 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+          )}
           <div className="flex justify-end border-t border-base-200 pt-4"><Button type="submit" loading={updateMutation.isPending}><Save className="size-4" /> Save changes</Button></div>
         </form>
       </Card>

@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
@@ -56,10 +55,6 @@ export default function LoginForm() {
         error={errors.password?.message}
         {...register('password')}
       />
-
-      <Link to="/forgot-password" className="link link-hover -mt-2 self-end text-sm">
-        Forgot password?
-      </Link>
 
       <Button
         type="submit"

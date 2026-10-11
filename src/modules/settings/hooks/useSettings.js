@@ -14,6 +14,8 @@ export function useUpdateSettings() {
     mutationFn: settingsApi.update,
     onSuccess: (response) => {
       queryClient.setQueryData(QUERY_KEYS.settings.detail, response)
+      // The theme colour, font and text size apply as soon as they are saved.
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.settings.appearance })
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard.all })
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.audit.all })
       toast.success(response?.message ?? 'Settings updated.')

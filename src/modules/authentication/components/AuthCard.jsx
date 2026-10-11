@@ -1,4 +1,4 @@
-import { ShieldCheck } from 'lucide-react'
+import logo from '../../../assets/logo.png'
 import { APP_NAME } from '../../../constants'
 
 /**
@@ -9,9 +9,7 @@ export default function AuthCard({ title, description, children, footer }) {
     <div>
       <div className="mb-6 flex flex-col items-center gap-2">
         <div className="flex items-center gap-2 text-2xl font-bold">
-          <span className="grid size-11 place-items-center rounded-2xl bg-primary/10 text-primary">
-            <ShieldCheck className="size-7" />
-          </span>
+          <img src={logo} alt="" className="size-12" />
           <span>{APP_NAME}</span>
         </div>
       </div>

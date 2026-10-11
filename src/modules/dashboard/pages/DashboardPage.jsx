@@ -12,7 +12,8 @@ const formatNumber = (value) => numberFormat.format(value ?? 0)
 const formatActivity = (value) => value?.replaceAll('_', ' ') ?? 'system activity'
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : 'Unknown time')
 
-const PIE_COLORS = ['#2563eb', '#f59e0b', '#ef4444', '#9333ea']
+// The first slice follows the theme colour (System Settings → Appearance).
+const PIE_COLORS = ['var(--color-primary)', '#f59e0b', '#ef4444', '#9333ea']
 const TONE_STYLES = {
   primary: 'bg-primary/10 text-primary',
   secondary: 'bg-secondary/10 text-secondary',
@@ -112,7 +113,7 @@ export default function DashboardPage() {
                 <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="users" name="Users" stroke="#2563eb" strokeWidth={3} dot={false} />
+                <Line type="monotone" dataKey="users" name="Users" stroke="var(--color-primary)" strokeWidth={3} dot={false} />
                 <Line type="monotone" dataKey="providers" name="Providers" stroke="#9333ea" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="services" name="Services" stroke="#16a34a" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="bookings" name="Bookings" stroke="#f59e0b" strokeWidth={2} dot={false} />
@@ -129,7 +130,7 @@ export default function DashboardPage() {
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-25} textAnchor="end" height={50} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Bar dataKey="value" name="Bookings" fill="#2563eb" radius={[5, 5, 0, 0]} />
+                <Bar dataKey="value" name="Bookings" fill="var(--color-primary)" radius={[5, 5, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

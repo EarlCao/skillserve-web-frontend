@@ -1,5 +1,5 @@
 // Bump versions to purge caches written by older workers on activate.
-const STATIC_CACHE = 'skillserve-static-v2'
+const STATIC_CACHE = 'skillserve-static-v3'
 const API_CACHE = 'skillserve-api-v2'
 // Content-hashed build output (/assets/*): a file name never changes content.
 const ASSET_CACHE = 'skillserve-assets-v1'
@@ -9,7 +9,7 @@ const MAX_ASSET_ENTRIES = 150
 const PRECACHE_URLS = [
   '/',
   '/index.html',
-  '/favicon.svg',
+  '/favicon.png',
 ]
 
 // Install — precache critical static assets
