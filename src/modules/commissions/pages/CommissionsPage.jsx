@@ -496,8 +496,8 @@ function LedgerTab({ canSettle }) {
 }
 
 /**
- * Commission payments providers made: GCash references a reviewer checks, and
- * PayMongo QR Ph payments that confirm themselves. For a GCash reference the
+ * Commission payments providers made: PayMongo QR Ph payments that confirm
+ * themselves, and GCash references from older app versions a reviewer checks. For a GCash reference the
  * reviewer finds it in SkillServe's GCash history, then confirms
  * (settling the bookings it covered) or rejects it with a reason.
  */
@@ -676,7 +676,7 @@ function PaymentsTab({ canSettle }) {
             data={rows}
             isLoading={isLoading}
             emptyTitle={status === 'pending' ? 'No payments waiting' : 'No payments found'}
-            emptyDescription="A provider's GCash-reference payment appears here for you to confirm. QR Ph payments are confirmed by PayMongo and only appear here when one needs a decision."
+            emptyDescription="QR Ph payments are confirmed by PayMongo and only appear here when one needs a decision. A GCash-reference payment from an older app version also waits here for you to confirm."
           />
         )}
 
