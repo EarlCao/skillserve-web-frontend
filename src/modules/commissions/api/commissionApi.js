@@ -17,4 +17,12 @@ export const commissionApi = {
   list: (params) => api.get('/commissions', { params }),
   settle: (bookingId, payload) => api.patch(`/commissions/${bookingId}/settle`, payload),
   waive: (bookingId, reason) => api.patch(`/commissions/${bookingId}/waive`, { reason }),
+
+  // GCash payments providers submit — the reference to find in SkillServe's
+  // GCash history before confirming.
+  listRemittances: (params) => api.get('/commission-remittances', { params }),
+  confirmRemittance: (id, notes) => api.patch(`/commission-remittances/${id}/confirm`, { notes }),
+  rejectRemittance: (id, reason) => api.patch(`/commission-remittances/${id}/reject`, { reason }),
+  // The receipt is private, so it is fetched with the admin's token as a blob.
+  remittanceProof: (id) => api.get(`/commission-remittances/${id}/proof`, { responseType: 'blob' }),
 }

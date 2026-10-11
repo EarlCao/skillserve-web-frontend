@@ -135,6 +135,10 @@ export const QUERY_KEYS = {
     all: ['commissions'],
     list: (params) => ['commissions', 'list', params],
   },
+  commissionRemittances: {
+    all: ['commission-remittances'],
+    list: (params) => ['commission-remittances', 'list', params],
+  },
   identityVerifications: {
     all: ['identity-verifications'],
     list: (params) => ['identity-verifications', 'list', params],

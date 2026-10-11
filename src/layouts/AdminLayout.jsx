@@ -132,7 +132,9 @@ export default function AdminLayout() {
   // (settle / verify / reject) does not let you load either list.
   const canManageCommissions = hasAnyCapability(user, ['manage commissions', 'view commissions'])
   const canReviewIdentities = hasAnyCapability(user, ['view identity verifications'])
-  const { openSupportTickets, pendingReports } = useAttentionCounts({ enabled: canManageSupport || canManageReports })
+  const { openSupportTickets, pendingReports, pendingCommissionRemittances } = useAttentionCounts({
+    enabled: canManageSupport || canManageReports || canManageCommissions,
+  })
 
   const showAdministration = canManageUsers || canManageProviders || canManageAdministrators
     || canManageServices || canManageServiceCategories || canManageBookings || canManageDisputes
@@ -275,7 +277,14 @@ export default function AdminLayout() {
             items={[
               canManageBookings && { to: '/admin/bookings', icon: CalendarCheck, label: 'Bookings' },
               canManageDisputes && { to: '/admin/disputes', icon: Gavel, label: 'Dispute Management' },
-              canManageCommissions && { to: '/admin/commissions', icon: Percent, label: 'Commissions' },
+              canManageCommissions && {
+                // Straight to the payments waiting for confirmation, when there are any.
+                to: pendingCommissionRemittances > 0 ? '/admin/commissions?tab=payments' : '/admin/commissions',
+                icon: Percent,
+                label: 'Commissions',
+                badge: pendingCommissionRemittances,
+                badgeLabel: 'GCash payments to confirm',
+              },
             ]}
           />
           {canReviewIdentities && (

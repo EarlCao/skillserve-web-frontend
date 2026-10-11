@@ -17,12 +17,17 @@ import { formatCurrency, formatDateTime } from '../../../utils'
 import { hasCapability } from '../../../utils/permissions'
 import CommissionStatusBadge from '../components/CommissionStatusBadge'
 import CommissionTierModal from '../components/CommissionTierModal'
+import ReviewRemittanceModal from '../components/ReviewRemittanceModal'
 import SettleCommissionModal from '../components/SettleCommissionModal'
+import { useAttentionCounts } from '../../dashboard/hooks/useAttentionCounts'
 import {
+  useCommissionRemittances,
   useCommissions,
   useCommissionTiers,
+  useConfirmRemittance,
   useCreateCommissionTier,
   useDeleteCommissionTier,
+  useRejectRemittance,
   useSettleCommission,
   useUpdateCommissionTier,
   useWaiveCommission,
@@ -33,7 +38,14 @@ const PER_PAGE = 10
 const TABS = [
   { id: 'tiers', label: 'Tiers' },
   { id: 'ledger', label: 'Commissions & Payments' },
+  { id: 'payments', label: 'GCash payments' },
 ]
+
+const REMITTANCE_STATUSES = {
+  pending: { variant: 'warning', label: 'Waiting' },
+  confirmed: { variant: 'success', label: 'Confirmed' },
+  rejected: { variant: 'error', label: 'Rejected' },
+}
 
 const range = (tier) =>
   `${formatCurrency(tier.min_amount)} – ${tier.is_open_ended ? 'above' : formatCurrency(tier.max_amount)}`
@@ -57,6 +69,7 @@ export default function CommissionsPage() {
   const tab = TABS.some((entry) => entry.id === searchParams.get('tab')) ? searchParams.get('tab') : 'tiers'
 
   const selectTab = (id) => setSearchParams(id === 'tiers' ? {} : { tab: id }, { replace: true })
+  const { pendingCommissionRemittances } = useAttentionCounts()
 
   return (
     <div className="flex flex-col gap-4">
@@ -80,11 +93,18 @@ export default function CommissionsPage() {
             onClick={() => selectTab(entry.id)}
           >
             {entry.label}
+            {entry.id === 'payments' && pendingCommissionRemittances > 0 && (
+              <span className="badge badge-error badge-sm ms-2" aria-label={`${pendingCommissionRemittances} waiting for confirmation`}>
+                {pendingCommissionRemittances}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
-      {tab === 'tiers' ? <TiersTab canManage={canManageTiers} /> : <LedgerTab canSettle={canSettle} />}
+      {tab === 'tiers' && <TiersTab canManage={canManageTiers} />}
+      {tab === 'ledger' && <LedgerTab canSettle={canSettle} />}
+      {tab === 'payments' && <PaymentsTab canSettle={canSettle} />}
     </div>
   )
 }
@@ -461,6 +481,204 @@ function LedgerTab({ canSettle }) {
         loading={settleMutation.isPending || waiveMutation.isPending}
         commission={target?.commission}
         mode={target?.mode ?? 'settle'}
+      />
+    </div>
+  )
+}
+
+/**
+ * GCash payments providers submitted for their outstanding commission. The
+ * reviewer finds each reference in SkillServe's GCash history, then confirms
+ * (settling the bookings it covered) or rejects it with a reason.
+ */
+function PaymentsTab({ canSettle }) {
+  const pagination = usePagination({ perPage: PER_PAGE })
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
+  const [status, setStatus] = useState('pending')
+  const [target, setTarget] = useState(null) // { remittance, mode }
+  const reviewDisclosure = useDisclosure()
+
+  const confirmMutation = useConfirmRemittance()
+  const rejectMutation = useRejectRemittance()
+
+  const { data, isLoading, isFetching, isError, error, refetch } = useCommissionRemittances({
+    search: debouncedSearch || undefined,
+    status: status || undefined,
+    // The queue is worked oldest first; history reads newest first.
+    direction: status === 'pending' ? 'asc' : 'desc',
+    per_page: PER_PAGE,
+    page: pagination.currentPage,
+  })
+
+  const rows = data?.data ?? []
+  const meta = data?.meta?.pagination
+
+  useEffect(() => {
+    if (meta && pagination.currentPage > meta.last_page) pagination.setCurrentPage(meta.last_page)
+  }, [meta?.last_page]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const openReview = (remittance, mode) => {
+    setTarget({ remittance, mode })
+    reviewDisclosure.open()
+  }
+
+  const submitReview = (payload) => {
+    if (!target) return
+
+    const options = { onSuccess: () => reviewDisclosure.close() }
+
+    if (target.mode === 'reject') {
+      rejectMutation.mutate({ id: target.remittance.id, reason: payload.reason }, options)
+      return
+    }
+
+    confirmMutation.mutate({ id: target.remittance.id, notes: payload.notes }, options)
+  }
+
+  const columns = [
+    {
+      accessorKey: 'reference',
+      header: 'GCash reference',
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <span className="font-mono">{row.original.reference}</span>
+          <span className="text-xs text-base-content/60">{formatDateTime(row.original.submitted_at)}</span>
+          {row.original.other_claims_count > 0 && (
+            <Badge variant="warning" size="sm" className="mt-1">
+              Also claimed by another provider
+            </Badge>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'provider',
+      header: 'Provider',
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <span>{row.original.provider?.business_name ?? '—'}</span>
+          <span className="text-xs text-base-content/60">
+            {row.original.provider?.gcash_number ? `GCash ${row.original.provider.gcash_number}` : 'No GCash on file'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: 'amounts',
+      header: 'Sent / owed',
+      cell: ({ row }) => {
+        const short = Number(row.original.amount_sent) < Number(row.original.amount_due)
+
+        return (
+          <div className="flex flex-col">
+            <span className={`font-medium ${short ? 'text-error' : ''}`}>{formatCurrency(row.original.amount_sent)}</span>
+            <span className="text-xs text-base-content/60">
+              {formatCurrency(row.original.amount_due)} owed on {row.original.bookings?.length ?? 0}{' '}
+              {row.original.bookings?.length === 1 ? 'booking' : 'bookings'}
+            </span>
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => {
+        const { variant, label } = REMITTANCE_STATUSES[row.original.status] ?? { variant: 'neutral', label: row.original.status }
+
+        return (
+          <div className="flex flex-col gap-1">
+            <Badge variant={variant}>{label}</Badge>
+            {row.original.reviewed_by && (
+              <span className="text-xs text-base-content/60">by {row.original.reviewed_by.name}</span>
+            )}
+            {row.original.status === 'rejected' && row.original.review_notes && (
+              <span className="max-w-56 text-xs text-base-content/60">{row.original.review_notes}</span>
+            )}
+          </div>
+        )
+      },
+    },
+    {
+      id: 'actions',
+      header: '',
+      cell: ({ row }) =>
+        canSettle && row.original.status === 'pending' ? (
+          <div className="flex justify-end gap-1">
+            <Button variant="outline" size="sm" onClick={() => openReview(row.original, 'confirm')}>
+              Confirm
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => openReview(row.original, 'reject')}>
+              Reject
+            </Button>
+          </div>
+        ) : null,
+    },
+  ]
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Card bodyClassName="p-0">
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto border-b border-base-200 p-4">
+          <SearchInput
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value)
+              pagination.setCurrentPage(1)
+            }}
+            placeholder="Search by reference or provider…"
+            className="w-44 shrink min-w-0 sm:w-64"
+          />
+
+          <select
+            className="select select-bordered select-sm w-44 shrink-0"
+            value={status}
+            onChange={(event) => {
+              setStatus(event.target.value)
+              pagination.setCurrentPage(1)
+            }}
+            aria-label="Filter by payment status"
+          >
+            <option value="pending">Waiting for confirmation</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="rejected">Rejected</option>
+            <option value="">All payments</option>
+          </select>
+
+          <Button variant="outline" size="sm" className="shrink-0" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh payments">
+            <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
+
+        {isError ? (
+          <ErrorState title="Could not load GCash payments" message={error?.message} onRetry={refetch} />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={rows}
+            isLoading={isLoading}
+            emptyTitle={status === 'pending' ? 'No payments waiting' : 'No payments found'}
+            emptyDescription="When a provider sends SkillServe's GCash their commission and submits the reference number, it appears here for you to confirm."
+          />
+        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-base-200 p-4">
+          <p className="text-sm text-base-content/60">
+            {meta ? `${meta.from ?? 0}–${meta.to ?? 0} of ${meta.total}` : ''}
+          </p>
+          <Pagination totalItems={meta?.total ?? 0} perPage={PER_PAGE} pagination={pagination} />
+        </div>
+      </Card>
+
+      <ReviewRemittanceModal
+        key={target ? `${target.remittance.id}-${target.mode}-${reviewDisclosure.isOpen}` : 'closed'}
+        open={reviewDisclosure.isOpen}
+        onClose={reviewDisclosure.close}
+        onConfirm={submitReview}
+        loading={confirmMutation.isPending || rejectMutation.isPending}
+        remittance={target?.remittance}
+        mode={target?.mode ?? 'confirm'}
       />
     </div>
   )

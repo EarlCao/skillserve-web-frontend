@@ -24,6 +24,7 @@ const RESOURCE_QUERY_KEYS = {
   reviews: [QUERY_KEYS.reviews.all, QUERY_KEYS.providerRecognition.all, QUERY_KEYS.services.all],
   reports: [QUERY_KEYS.reports.all],
   'support-tickets': [QUERY_KEYS.supportTickets.all],
+  'commission-remittances': [QUERY_KEYS.commissionRemittances.all, QUERY_KEYS.commissions.all],
   notifications: [QUERY_KEYS.notifications.all],
   settings: [QUERY_KEYS.settings.all],
   'data-management': [QUERY_KEYS.dataManagement.all],

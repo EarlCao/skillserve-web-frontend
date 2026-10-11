@@ -10,6 +10,7 @@ import { useSettings, useUpdateSettings } from '../hooks/useSettings'
 const GROUPS = [
   ['general', 'General', 'Platform identity and preferences.'],
   ['marketplace', 'Marketplace', 'Rules for providers, services, and marketplace operations.'],
+  ['commission_payments', 'Commission payments', 'Where providers send SkillServe its commission. Providers see these GCash details on their Commission screen, pay outside the app, then submit the reference number for you to confirm under Commissions → GCash payments.'],
   ['identity', 'Identity', 'National ID verification. The requirement ships off; turning it on stops unverified accounts booking or taking work.'],
   ['booking', 'Booking', 'Booking and cancellation rules. A confirmed booking cancelled inside the window records the fee of whoever cancelled.'],
   ['notifications', 'Notifications', 'System notification preferences.'],
@@ -26,8 +27,14 @@ const HINTS = {
   'identity.identity_verification_enforced_from': 'Accounts created before this date keep transacting unverified. Leave it empty and the requirement covers every existing account too.',
   'identity.identity_document_retention_days': 'How long National ID images are kept after a decision.',
   'marketplace.commission_block_min_amount': 'In pesos. A provider who owes less keeps taking new bookings; 0 blocks on any unpaid commission. Finishing agreed jobs is never blocked.',
+  'commission_payments.gcash_account_name': 'The registered name GCash shows the provider before they send, so they can check it is SkillServe.',
+  'commission_payments.gcash_number': 'An 11-digit GCash number starting with 09.',
+  'commission_payments.receipt_retention_days': 'Receipt screenshots providers attach are deleted this many days after the payment is confirmed or rejected. The payment record is kept.',
   'marketplace.commission_block_after_days': 'Blocks even a small debt once the oldest unpaid commission is this many days old; 0 turns this off. Whichever limit is reached first applies.',
 }
+
+// Free text long enough to need a textarea, beyond the policies and descriptions.
+const TEXTAREA_FIELDS = new Set(['commission_payments.payment_instructions'])
 
 // Text inputs the browser should render as a date picker. The API sends values,
 // not types, so the one date setting is named here rather than guessed at.
@@ -101,7 +108,7 @@ export default function SettingsPage() {
               </label>
               ) : (
                 <div key={name} className={activeGroup === 'policies' ? 'md:col-span-2' : ''}>
-                {activeGroup === 'policies' || name.includes('description') ? <label className="form-control" htmlFor={`setting-${activeGroup}-${name}`}><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea id={`setting-${activeGroup}-${name}`} className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} id={`setting-${activeGroup}-${name}`} type={inputType(name, value)} value={value ?? ''} disabled={isReadOnly(name)} hint={HINTS[`${activeGroup}.${name}`]} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
+                {activeGroup === 'policies' || name.includes('description') || TEXTAREA_FIELDS.has(`${activeGroup}.${name}`) ? <label className="form-control" htmlFor={`setting-${activeGroup}-${name}`}><span className="mb-1 text-sm font-medium">{labelFor(name)}</span><textarea id={`setting-${activeGroup}-${name}`} className="textarea textarea-bordered min-h-32 w-full" value={value ?? ''} onChange={(event) => updateField(name, event.target.value)} /></label> : <Input label={labelFor(name)} id={`setting-${activeGroup}-${name}`} type={inputType(name, value)} value={value ?? ''} disabled={isReadOnly(name)} hint={HINTS[`${activeGroup}.${name}`]} onChange={(event) => updateField(name, typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}
               </div>
             ))}
           </div>

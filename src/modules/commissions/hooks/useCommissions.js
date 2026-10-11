@@ -10,6 +10,7 @@ import { commissionApi } from '../api/commissionApi'
  */
 function invalidateCommissionCaches(queryClient) {
   queryClient.invalidateQueries({ queryKey: QUERY_KEYS.commissions.all })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.commissionRemittances.all })
   queryClient.invalidateQueries({ queryKey: QUERY_KEYS.commissionTiers.all })
   queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bookings.all })
   queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard.all })
@@ -112,6 +113,55 @@ export function useSettleCommission() {
       invalidateCommissionCaches(queryClient)
     },
     onError: (error) => toast.error(error?.message ?? 'Unable to record this settlement.'),
+  })
+}
+
+export function useCommissionRemittances(params) {
+  return useQuery({
+    queryKey: QUERY_KEYS.commissionRemittances.list(params),
+    queryFn: () => commissionApi.listRemittances(params),
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** Settles every booking the payment covered, so the ledger refreshes too. */
+export function useConfirmRemittance() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, notes }) => commissionApi.confirmRemittance(id, notes),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Payment confirmed.')
+      invalidateCommissionCaches(queryClient)
+    },
+    onError: (error) => toast.error(error?.message ?? 'Unable to confirm this payment.'),
+  })
+}
+
+export function useRejectRemittance() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, reason }) => commissionApi.rejectRemittance(id, reason),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Payment rejected.')
+      invalidateCommissionCaches(queryClient)
+    },
+    onError: (error) => toast.error(error?.message ?? 'Unable to reject this payment.'),
+  })
+}
+
+/** Open the provider's GCash receipt in a new tab, from memory. */
+export function useOpenRemittanceProof() {
+  return useMutation({
+    mutationFn: (id) => commissionApi.remittanceProof(id),
+    onSuccess: (blob) => {
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank', 'noopener,noreferrer')
+      // Long enough for the new tab to load it.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    },
+    onError: (error) => toast.error(error?.message ?? 'Unable to open this receipt.'),
   })
 }
 
