@@ -59,7 +59,7 @@ export default function ReviewRemittanceModal({ open, onClose, onConfirm, loadin
     >
       <form id="review-remittance-form" onSubmit={submit} className="flex flex-col gap-3">
         <div className="rounded-lg bg-base-200 p-3 text-sm">
-          <p className="text-base-content/60">GCash reference number</p>
+          <p className="text-base-content/60">{remittance?.method === 'qrph' ? 'SkillServe reference (QR Ph)' : 'GCash reference number'}</p>
           <p className="font-mono text-lg font-semibold tracking-wide">{remittance?.reference}</p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <div>
@@ -108,6 +108,16 @@ export default function ReviewRemittanceModal({ open, onClose, onConfirm, loadin
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {remittance?.method === 'qrph' && remittance.failure_reason && (
+          <div role="alert" className="alert alert-error text-sm">
+            <TriangleAlert className="size-5" />
+            <span>
+              {remittance.failure_reason}
+              {remittance.external_payment_id ? ` PayMongo payment: ${remittance.external_payment_id}.` : ''}
+            </span>
           </div>
         )}
 

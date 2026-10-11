@@ -283,7 +283,7 @@ export default function AdminLayout() {
                 icon: Percent,
                 label: 'Commissions',
                 badge: pendingCommissionRemittances,
-                badgeLabel: 'GCash payments to confirm',
+                badgeLabel: 'provider payments to confirm',
               },
             ]}
           />

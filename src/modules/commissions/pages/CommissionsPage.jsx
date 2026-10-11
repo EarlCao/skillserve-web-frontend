@@ -38,13 +38,22 @@ const PER_PAGE = 10
 const TABS = [
   { id: 'tiers', label: 'Tiers' },
   { id: 'ledger', label: 'Commissions & Payments' },
-  { id: 'payments', label: 'GCash payments' },
+  { id: 'payments', label: 'Provider payments' },
 ]
 
 const REMITTANCE_STATUSES = {
   pending: { variant: 'warning', label: 'Waiting' },
   confirmed: { variant: 'success', label: 'Confirmed' },
   rejected: { variant: 'error', label: 'Rejected' },
+  expired: { variant: 'neutral', label: 'QR expired' },
+  failed: { variant: 'neutral', label: 'Failed' },
+}
+
+// How the provider paid: a GCash reference a reviewer checks, or a PayMongo
+// QR Ph code PayMongo confirms by itself.
+const REMITTANCE_METHODS = {
+  gcash_reference: 'GCash reference',
+  qrph: 'QR Ph (PayMongo)',
 }
 
 const range = (tier) =>
@@ -487,8 +496,9 @@ function LedgerTab({ canSettle }) {
 }
 
 /**
- * GCash payments providers submitted for their outstanding commission. The
- * reviewer finds each reference in SkillServe's GCash history, then confirms
+ * Commission payments providers made: GCash references a reviewer checks, and
+ * PayMongo QR Ph payments that confirm themselves. For a GCash reference the
+ * reviewer finds it in SkillServe's GCash history, then confirms
  * (settling the bookings it covered) or rejects it with a reason.
  */
 function PaymentsTab({ canSettle }) {
@@ -543,7 +553,9 @@ function PaymentsTab({ canSettle }) {
       cell: ({ row }) => (
         <div className="flex flex-col">
           <span className="font-mono">{row.original.reference}</span>
-          <span className="text-xs text-base-content/60">{formatDateTime(row.original.submitted_at)}</span>
+          <span className="text-xs text-base-content/60">
+            {REMITTANCE_METHODS[row.original.method] ?? row.original.method} · {formatDateTime(row.original.submitted_at)}
+          </span>
           {row.original.other_claims_count > 0 && (
             <Badge variant="warning" size="sm" className="mt-1">
               Also claimed by another provider
@@ -596,6 +608,9 @@ function PaymentsTab({ canSettle }) {
             {row.original.status === 'rejected' && row.original.review_notes && (
               <span className="max-w-56 text-xs text-base-content/60">{row.original.review_notes}</span>
             )}
+            {row.original.failure_reason && (
+              <span className="max-w-56 text-xs text-error">{row.original.failure_reason}</span>
+            )}
           </div>
         )
       },
@@ -643,6 +658,8 @@ function PaymentsTab({ canSettle }) {
             <option value="pending">Waiting for confirmation</option>
             <option value="confirmed">Confirmed</option>
             <option value="rejected">Rejected</option>
+            <option value="expired">QR expired</option>
+            <option value="failed">Failed</option>
             <option value="">All payments</option>
           </select>
 
@@ -652,14 +669,14 @@ function PaymentsTab({ canSettle }) {
         </div>
 
         {isError ? (
-          <ErrorState title="Could not load GCash payments" message={error?.message} onRetry={refetch} />
+          <ErrorState title="Could not load provider payments" message={error?.message} onRetry={refetch} />
         ) : (
           <DataTable
             columns={columns}
             data={rows}
             isLoading={isLoading}
             emptyTitle={status === 'pending' ? 'No payments waiting' : 'No payments found'}
-            emptyDescription="When a provider sends SkillServe's GCash their commission and submits the reference number, it appears here for you to confirm."
+            emptyDescription="A provider's GCash-reference payment appears here for you to confirm. QR Ph payments are confirmed by PayMongo and only appear here when one needs a decision."
           />
         )}
 

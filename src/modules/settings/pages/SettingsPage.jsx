@@ -10,7 +10,7 @@ import { useSettings, useUpdateSettings } from '../hooks/useSettings'
 const GROUPS = [
   ['general', 'General', 'Platform identity and preferences.'],
   ['marketplace', 'Marketplace', 'Rules for providers, services, and marketplace operations.'],
-  ['commission_payments', 'Commission payments', 'Where providers send SkillServe its commission. Providers see these GCash details on their Commission screen, pay outside the app, then submit the reference number for you to confirm under Commissions → GCash payments.'],
+  ['commission_payments', 'Commission payments', 'Where providers send SkillServe its commission. Providers see these GCash details on their Commission screen, pay outside the app, then submit the reference number for you to confirm under Commissions → Provider payments. (Paying by QR Ph through PayMongo needs no setting here; it uses the PayMongo keys set on the server.)'],
   ['identity', 'Identity', 'National ID verification. The requirement ships off; turning it on stops unverified accounts booking or taking work.'],
   ['booking', 'Booking', 'Booking and cancellation rules. A confirmed booking cancelled inside the window records the fee of whoever cancelled.'],
   ['notifications', 'Notifications', 'System notification preferences.'],
