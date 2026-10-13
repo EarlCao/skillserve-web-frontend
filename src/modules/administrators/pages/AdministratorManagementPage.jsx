@@ -7,7 +7,6 @@ import RolesPage from './RolesPage'
 import PermissionsPage from './PermissionsPage'
 import AdministratorFormModal from '../components/AdministratorFormModal'
 import RoleFormModal from '../components/RoleFormModal'
-import { useRoles } from '../hooks/useRoles'
 import { useAuth } from '../../../contexts/AuthContext'
 import { hasCapability } from '../../../utils/permissions'
 
@@ -36,10 +35,6 @@ export default function AdministratorManagementPage() {
 
   const [adminFormOpen, setAdminFormOpen] = useState(false)
   const [roleFormOpen, setRoleFormOpen] = useState(false)
-
-  // Role names for the administrator form's role select.
-  const rolesQuery = useRoles({ per_page: 100, sort: 'name', direction: 'asc' })
-  const roleNames = rolesQuery.data?.data?.map((role) => role.name) ?? []
 
   const selectTab = (id) => {
     setSearchParams(id === TABS[0].id ? {} : { tab: id }, { replace: true })
@@ -107,7 +102,6 @@ export default function AdministratorManagementPage() {
         open={adminFormOpen}
         onClose={() => setAdminFormOpen(false)}
         administrator={null}
-        roles={roleNames}
       />
     </div>
   )

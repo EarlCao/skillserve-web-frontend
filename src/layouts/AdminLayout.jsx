@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { toast } from 'sonner'
 import { useLogout } from '../modules/authentication/hooks/useLogout'
 import { useProfilePhoto } from '../modules/authentication/hooks/useProfilePhoto'
+import UserAvatar from '../modules/users/components/UserAvatar'
 import { useDisclosure } from '../hooks/useDisclosure'
 import ConfirmDialog from '../components/feedback/ConfirmDialog'
 import OfflineBanner from '../components/common/OfflineBanner'
@@ -110,13 +111,6 @@ export default function AdminLayout() {
   const photoInput = useRef(null)
   const [collapsed, setCollapsed] = useState(false)
 
-  const initials = (user?.name ?? 'A')
-    .split(' ')
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
-
   const canManageAdministrators = hasAnyCapability(user, ['manage administrators', 'view administrators', 'create administrators', 'edit administrators'])
   const canManageUsers = hasAnyCapability(user, ['manage users', 'view users', 'edit users', 'delete users', 'suspend users', 'activate users', 'ban users'])
   const canManageServiceCategories = hasAnyCapability(user, ['manage service categories', 'view service categories', 'create service categories', 'edit service categories', 'delete service categories'])
@@ -193,16 +187,11 @@ export default function AdminLayout() {
             <button
               type="button"
               tabIndex={0}
-              className={`btn btn-ghost btn-circle avatar ${user?.profile_photo_url ? '' : 'placeholder'}`}
+              className="btn btn-ghost btn-circle avatar"
               aria-label="Account menu"
             >
-              <div className="w-10 rounded-full bg-primary text-primary-content">
-                {user?.profile_photo_url ? (
-                  <img src={user.profile_photo_url} alt="" className="size-10 rounded-full object-cover" />
-                ) : (
-                  <span className="text-sm font-semibold">{initials}</span>
-                )}
-              </div>
+              {/* The photo, or the initials when there is none or it fails to load. */}
+              <UserAvatar name={user?.name} src={user?.profile_photo_url} className="bg-primary text-primary-content" />
             </button>
             <ul
               tabIndex={0}

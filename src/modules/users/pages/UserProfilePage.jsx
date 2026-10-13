@@ -209,7 +209,7 @@ export default function UserProfilePage() {
           </div>
         ) : (
           <>
-            <UserAvatar name={user.name} size="lg" />
+            <UserAvatar name={user.name} src={user.profile_photo_url} size="lg" />
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-lg font-semibold">{user.name}</span>

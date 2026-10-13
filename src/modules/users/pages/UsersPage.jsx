@@ -133,7 +133,7 @@ export default function UsersPage() {
       header: 'User',
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-          <UserAvatar name={row.original.name} size="sm" />
+          <UserAvatar name={row.original.name} src={row.original.profile_photo_url} size="sm" />
           <div className="flex flex-col">
             <span className="font-medium">{row.original.name}</span>
             <span className="text-xs text-base-content/60">{row.original.email}</span>

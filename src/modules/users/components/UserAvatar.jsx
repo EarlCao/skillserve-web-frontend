@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { cn } from '../../../lib/utils'
 
 const SIZES = {
@@ -7,10 +8,19 @@ const SIZES = {
 }
 
 /**
- * Initials avatar. Profile photos are surfaced by the resource as soon as a
- * media/upload flow exists; until then every account renders its initials.
+ * An account's avatar: their profile photo when they have one, otherwise —
+ * or when the photo fails to load — their initials.
+ *
+ * @param {object} props
+ * @param {string} [props.name]
+ * @param {string|null} [props.src]  the profile photo URL
+ * @param {'sm'|'md'|'lg'} [props.size]
+ * @param {string} [props.className]
  */
-export default function UserAvatar({ name, size = 'md', className }) {
+export default function UserAvatar({ name, src, size = 'md', className }) {
+  // Remembers which URL failed, so a new photo is tried again.
+  const [failedSrc, setFailedSrc] = useState(null)
+
   const initials = (name ?? '?')
     .split(' ')
     .map((part) => part[0])
@@ -18,6 +28,18 @@ export default function UserAvatar({ name, size = 'md', className }) {
     .slice(0, 2)
     .join('')
     .toUpperCase()
+
+  if (src && failedSrc !== src) {
+    return (
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        onError={() => setFailedSrc(src)}
+        className={cn('shrink-0 rounded-full object-cover', SIZES[size], className)}
+      />
+    )
+  }
 
   return (
     <div

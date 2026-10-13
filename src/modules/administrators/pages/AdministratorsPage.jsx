@@ -18,6 +18,7 @@ import { useAdministrators, useUpdateAdministratorStatus } from '../hooks/useAdm
 import { useRoles } from '../hooks/useRoles'
 import AdministratorDetailsModal from '../components/AdministratorDetailsModal'
 import AdministratorFormModal from '../components/AdministratorFormModal'
+import UserAvatar from '../../users/components/UserAvatar'
 import ResetPasswordModal from '../components/ResetPasswordModal'
 import StatusBadge from '../components/StatusBadge'
 
@@ -94,9 +95,12 @@ export default function AdministratorsPage() {
       accessorKey: 'name',
       header: 'Name',
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{row.original.name}</span>
-          <span className="text-xs text-base-content/60">{row.original.email}</span>
+        <div className="flex items-center gap-3">
+          <UserAvatar name={row.original.name} src={row.original.profile_photo_url} size="sm" />
+          <div className="flex flex-col">
+            <span className="font-medium">{row.original.name}</span>
+            <span className="text-xs text-base-content/60">{row.original.email}</span>
+          </div>
         </div>
       ),
     },
@@ -328,7 +332,6 @@ export default function AdministratorsPage() {
         open={formOpen}
         onClose={() => setFormOpen(false)}
         administrator={editing}
-        roles={roleNames}
       />
 
       <AdministratorDetailsModal open={Boolean(viewing)} onClose={() => setViewing(null)} administrator={viewing} />

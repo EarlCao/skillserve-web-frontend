@@ -17,12 +17,14 @@ import { useCreateAdministrator, useUpdateAdministrator } from '../hooks/useAdmi
  * @param {boolean} props.open
  * @param {() => void} props.onClose
  * @param {object|null} props.administrator  the record being edited, or null to create
- * @param {string[]} [props.roles]  available role names for the select
+ *
+ * There is no role field: every new administrator is an admin, and SkillServe
+ * has exactly one super administrator, which is never granted.
  */
-export default function AdministratorFormModal({ open, onClose, administrator, roles = [] }) {
+export default function AdministratorFormModal({ open, onClose, administrator }) {
   const isEditing = Boolean(administrator)
 
-  // Super administrators are a fixed system role: role and status cannot be
+  // The super administrator is a fixed system role: its status cannot be
   // changed (the backend enforces this too).
   const isSuperAdmin = (administrator?.roles ?? []).includes('super-admin')
 
@@ -41,7 +43,6 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
           first_name: administrator.first_name ?? '',
           last_name: administrator.last_name ?? '',
           email: administrator.email ?? '',
-          role: administrator.roles?.[0] ?? '',
           status: administrator.status ?? 'active',
         }
       : {
@@ -50,7 +51,6 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
           email: '',
           password: '',
           password_confirmation: '',
-          role: '',
         },
   })
 
@@ -64,7 +64,6 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
             first_name: administrator.first_name ?? '',
             last_name: administrator.last_name ?? '',
             email: administrator.email ?? '',
-            role: administrator.roles?.[0] ?? '',
             status: administrator.status ?? 'active',
           }
         : {
@@ -73,7 +72,6 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
             email: '',
             password: '',
             password_confirmation: '',
-            role: '',
           },
     )
   }, [open, administrator, isEditing, reset])
@@ -191,28 +189,15 @@ export default function AdministratorFormModal({ open, onClose, administrator, r
           </>
         )}
 
-        <FormField
-          label="Role"
-          required
-          error={errors.role?.message}
-          hint={isSuperAdmin ? 'Super administrator role is fixed and cannot be changed.' : undefined}
-        >
-          <Controller
-            control={control}
-            name="role"
-            disabled={isSuperAdmin}
-            render={({ field }) => (
-              <select className="select select-bordered w-full" {...field}>
-                <option value="">Select a role…</option>
-                {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
-            )}
-          />
-        </FormField>
+        <div className="rounded-box bg-base-200 px-4 py-3 text-sm">
+          <span className="font-medium">Role: </span>
+          {isSuperAdmin ? 'Super administrator' : 'Administrator'}
+          <p className="mt-1 text-xs text-base-content/60">
+            {isSuperAdmin
+              ? 'SkillServe has one super administrator; this role is fixed.'
+              : 'Every administrator you add is an administrator. There is only one super administrator.'}
+          </p>
+        </div>
 
         {isEditing && (
           <FormField
