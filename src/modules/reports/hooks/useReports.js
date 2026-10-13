@@ -141,3 +141,21 @@ export function useTakeReportAction() {
     },
   })
 }
+
+/**
+ * Open the photo of a reported chat message in a new tab. The file is private,
+ * so it is downloaded with the admin's token and shown from memory.
+ */
+export function useOpenReportedPhoto() {
+  return useMutation({
+    mutationFn: (reportId) => reportApi.messageImage(reportId),
+    onSuccess: (blob) => {
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank', 'noopener,noreferrer')
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to open this photo.')
+    },
+  })
+}

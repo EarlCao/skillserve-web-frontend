@@ -1,10 +1,10 @@
 import { format } from 'date-fns'
-import { AlertTriangle, MessageSquareQuote, PackageCheck, ShieldX, StickyNote, UserCheck, UserCog } from 'lucide-react'
+import { AlertTriangle, ImageIcon, MessageSquareQuote, PackageCheck, ShieldX, StickyNote, UserCheck, UserCog } from 'lucide-react'
 import Modal from '../../../components/ui/Modal'
 import Button from '../../../components/ui/Button'
 import ReportStatusBadge from './ReportStatusBadge'
 import ReportTypeBadge from './ReportTypeBadge'
-import { useReport } from '../hooks/useReports'
+import { useOpenReportedPhoto, useReport } from '../hooks/useReports'
 import ErrorState from '../../../components/common/ErrorState'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
@@ -26,6 +26,7 @@ export default function ReportDetailsModal({
   onReject,
 }) {
   const { data, isLoading, isError, error, refetch } = useReport(reportId)
+  const openPhoto = useOpenReportedPhoto()
   const report = data?.data
   const terminal = report?.status === 'resolved' || report?.status === 'rejected'
 
@@ -115,6 +116,18 @@ export default function ReportDetailsModal({
               {report.reportable.sender && <p className="text-xs text-base-content/60">From: {report.reportable.sender.name}</p>}
               {report.reportable.receiver && <p className="text-xs text-base-content/60">To: {report.reportable.receiver.name}</p>}
               {report.reportable.status && <p className="text-xs text-base-content/60">Target status: {report.reportable.status}</p>}
+              {report.reportable.has_image && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-2"
+                  loading={openPhoto.isPending}
+                  onClick={() => openPhoto.mutate(report.id)}
+                >
+                  <ImageIcon className="size-4" />
+                  View photo
+                </Button>
+              )}
             </div>
           )}
 

@@ -13,4 +13,6 @@ export const reportApi = {
   resolve: (id, resolutionNote) => api.patch(`/reports/${id}/resolve`, { resolution_note: resolutionNote }),
   reject: (id, reason) => api.patch(`/reports/${id}/reject`, { reason }),
   takeAction: (id, payload) => api.patch(`/reports/${id}/action`, payload),
+  // The photo of a reported chat message (private; fetched with the token).
+  messageImage: (id) => api.get(`/reports/${id}/message-image`, { responseType: 'blob' }),
 }
