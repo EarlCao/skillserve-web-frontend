@@ -6,6 +6,7 @@ import ReportStatusBadge from './ReportStatusBadge'
 import ReportTypeBadge from './ReportTypeBadge'
 import { useOpenReportedPhoto, useReport } from '../hooks/useReports'
 import ErrorState from '../../../components/common/ErrorState'
+import PrivatePhotos from '../../../components/common/PrivatePhotos'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
 
@@ -138,6 +139,8 @@ export default function ReportDetailsModal({
               <p className="mt-1 text-sm text-base-content/80">{report.description}</p>
             </div>
           )}
+
+          <PrivatePhotos photos={report.attachments} label="Photos from the reporter" />
 
           {/* Reporter */}
           {report.reporter && (

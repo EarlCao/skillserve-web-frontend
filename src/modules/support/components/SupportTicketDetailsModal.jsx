@@ -5,6 +5,7 @@ import Button from '../../../components/ui/Button'
 import Textarea from '../../../components/ui/Textarea'
 import Input from '../../../components/ui/Input'
 import ErrorState from '../../../components/common/ErrorState'
+import PrivatePhotos from '../../../components/common/PrivatePhotos'
 import SupportTicketStatusBadge from './SupportTicketStatusBadge'
 import SupportTicketPriorityBadge from './SupportTicketPriorityBadge'
 import { useSupportAssignees, useSupportTicket } from '../hooks/useSupportTickets'
@@ -81,11 +82,12 @@ export default function SupportTicketDetailsModal({
           )}
 
           <div><span className="text-sm font-medium">Request</span><p className="mt-1 whitespace-pre-wrap text-sm text-base-content/80">{ticket.description}</p></div>
+          <PrivatePhotos photos={ticket.attachments} label="Photos from the requester" />
 
           <div>
             <span className="text-sm font-medium">Responses</span>
             <div className="mt-2 flex flex-col gap-2">
-              {(ticket.messages ?? []).length === 0 ? <p className="text-sm text-base-content/60">No responses yet.</p> : ticket.messages.map((message) => <div key={message.id} className="rounded-md border border-base-200 p-3"><p className="whitespace-pre-wrap text-sm">{message.body}</p><p className="mt-1 text-xs text-base-content/60">{message.author?.name ?? 'System'} · {formatDateTime(message.created_at)}</p></div>)}
+              {(ticket.messages ?? []).length === 0 ? <p className="text-sm text-base-content/60">No responses yet.</p> : ticket.messages.map((message) => <div key={message.id} className="rounded-md border border-base-200 p-3">{message.body && <p className="whitespace-pre-wrap text-sm">{message.body}</p>}{message.attachments?.length > 0 && <div className="mt-2"><PrivatePhotos photos={message.attachments} /></div>}<p className="mt-1 text-xs text-base-content/60">{message.author?.name ?? 'System'} · {formatDateTime(message.created_at)}</p></div>)}
             </div>
           </div>
 

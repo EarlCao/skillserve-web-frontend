@@ -146,6 +146,9 @@ export const QUERY_KEYS = {
     list: (params) => ['identity-verifications', 'list', params],
     detail: (id) => ['identity-verifications', 'detail', id],
   },
+  privatePhotos: {
+    photo: (path) => ['private-photos', path],
+  },
 }
 
 /** Common HTTP status codes. */
