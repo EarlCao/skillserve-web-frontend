@@ -154,8 +154,8 @@ function TiersTab({ canManage }) {
     formDisclosure.open()
   }
 
-  const submitTier = (payload) => {
-    const options = { onSuccess: () => formDisclosure.close() }
+  const submitTier = (payload, { onError } = {}) => {
+    const options = { onSuccess: () => formDisclosure.close(), onError }
 
     if (editing) {
       updateMutation.mutate({ id: editing.id, payload }, options)

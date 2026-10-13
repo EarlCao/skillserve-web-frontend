@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Modal from '../../../components/ui/Modal'
 import Button from '../../../components/ui/Button'
@@ -26,7 +26,6 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
   const updateMutation = useUpdateService()
 
   const {
-    register,
     handleSubmit,
     reset,
     control,
@@ -40,7 +39,9 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
   const { data: selectedCategoryData } = useServiceCategory(selectedCategoryId)
   const subcategories = selectedCategoryData?.data?.subcategories ?? []
 
-  // Re-seed the form whenever the target (or the modal) changes.
+  // Re-seed the form whenever the target (or the modal) changes. Fields are
+  // controlled so the seeded values show even though the React Compiler
+  // memoizes the render, and the selects keep their value once async options load.
   useEffect(() => {
     if (open) reset(toDefaults(service))
   }, [open, service, reset])
@@ -79,33 +80,53 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <FormField label="Title" error={errors.title?.message} required>
-          <Input {...register('title')} placeholder="Service title" />
+          <Controller
+            control={control}
+            name="title"
+            render={({ field }) => <Input {...field} placeholder="Service title" />}
+          />
         </FormField>
 
         <FormField label="Description" error={errors.description?.message}>
-          <Textarea {...register('description')} placeholder="Describe the service..." rows={3} />
+          <Controller
+            control={control}
+            name="description"
+            render={({ field }) => <Textarea {...field} placeholder="Describe the service..." rows={3} />}
+          />
         </FormField>
 
         <FormField label="Category" error={errors.category_id?.message} required>
-          <select {...register('category_id')} className="select select-bordered w-full">
-            <option value="">Select a category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+          <Controller
+            control={control}
+            name="category_id"
+            render={({ field }) => (
+              <select {...field} className="select select-bordered w-full">
+                <option value="">Select a category</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
         </FormField>
 
         <FormField label="Subcategory" error={errors.subcategory_id?.message}>
-          <select {...register('subcategory_id')} className="select select-bordered w-full" disabled={!selectedCategoryId}>
-            <option value="">No subcategory</option>
-            {subcategories.map((subcategory) => (
-              <option key={subcategory.id} value={subcategory.id}>
-                {subcategory.name}
-              </option>
-            ))}
-          </select>
+          <Controller
+            control={control}
+            name="subcategory_id"
+            render={({ field }) => (
+              <select {...field} className="select select-bordered w-full" disabled={!selectedCategoryId}>
+                <option value="">No subcategory</option>
+                {subcategories.map((subcategory) => (
+                  <option key={subcategory.id} value={subcategory.id}>
+                    {subcategory.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
         </FormField>
 
         <p className="text-xs text-base-content/60">

@@ -20,7 +20,6 @@ export default function ServiceDetailsModal({
   onHide,
   onFeature,
   onDelete,
-  onEdit,
 }) {
   const { data, isLoading, isError, error, refetch } = useService(serviceId)
   const service = data?.data
@@ -38,11 +37,6 @@ export default function ServiceDetailsModal({
           </Button>
           {service && (
             <>
-              {onEdit && (
-                <Button variant="outline" onClick={() => onEdit(service)}>
-                  Edit
-                </Button>
-              )}
               {service.approval_status === 'pending' && onApprove && (
                 <Button variant="success" onClick={() => onApprove(service)}>
                   Approve

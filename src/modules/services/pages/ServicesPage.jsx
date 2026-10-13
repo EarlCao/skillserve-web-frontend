@@ -442,7 +442,6 @@ export default function ServicesPage() {
         onHide={can('edit services') ? (service) => { setHideTarget(service); hideDisclosure.open(); } : undefined}
         onFeature={can('feature services') ? (service) => { setFeatureTarget(service); featureDisclosure.open(); } : undefined}
         onDelete={can('delete services') ? (service) => { setDeleteTarget(service); deleteDisclosure.open(); } : undefined}
-        onEdit={can('edit services') ? (service) => setEditing(service) : undefined}
       />
 
       <ConfirmDialog

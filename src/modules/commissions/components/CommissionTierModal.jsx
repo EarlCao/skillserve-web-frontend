@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
 import Modal from '../../../components/ui/Modal'
+import { getFirstFieldError } from '../../../lib/errors'
 
 /**
  * Create or edit a commission band.
@@ -12,7 +13,8 @@ import Modal from '../../../components/ui/Modal'
  *
  * Overlap with another active band is a cross-row rule decided by the server,
  * so a clash arrives as a 422 naming the band it collides with rather than
- * being guessed at here.
+ * being guessed at here. Server errors are shown in the form: a toast would
+ * render behind the open dialog.
  */
 export default function CommissionTierModal({ open, onClose, onSubmit, loading, tier }) {
   const isEdit = Boolean(tier)
@@ -49,13 +51,16 @@ export default function CommissionTierModal({ open, onClose, onSubmit, loading, 
       return
     }
 
-    onSubmit({
-      name: form.name.trim(),
-      min_amount: min,
-      max_amount: max,
-      percentage: Number(form.percentage),
-      is_active: form.is_active,
-    })
+    onSubmit(
+      {
+        name: form.name.trim(),
+        min_amount: min,
+        max_amount: max,
+        percentage: Number(form.percentage),
+        is_active: form.is_active,
+      },
+      { onError: (serverError) => setError(getFirstFieldError(serverError, 'Unable to save this tier.')) },
+    )
   }
 
   // Shows the split on the band's own lower bound, so the effect of the rate
@@ -133,7 +138,7 @@ export default function CommissionTierModal({ open, onClose, onSubmit, loading, 
 
         {error && (
           <p className="text-sm text-error" role="alert">
-            {error}
+            Error: {error}
           </p>
         )}
       </form>

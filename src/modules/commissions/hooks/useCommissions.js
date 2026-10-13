@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { QUERY_KEYS } from '../../../constants'
+import { getFirstFieldError } from '../../../lib/errors'
 import { commissionApi } from '../api/commissionApi'
 
 /**
@@ -46,10 +47,12 @@ export function useCommissions(params) {
 }
 
 /**
- * Overlapping ranges come back as a 422 on `min_amount`. The message is the
- * backend's own ("This range overlaps the active tier …"), which names the
- * clashing band and is more useful than anything generic.
+ * Overlapping ranges come back as a 422 on `min_amount` ("Another tier
+ * already has this price range …"). Toast that field message rather than the
+ * generic "The given data was invalid." The tier form also shows it inline.
  */
+const toastTierError = (fallback) => (error) => toast.error(getFirstFieldError(error, fallback))
+
 export function useCreateCommissionTier() {
   const queryClient = useQueryClient()
 
@@ -59,7 +62,7 @@ export function useCreateCommissionTier() {
       toast.success(data?.message ?? 'Commission tier created.')
       invalidateCommissionCaches(queryClient)
     },
-    onError: (error) => toast.error(error?.message ?? 'Unable to create this tier.'),
+    onError: toastTierError('Unable to create this tier.'),
   })
 }
 
@@ -72,7 +75,7 @@ export function useUpdateCommissionTier() {
       toast.success(data?.message ?? 'Commission tier updated.')
       invalidateCommissionCaches(queryClient)
     },
-    onError: (error) => toast.error(error?.message ?? 'Unable to update this tier.'),
+    onError: toastTierError('Unable to update this tier.'),
   })
 }
 

@@ -21,3 +21,19 @@ export function getErrorMessage(error, fallback = 'Something went wrong.') {
 
   return fallback
 }
+
+/**
+ * The first field message of a 422 (`errors: { field: [message] }`), falling
+ * back to the general message. Use where the specific rule matters more than
+ * "The given data was invalid."
+ *
+ * @param {unknown} error
+ * @param {string} fallback
+ * @returns {string}
+ */
+export function getFirstFieldError(error, fallback = 'Something went wrong.') {
+  const messages = Object.values(error?.errors ?? {})[0]
+  const message = Array.isArray(messages) ? messages[0] : messages
+
+  return message ? String(message) : getErrorMessage(error, fallback)
+}
