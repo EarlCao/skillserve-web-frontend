@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import { Ban, Eye, Power, RefreshCw, XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
+import Tooltip from '../../../components/ui/Tooltip'
 import Card from '../../../components/ui/Card'
 import SearchInput from '../../../components/common/SearchInput'
 import ErrorState from '../../../components/common/ErrorState'
@@ -164,16 +165,16 @@ export default function ProvidersPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            {can('view providers') && <Button
+            {can('view providers') && <Tooltip label="View profile" placement="left"><Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(`/admin/providers/${provider.id}`)}
               aria-label={`View ${provider.business_name || provider.user?.name}`}
             >
               <Eye className="size-4" />
-            </Button>}
+            </Button></Tooltip>}
             {isSuspended ? (
-              can('activate providers') && <Button
+              can('activate providers') && <Tooltip label="Activate provider" placement="left"><Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -183,9 +184,9 @@ export default function ProvidersPage() {
                 aria-label={`Activate ${provider.business_name || provider.user?.name}`}
               >
                 <Power className="size-4 text-success" />
-              </Button>
+              </Button></Tooltip>
             ) : (
-              can('suspend providers') && <Button
+              can('suspend providers') && <Tooltip label="Suspend provider" placement="left"><Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -195,10 +196,10 @@ export default function ProvidersPage() {
                 aria-label={`Suspend ${provider.business_name || provider.user?.name}`}
               >
                 <Ban className="size-4 text-warning" />
-              </Button>
+              </Button></Tooltip>
             )}
             {provider.verification_status === 'verified' && can('verify providers') && (
-              <Button
+              <Tooltip label="Remove verification" placement="left"><Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -208,7 +209,7 @@ export default function ProvidersPage() {
                 aria-label={`Remove verification for ${provider.business_name || provider.user?.name}`}
               >
                 <XCircle className="size-4 text-error" />
-              </Button>
+              </Button></Tooltip>
             )}
           </div>
         )

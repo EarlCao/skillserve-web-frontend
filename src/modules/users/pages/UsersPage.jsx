@@ -3,6 +3,7 @@ import { differenceInCalendarDays, format } from 'date-fns'
 import { Ban, CirclePause, Eye, Pencil, Power, RefreshCw, Trash2, UserCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
+import Tooltip from '../../../components/ui/Tooltip'
 import Card from '../../../components/ui/Card'
 import SearchInput from '../../../components/common/SearchInput'
 import ErrorState from '../../../components/common/ErrorState'
@@ -199,25 +200,25 @@ export default function UsersPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            {can('view users') && <Button
+            {can('view users') && <Tooltip label="View profile" placement="left"><Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(`/admin/users/${user.id}`)}
               aria-label={`View ${user.name}`}
             >
               <Eye className="size-4" />
-            </Button>}
-            {can('edit users') && <Button
+            </Button></Tooltip>}
+            {can('edit users') && <Tooltip label="Edit details" placement="left"><Button
               variant="ghost"
               size="sm"
               onClick={() => setEditing(user)}
               aria-label={`Edit ${user.name}`}
             >
               <Pencil className="size-4" />
-            </Button>}
+            </Button></Tooltip>}
             {!isBanned &&
               (isSuspended ? (
-                can('activate users') && <Button
+                can('activate users') && <Tooltip label="Activate account" placement="left"><Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
@@ -227,9 +228,9 @@ export default function UsersPage() {
                   aria-label={`Activate ${user.name}`}
                 >
                   <Power className="size-4 text-success" />
-                </Button>
+                </Button></Tooltip>
               ) : (
-                can('suspend users') && <Button
+                can('suspend users') && <Tooltip label="Suspend account" placement="left"><Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
@@ -239,10 +240,10 @@ export default function UsersPage() {
                   aria-label={`Suspend ${user.name}`}
                 >
                   <CirclePause className="size-4 text-warning" />
-                </Button>
+                </Button></Tooltip>
               ))}
             {!isBanned && can('ban users') && (
-              <Button
+              <Tooltip label="Ban account" placement="left"><Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -252,10 +253,10 @@ export default function UsersPage() {
                 aria-label={`Ban ${user.name}`}
               >
                 <Ban className="size-4 text-error" />
-              </Button>
+              </Button></Tooltip>
             )}
             {isBanned && can('ban users') && (
-              <Button
+              <Tooltip label="Unban account" placement="left"><Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -263,12 +264,11 @@ export default function UsersPage() {
                   actionDisclosure.open()
                 }}
                 aria-label={`Unban ${user.name}`}
-                title="Unban"
               >
                 <UserCheck className="size-4 text-success" />
-              </Button>
+              </Button></Tooltip>
             )}
-            {can('delete users') && <Button
+            {can('delete users') && <Tooltip label="Delete account" placement="left"><Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -278,7 +278,7 @@ export default function UsersPage() {
               aria-label={`Delete ${user.name}`}
             >
               <Trash2 className="size-4 text-error" />
-            </Button>}
+            </Button></Tooltip>}
           </div>
         )
       },
