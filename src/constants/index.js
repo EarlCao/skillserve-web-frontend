@@ -128,6 +128,7 @@ export const QUERY_KEYS = {
     detail: (id) => ['support-tickets', 'detail', id],
     assignees: (search) => ['support-tickets', 'assignees', search],
   },
+  commissionSettings: ['commission-settings'],
   commissionTiers: {
     all: ['commission-tiers'],
     list: (params) => ['commission-tiers', 'list', params],

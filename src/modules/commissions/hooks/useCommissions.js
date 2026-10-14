@@ -180,3 +180,25 @@ export function useWaiveCommission() {
     onError: (error) => toast.error(error?.message ?? 'Unable to waive this commission.'),
   })
 }
+
+/** The commission rules: fallback rate and when unpaid commission blocks a provider. */
+export function useCommissionSettings() {
+  return useQuery({
+    queryKey: QUERY_KEYS.commissionSettings,
+    queryFn: commissionApi.getSettings,
+  })
+}
+
+export function useUpdateCommissionSettings() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: commissionApi.updateSettings,
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Commission settings saved.')
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.commissionSettings })
+      invalidateCommissionCaches(queryClient)
+    },
+    onError: (error) => toast.error(getFirstFieldError(error) ?? error?.message ?? 'Unable to save the commission settings.'),
+  })
+}

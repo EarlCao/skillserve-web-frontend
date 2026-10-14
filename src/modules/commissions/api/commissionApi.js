@@ -13,6 +13,10 @@ export const commissionApi = {
   listPresets: () => api.get('/commission-tiers/presets'),
   applyPreset: (key) => api.post(`/commission-tiers/presets/${key}/apply`),
 
+  // Rules — the fallback rate and when unpaid commission blocks a provider.
+  getSettings: () => api.get('/commission-settings'),
+  updateSettings: (payload) => api.put('/commission-settings', payload),
+
   // Ledger — what each booking earned, and whether it has been remitted.
   list: (params) => api.get('/commissions', { params }),
   settle: (bookingId, payload) => api.patch(`/commissions/${bookingId}/settle`, payload),

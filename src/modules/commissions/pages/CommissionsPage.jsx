@@ -16,6 +16,7 @@ import { usePagination } from '../../../hooks/usePagination'
 import { formatCurrency, formatDateTime } from '../../../utils'
 import { hasCapability } from '../../../utils/permissions'
 import CommissionStatusBadge from '../components/CommissionStatusBadge'
+import CommissionRulesTab from '../components/CommissionRulesTab'
 import CommissionTierModal from '../components/CommissionTierModal'
 import ReviewRemittanceModal from '../components/ReviewRemittanceModal'
 import SettleCommissionModal from '../components/SettleCommissionModal'
@@ -39,6 +40,8 @@ const TABS = [
   { id: 'tiers', label: 'Tiers' },
   { id: 'ledger', label: 'Commissions & Payments' },
   { id: 'payments', label: 'Provider payments' },
+  // The fallback rate and blocking rules, moved here from System Settings.
+  { id: 'rules', label: 'Rules' },
 ]
 
 const REMITTANCE_STATUSES = {
@@ -114,6 +117,7 @@ export default function CommissionsPage() {
       {tab === 'tiers' && <TiersTab canManage={canManageTiers} />}
       {tab === 'ledger' && <LedgerTab canSettle={canSettle} />}
       {tab === 'payments' && <PaymentsTab canSettle={canSettle} />}
+      {tab === 'rules' && <CommissionRulesTab canManage={canManageTiers} />}
     </div>
   )
 }
