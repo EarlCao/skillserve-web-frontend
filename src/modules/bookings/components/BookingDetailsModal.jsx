@@ -7,11 +7,14 @@ import DisputeStatusBadge from './DisputeStatusBadge'
 import ErrorState from '../../../components/common/ErrorState'
 import { useBooking, useBookingHistory } from '../hooks/useBookings'
 import { formatCurrency } from '../../../utils'
+import { PrivatePhotoThumbnail } from '../../../components/common/PrivatePhotos'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
 
 // Mirrors BookingPaymentService::PAYABLE_STATUSES: work was agreed or done.
 const PAYABLE_STATUSES = ['confirmed', 'active', 'completed', 'disputed']
+// Mirrors BookingPaymentService::OWING_STATUSES: something is still to pay.
+const OWING_STATUSES = ['unpaid', 'partially_paid']
 
 /**
  * Modal that displays the full details of a booking, including its history
@@ -46,7 +49,7 @@ export default function BookingDetailsModal({
               Cancel Booking
             </Button>
           )}
-          {booking && onRecordPayment && booking.payment_status === 'unpaid' && PAYABLE_STATUSES.includes(booking.status) && (
+          {booking && onRecordPayment && OWING_STATUSES.includes(booking.payment_status) && PAYABLE_STATUSES.includes(booking.status) && (
             <Button variant="success" onClick={() => onRecordPayment(booking, 'paid')}>
               Mark as Paid
             </Button>
@@ -142,6 +145,36 @@ export default function BookingDetailsModal({
               <p className="font-medium">{booking.payment_method ?? '—'}</p>
             </div>
           </div>
+
+          {/* GCash payments the customer sent proof of; the provider confirms them. */}
+          {(Number(booking.amount_paid) > 0 || booking.payment_proofs?.length > 0) && (
+            <div className="rounded-md bg-base-200/50 p-3 text-sm">
+              <span className="font-medium">Paid so far</span>
+              <p className="mt-1">
+                {formatCurrency(booking.amount_paid)} of {formatCurrency(booking.total_price)}
+                {Number(booking.balance_due) > 0 && ` · ${formatCurrency(booking.balance_due)} still to pay`}
+              </p>
+              {booking.payment_proofs?.length > 0 && (
+                <ul className="mt-2 flex flex-col gap-2">
+                  {booking.payment_proofs.map((proof) => (
+                    <li key={proof.id} className="flex items-start gap-3">
+                      <PrivatePhotoThumbnail path={proof.download_path} />
+                      <div className="min-w-0">
+                        <p className="font-medium">
+                          {formatCurrency(proof.amount)} · <span className="capitalize">{proof.status}</span>
+                        </p>
+                        <p className="text-xs text-base-content/60">
+                          Sent {formatDateTime(proof.created_at)}
+                          {proof.reference && ` · ref ${proof.reference}`}
+                        </p>
+                        {proof.review_note && <p className="text-xs text-base-content/70">{proof.review_note}</p>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           {/* Settlement — recorded by hand; nothing is charged through the platform. */}
           {(booking.paid_at || Number(booking.refunded_amount) > 0) && (

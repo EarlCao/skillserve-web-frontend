@@ -2,6 +2,7 @@ import Badge from '../../../components/ui/Badge'
 
 const PAYMENT_STYLES = {
   unpaid: { variant: 'neutral', label: 'Unpaid' },
+  partially_paid: { variant: 'info', label: 'Partially Paid' },
   paid: { variant: 'success', label: 'Paid' },
   refunded: { variant: 'warning', label: 'Refunded' },
   partially_refunded: { variant: 'info', label: 'Partially Refunded' },

@@ -249,6 +249,7 @@ export default function BookingsPage() {
           >
             <option value="">All payments</option>
             <option value="unpaid">Unpaid</option>
+            <option value="partially_paid">Partially Paid</option>
             <option value="paid">Paid</option>
             <option value="refunded">Refunded</option>
             <option value="partially_refunded">Partially Refunded</option>
