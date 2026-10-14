@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -30,11 +29,10 @@ const resetPasswordSchema = z
  * @param {() => void} props.onClose
  * @param {object|null} props.administrator
  */
-export default function ResetPasswordModal({ open, onClose, administrator }) {
+function ResetPasswordModalDialog({ open, onClose, administrator }) {
   const {
     control,
     handleSubmit,
-    reset,
     setError,
     formState: { errors },
   } = useForm({
@@ -45,11 +43,6 @@ export default function ResetPasswordModal({ open, onClose, administrator }) {
   const mutation = useResetAdministratorPassword()
 
   // Fresh fields every time the modal opens.
-  useEffect(() => {
-    if (open) {
-      reset({ password: '', password_confirmation: '' })
-    }
-  }, [open, reset])
 
   const onSubmit = (values) => {
     mutation.mutate(
@@ -112,4 +105,12 @@ export default function ResetPasswordModal({ open, onClose, administrator }) {
       </form>
     </Modal>
   )
+}
+
+/**
+ * Mounted only while open, so every opening starts from the record's saved
+ * details — never from an earlier, discarded edit.
+ */
+export default function ResetPasswordModal(props) {
+  return props.open ? <ResetPasswordModalDialog {...props} /> : null
 }

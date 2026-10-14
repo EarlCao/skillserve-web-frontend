@@ -28,7 +28,7 @@ const labelFor = (name) => name.replaceAll('_', ' ').replace(/\b\w/g, (letter) =
 const HINTS = {
   'general.timezone': 'Set by the server configuration (BUSINESS_TIMEZONE); provider hours and booking times use this timezone.',
   'identity.identity_verification_enforced_from': 'Accounts created before this date keep transacting unverified. Leave it empty and the requirement covers every existing account too.',
-  'identity.identity_document_retention_days': 'How long National ID images are kept after a decision.',
+  'identity.identity_document_retention_days': 'How long the images of a rejected National ID are kept. A verified ID keeps its images while the account exists.',
   'booking.downpayment_refund_days': 'When a booking with a payment is cancelled, the provider must return it within this many days. Past it they cannot take new bookings and administrators are alerted.',
 }
 

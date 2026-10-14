@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Modal from '../../../components/ui/Modal'
@@ -22,12 +21,11 @@ const toDefaults = (service) => ({
  * offer itself (pricing, duration, location); administrators can only fix the
  * listing details, and the provider is notified of every change.
  */
-export default function ServiceFormModal({ open, onClose, service, categories = [] }) {
+function ServiceFormModalDialog({ open, onClose, service, categories = [] }) {
   const updateMutation = useUpdateService()
 
   const {
     handleSubmit,
-    reset,
     control,
     formState: { errors },
   } = useForm({
@@ -42,9 +40,6 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
   // Re-seed the form whenever the target (or the modal) changes. Fields are
   // controlled so the seeded values show even though the React Compiler
   // memoizes the render, and the selects keep their value once async options load.
-  useEffect(() => {
-    if (open) reset(toDefaults(service))
-  }, [open, service, reset])
 
   const onSubmit = (data) => {
     if (!service) return
@@ -135,4 +130,12 @@ export default function ServiceFormModal({ open, onClose, service, categories = 
       </form>
     </Modal>
   )
+}
+
+/**
+ * Mounted only while open, so every opening starts from the record's saved
+ * details — never from an earlier, discarded edit.
+ */
+export default function ServiceFormModal(props) {
+  return props.open ? <ServiceFormModalDialog {...props} /> : null
 }

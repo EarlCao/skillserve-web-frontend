@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
@@ -17,7 +17,7 @@ import { useCreateRole, useUpdateRole } from '../hooks/useRoles'
  * @param {() => void} props.onClose
  * @param {object|null} props.role  the record being edited, or null to create
  */
-export default function RoleFormModal({ open, onClose, role }) {
+function RoleFormModalDialog({ open, onClose, role }) {
   const isEditing = Boolean(role)
 
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
@@ -33,14 +33,6 @@ export default function RoleFormModal({ open, onClose, role }) {
     defaultValues: { name: '', description: '' },
   })
 
-  useEffect(() => {
-    if (!open) return
-
-    reset({
-      name: role?.name ?? '',
-      description: role?.description ?? '',
-    })
-  }, [open, role, reset])
 
   const createMutation = useCreateRole()
   const updateMutation = useUpdateRole()
@@ -131,4 +123,12 @@ export default function RoleFormModal({ open, onClose, role }) {
     />
     </>
   )
+}
+
+/**
+ * Mounted only while open, so every opening starts from the record's saved
+ * details — never from an earlier, discarded edit.
+ */
+export default function RoleFormModal(props) {
+  return props.open ? <RoleFormModalDialog {...props} /> : null
 }

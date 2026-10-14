@@ -6,12 +6,7 @@ import Spinner from '../../../components/ui/Spinner'
 import Textarea from '../../../components/ui/Textarea'
 import { formatDate, formatDateTime } from '../../../utils'
 import IdentityStatusBadge from './IdentityStatusBadge'
-
-const DOCUMENT_LABELS = {
-  id_front: 'Front of card',
-  id_back: 'Back of card',
-  selfie: 'Selfie',
-}
+import { DOCUMENT_LABELS } from '../utils/documentLabels'
 
 /**
  * Review one National ID submission.

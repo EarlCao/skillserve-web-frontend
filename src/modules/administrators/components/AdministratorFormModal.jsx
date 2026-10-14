@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
@@ -21,7 +21,23 @@ import { useCreateAdministrator, useUpdateAdministrator } from '../hooks/useAdmi
  * There is no role field: every new administrator is an admin, and SkillServe
  * has exactly one super administrator, which is never granted.
  */
-export default function AdministratorFormModal({ open, onClose, administrator }) {
+/** The form's values: the administrator's details when editing, blanks when creating. */
+const formDefaults = (administrator, isEditing) => (isEditing
+  ? {
+      first_name: administrator.first_name ?? '',
+      last_name: administrator.last_name ?? '',
+      email: administrator.email ?? '',
+      status: administrator.status ?? 'active',
+    }
+  : {
+      first_name: '',
+      last_name: '',
+      email: '',
+      password: '',
+      password_confirmation: '',
+    })
+
+function AdministratorFormModalDialog({ open, onClose, administrator }) {
   const isEditing = Boolean(administrator)
 
   // The super administrator is a fixed system role: its status cannot be
@@ -38,43 +54,9 @@ export default function AdministratorFormModal({ open, onClose, administrator })
     formState: { errors, isDirty },
   } = useForm({
     resolver: zodResolver(isEditing ? administratorUpdateSchema : administratorCreateSchema),
-    defaultValues: isEditing
-      ? {
-          first_name: administrator.first_name ?? '',
-          last_name: administrator.last_name ?? '',
-          email: administrator.email ?? '',
-          status: administrator.status ?? 'active',
-        }
-      : {
-          first_name: '',
-          last_name: '',
-          email: '',
-          password: '',
-          password_confirmation: '',
-        },
+    defaultValues: formDefaults(administrator, isEditing),
   })
 
-  // Re-seed the form whenever the target (or the modal) changes.
-  useEffect(() => {
-    if (!open) return
-
-    reset(
-      isEditing
-        ? {
-            first_name: administrator.first_name ?? '',
-            last_name: administrator.last_name ?? '',
-            email: administrator.email ?? '',
-            status: administrator.status ?? 'active',
-          }
-        : {
-            first_name: '',
-            last_name: '',
-            email: '',
-            password: '',
-            password_confirmation: '',
-          },
-    )
-  }, [open, administrator, isEditing, reset])
 
   const createMutation = useCreateAdministrator()
   const updateMutation = useUpdateAdministrator()
@@ -233,4 +215,12 @@ export default function AdministratorFormModal({ open, onClose, administrator })
     />
     </>
   )
+}
+
+/**
+ * Mounted only while open, so every opening starts from the record's saved
+ * details — never from an earlier, discarded edit.
+ */
+export default function AdministratorFormModal(props) {
+  return props.open ? <AdministratorFormModalDialog {...props} /> : null
 }

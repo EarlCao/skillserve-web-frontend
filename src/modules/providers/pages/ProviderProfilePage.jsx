@@ -34,6 +34,9 @@ import {
 import ProviderAvatar from '../components/ProviderAvatar'
 import ProviderStatusBadge from '../components/ProviderStatusBadge'
 import VerificationStatusBadge from '../components/VerificationStatusBadge'
+import IdentityStatusBadge from '../../identityVerifications/components/IdentityStatusBadge'
+import { DOCUMENT_LABELS } from '../../identityVerifications/utils/documentLabels'
+import { PrivatePhotoThumbnail } from '../../../components/common/PrivatePhotos'
 import { hasCapability } from '../../../utils/permissions'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : '—')
@@ -361,6 +364,42 @@ export default function ProviderProfilePage() {
           )}
         </Card>
       </div>
+
+      {/* National ID — kept after verification, for fraud follow-up. Present
+          only for administrators allowed to review IDs. */}
+      {provider?.identity !== undefined && (
+        <Card title="National ID" description="The identity the provider verified. The photos are kept while the account exists.">
+          {provider.identity === null ? (
+            <p className="text-sm text-base-content/60">No National ID submitted yet.</p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <dt className="text-xs text-base-content/60">Status</dt>
+                  <dd className="mt-1"><IdentityStatusBadge status={provider.identity.status} /></dd>
+                </div>
+                <ProfileField label="Name on the card" value={provider.identity.full_name} />
+                <ProfileField label="Card number" value={provider.identity.id_number_last4 ? `•••• ${provider.identity.id_number_last4}` : null} />
+                <ProfileField label="Submitted" value={formatDateTime(provider.identity.submitted_at)} />
+                <ProfileField label="Decided" value={formatDateTime(provider.identity.reviewed_at)} />
+              </dl>
+              {provider.identity.documents.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {provider.identity.documents.map((document, index) => (
+                    <div key={document.id} className="flex flex-col items-center gap-1">
+                      <PrivatePhotoThumbnail path={document.download_path} number={index + 1} />
+                      <span className="text-xs text-base-content/60">{DOCUMENT_LABELS[document.document_type] ?? document.document_type}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-base-content/60">The photos are no longer stored.</p>
+              )}
+              <Link to="/admin/identity-verifications" className="link link-primary w-fit text-sm">Open in Identity Verification</Link>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Verification documents */}
       {verificationRequest && (

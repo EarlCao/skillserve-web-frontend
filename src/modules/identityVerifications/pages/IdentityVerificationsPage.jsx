@@ -42,7 +42,8 @@ export default function IdentityVerificationsPage() {
 
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
-  const [status, setStatus] = useState('pending')
+  // All statuses, so a submission stays in view after it is verified.
+  const [status, setStatus] = useState('')
   const [accountType, setAccountType] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const pagination = usePagination({ perPage: PER_PAGE })

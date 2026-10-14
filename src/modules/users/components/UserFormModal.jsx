@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
@@ -28,26 +28,18 @@ const toDefaults = (user) => ({
  * @param {() => void} props.onClose
  * @param {object|null} props.user  the record being edited
  */
-export default function UserFormModal({ open, onClose, user }) {
+function UserFormModalDialog({ open, onClose, user }) {
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
 
   const {
     register,
     handleSubmit,
-    reset,
     setError,
     formState: { errors, isDirty },
   } = useForm({
     resolver: zodResolver(userUpdateSchema),
     defaultValues: toDefaults(user),
   })
-
-  // Re-seed the form whenever the target (or the modal) changes.
-  useEffect(() => {
-    if (open) {
-      reset(toDefaults(user))
-    }
-  }, [open, user, reset])
 
   const updateMutation = useUpdateUser()
 
@@ -152,4 +144,12 @@ export default function UserFormModal({ open, onClose, user }) {
       />
     </>
   )
+}
+
+/**
+ * Mounted only while open, so every opening starts from the record's saved
+ * details — never from an earlier, discarded edit.
+ */
+export default function UserFormModal(props) {
+  return props.open ? <UserFormModalDialog {...props} /> : null
 }

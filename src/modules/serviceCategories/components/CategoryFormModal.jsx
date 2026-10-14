@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
@@ -23,7 +23,7 @@ const toDefaults = (category) => ({
  * @param {() => void} props.onClose
  * @param {object|null} props.category  the record being edited, or null to create
  */
-export default function CategoryFormModal({ open, onClose, category }) {
+function CategoryFormModalDialog({ open, onClose, category }) {
   const isEditing = Boolean(category)
 
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
@@ -40,12 +40,6 @@ export default function CategoryFormModal({ open, onClose, category }) {
     defaultValues: toDefaults(category),
   })
 
-  // Re-seed the form whenever the target (or the modal) changes.
-  useEffect(() => {
-    if (open) {
-      reset(toDefaults(category))
-    }
-  }, [open, category, reset])
 
   const createMutation = useCreateServiceCategory()
   const updateMutation = useUpdateServiceCategory()
@@ -153,4 +147,12 @@ export default function CategoryFormModal({ open, onClose, category }) {
       />
     </>
   )
+}
+
+/**
+ * Mounted only while open, so every opening starts from the record's saved
+ * details — never from an earlier, discarded edit.
+ */
+export default function CategoryFormModal(props) {
+  return props.open ? <CategoryFormModalDialog {...props} /> : null
 }

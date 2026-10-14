@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -35,7 +34,7 @@ const refundSchema = (remaining) =>
  * paid, `mode="refund"` records a full or partial refund. No money moves
  * through SkillServe; both parties are notified and the action is audited.
  */
-export default function BookingPaymentModal({ open, mode, booking, onClose }) {
+function BookingPaymentModalDialog({ open, mode, booking, onClose }) {
   const isRefund = mode === 'refund'
   const remaining = remainingOf(booking)
   const markPaid = useMarkBookingPaid()
@@ -45,7 +44,6 @@ export default function BookingPaymentModal({ open, mode, booking, onClose }) {
   const {
     register,
     handleSubmit,
-    reset,
     setError,
     formState: { errors },
   } = useForm({
@@ -53,9 +51,6 @@ export default function BookingPaymentModal({ open, mode, booking, onClose }) {
     defaultValues: isRefund ? { amount: remaining, reason: '' } : { payment_reference: '' },
   })
 
-  useEffect(() => {
-    if (open) reset(isRefund ? { amount: remaining, reason: '' } : { payment_reference: '' })
-  }, [open, isRefund, remaining, reset])
 
   const onSubmit = (values) => {
     const variables = isRefund
@@ -127,4 +122,12 @@ export default function BookingPaymentModal({ open, mode, booking, onClose }) {
       </form>
     </Modal>
   )
+}
+
+/**
+ * Mounted only while open, so every opening starts from the record's saved
+ * details — never from an earlier, discarded edit.
+ */
+export default function BookingPaymentModal(props) {
+  return props.open ? <BookingPaymentModalDialog {...props} /> : null
 }

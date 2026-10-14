@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '../../../components/ui/Button'
@@ -25,7 +25,7 @@ const toDefaults = (subcategory) => ({
  * @param {number} props.categoryId  parent category id
  * @param {object|null} props.subcategory  the record being edited, or null to create
  */
-export default function SubcategoryFormModal({ open, onClose, categoryId, subcategory }) {
+function SubcategoryFormModalDialog({ open, onClose, categoryId, subcategory }) {
   const isEditing = Boolean(subcategory)
 
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false)
@@ -42,12 +42,6 @@ export default function SubcategoryFormModal({ open, onClose, categoryId, subcat
     defaultValues: toDefaults(subcategory),
   })
 
-  // Re-seed the form whenever the target (or the modal) changes.
-  useEffect(() => {
-    if (open) {
-      reset(toDefaults(subcategory))
-    }
-  }, [open, subcategory, reset])
 
   const createMutation = useCreateSubcategory()
   const updateMutation = useUpdateSubcategory()
@@ -157,4 +151,12 @@ export default function SubcategoryFormModal({ open, onClose, categoryId, subcat
       />
     </>
   )
+}
+
+/**
+ * Mounted only while open, so every opening starts from the record's saved
+ * details — never from an earlier, discarded edit.
+ */
+export default function SubcategoryFormModal(props) {
+  return props.open ? <SubcategoryFormModalDialog {...props} /> : null
 }
