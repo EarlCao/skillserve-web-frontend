@@ -18,6 +18,7 @@ export const DisputesPage = lazy(() => import('../modules/disputes/pages/Dispute
 export const ProvidersPage = lazy(() => import('../modules/providers/pages/ProvidersPage'))
 export const ProviderProfilePage = lazy(() => import('../modules/providers/pages/ProviderProfilePage'))
 export const NotificationsPage = lazy(() => import('../modules/notifications/pages/NotificationsPage'))
+export const InboxPage = lazy(() => import('../modules/inbox/pages/InboxPage'))
 export const DashboardPage = lazy(() => import('../modules/dashboard/pages/DashboardPage'))
 export const AnalyticsPage = lazy(() => import('../modules/analytics/pages/AnalyticsPage'))
 export const ProviderRecognitionPage = lazy(() => import('../modules/providerRecognition/pages/ProviderRecognitionPage'))

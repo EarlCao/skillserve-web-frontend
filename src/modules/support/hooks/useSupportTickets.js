@@ -37,7 +37,7 @@ export function useAssignSupportTicket() {
   return useMutation({
     mutationFn: ({ id, assignedTo }) => supportTicketApi.assign(id, assignedTo),
     onSuccess: (data, variables) => {
-      toast.success(data?.message ?? 'Support ticket assignment updated.')
+      toast.success(data?.message ?? 'Assignment updated.')
       invalidateSupport(queryClient, variables.id)
     },
     onError: (error) => toast.error(error?.message ?? 'Unable to update the assignment.'),
@@ -48,12 +48,10 @@ export function useRespondToSupportTicket() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, body }) => supportTicketApi.respond(id, body),
-    onSuccess: (data, variables) => {
-      toast.success(data?.message ?? 'Support response added.')
-      invalidateSupport(queryClient, variables.id)
-    },
-    onError: (error) => toast.error(error?.message ?? 'Unable to add the response.'),
+    mutationFn: ({ id, body, images }) => supportTicketApi.respond(id, body, images),
+    // A chat reply shows up in the thread itself, so no toast on success.
+    onSuccess: (_data, variables) => invalidateSupport(queryClient, variables.id),
+    onError: (error) => toast.error(error?.message ?? 'Unable to send the reply.'),
   })
 }
 
@@ -63,7 +61,7 @@ export function useResolveSupportTicket() {
   return useMutation({
     mutationFn: ({ id, resolutionNote }) => supportTicketApi.resolve(id, resolutionNote),
     onSuccess: (data, variables) => {
-      toast.success(data?.message ?? 'Support ticket resolved.')
+      toast.success(data?.message ?? 'Request resolved.')
       invalidateSupport(queryClient, variables.id)
     },
     onError: (error) => toast.error(error?.message ?? 'Unable to resolve the ticket.'),

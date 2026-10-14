@@ -87,6 +87,16 @@ export function subscribeToAdminDataChanges({ onChange, onLiveChange }) {
   }
 }
 
+/** New admin Inbox alerts for this administrator (`admin.notification.created`). */
+export function subscribeToAdminAlerts(userId, onAlert) {
+  if (!echo || !userId) return () => {}
+
+  const channel = echo.private(`App.Models.User.${userId}`)
+  channel.listen('.admin.notification.created', onAlert)
+
+  return () => channel.stopListening('.admin.notification.created')
+}
+
 export function subscribeToUserNotifications(userId, onNotification) {
   if (!echo || !userId) return () => {}
 

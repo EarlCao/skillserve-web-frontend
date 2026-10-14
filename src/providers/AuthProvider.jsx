@@ -5,7 +5,8 @@ import { APP_EVENTS, QUERY_KEYS, STORAGE_KEYS } from '../constants'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { queryClient } from '../lib/queryClient'
 import { api } from '../services/api'
-import { connectRealtime, disconnectRealtime, subscribeToUserNotifications } from '../services/echo'
+import { toast } from 'sonner'
+import { connectRealtime, disconnectRealtime, subscribeToAdminAlerts, subscribeToUserNotifications } from '../services/echo'
 import { startLiveUpdates } from '../services/liveUpdates'
 
 /**
@@ -47,10 +48,16 @@ export default function AuthProvider({ children }) {
     const unsubscribe = subscribeToUserNotifications(userId, (event) => {
       window.dispatchEvent(new CustomEvent(APP_EVENTS.realtimeNotification, { detail: event }))
     })
+    // A new Inbox alert: the bell and the Inbox refetch, and a toast says what came in.
+    const stopAlerts = subscribeToAdminAlerts(userId, ({ notification } = {}) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inbox.all })
+      if (notification?.title) toast.info(notification.title, { description: notification.message })
+    })
     const stopLiveUpdates = startLiveUpdates()
 
     return () => {
       stopLiveUpdates()
+      stopAlerts()
       unsubscribe()
       disconnectRealtime()
     }

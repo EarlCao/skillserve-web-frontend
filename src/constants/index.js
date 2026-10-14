@@ -149,6 +149,11 @@ export const QUERY_KEYS = {
   privatePhotos: {
     photo: (path) => ['private-photos', path],
   },
+  inbox: {
+    all: ['inbox'],
+    list: (params) => ['inbox', 'list', params],
+    unreadCount: ['inbox', 'unread-count'],
+  },
 }
 
 /** Common HTTP status codes. */

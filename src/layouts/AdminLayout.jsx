@@ -1,6 +1,6 @@
 import { Suspense, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, matchPath, useLocation } from 'react-router-dom'
-import { Archive, Award, BadgeCheck, Bell, BarChart3, CalendarCheck, Camera, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, ImageOff, KeyRound, Layers, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareWarning, Moon, Percent, Settings, ShieldAlert, Star, Sun, User, UserCheck, UserCog, UsersRound } from 'lucide-react'
+import { Archive, Award, BadgeCheck, Bell, BarChart3, BellDot, CalendarCheck, Camera, CalendarDays, ClipboardList, FolderTree, FileText, Gavel, ImageOff, KeyRound, Layers, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareWarning, Moon, Percent, Settings, ShieldAlert, Star, Sun, User, UserCheck, UserCog, UsersRound } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { APP_NAME } from '../constants'
 import { useTheme } from '../contexts/ThemeContext'
@@ -15,6 +15,8 @@ import OfflineBanner from '../components/common/OfflineBanner'
 import PageSkeleton from '../components/common/PageSkeleton'
 import { hasAnyCapability } from '../utils/permissions'
 import { useAttentionCounts } from '../modules/dashboard/hooks/useAttentionCounts'
+import InboxBell from '../modules/inbox/components/InboxBell'
+import { useInboxUnreadCount } from '../modules/inbox/hooks/useInbox'
 
 // Active nav item uses the primary color (not daisyUI's near-black
 // base-content that `menu-active` applies). When collapsed, icons center.
@@ -131,6 +133,7 @@ export default function AdminLayout() {
   // (settle / verify / reject) does not let you load either list.
   const canManageCommissions = hasAnyCapability(user, ['manage commissions', 'view commissions'])
   const canReviewIdentities = hasAnyCapability(user, ['view identity verifications'])
+  const unreadAlerts = useInboxUnreadCount()
   const { openSupportTickets, pendingReports, pendingCommissionRemittances } = useAttentionCounts({
     enabled: canManageSupport || canManageReports || canManageCommissions,
   })
@@ -173,6 +176,8 @@ export default function AdminLayout() {
           <div className="flex-1">
             <h1 className="text-lg font-semibold">{APP_NAME} Admin</h1>
           </div>
+
+          <InboxBell />
 
           <button
             type="button"
@@ -281,6 +286,7 @@ export default function AdminLayout() {
           {(user?.permissions?.includes('view dashboard') || user?.roles?.includes('super-admin')) && (
             <NavItem to="/admin" end icon={LayoutDashboard} label="Dashboard" collapsed={collapsed} />
           )}
+          <NavItem to="/admin/inbox" icon={BellDot} label="Inbox" badge={unreadAlerts} badgeLabel="unread alerts" collapsed={collapsed} />
 
           {showAdministration && (
             <li className={`menu-title mt-2 ${collapsed ? 'lg:hidden' : undefined}`}>Administration</li>
@@ -336,7 +342,7 @@ export default function AdminLayout() {
             ]}
           />
           {canManageSupport && (
-            <NavItem to="/admin/support" icon={LifeBuoy} label="Support Management" badge={openSupportTickets} badgeLabel="new support tickets" collapsed={collapsed} />
+            <NavItem to="/admin/support" icon={LifeBuoy} label="Customer Support" badge={openSupportTickets} badgeLabel="new support requests" collapsed={collapsed} />
           )}
           {canManageAnalytics && (
             <NavItem to="/admin/analytics" icon={BarChart3} label="Reports" collapsed={collapsed} />

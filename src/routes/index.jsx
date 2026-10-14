@@ -18,6 +18,7 @@ import {
   ProvidersPage,
   ProviderProfilePage,
   NotificationsPage,
+  InboxPage,
   DashboardPage,
   AnalyticsPage,
   ProviderRecognitionPage,
@@ -80,6 +81,12 @@ export const router = createBrowserRouter([
           {
             path: 'change-password',
             element: <ChangePasswordPage />,
+          },
+          {
+            // Every administrator's own alerts; what they contain already
+            // follows their permissions.
+            path: 'inbox',
+            element: <InboxPage />,
           },
           {
             // Administrator Management — requires the module permission.
