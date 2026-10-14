@@ -17,6 +17,8 @@ import Skeleton from '../ui/Skeleton'
  * @param {boolean} [isLoading]
  * @param {string} [emptyTitle]
  * @param {string} [emptyDescription]
+ * @param {'default'|'clean'} [variant]  'clean': no stripes, a quiet header,
+ *   row hover — for full-width management lists
  */
 export default function DataTable({
   columns,
@@ -24,7 +26,10 @@ export default function DataTable({
   isLoading = false,
   emptyTitle = 'No records found',
   emptyDescription = 'Try adjusting your filters or search.',
+  variant = 'default',
 }) {
+  const clean = variant === 'clean'
+
   const table = useLegacyTable({
     data,
     columns,
@@ -33,12 +38,15 @@ export default function DataTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="table table-zebra">
+      <table className={clean ? 'table' : 'table table-zebra'}>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
+            <tr key={headerGroup.id} className={clean ? 'border-b border-base-200 bg-base-200/40' : undefined}>
               {headerGroup.headers.map((header) => (
-                <th key={header.id}>
+                <th
+                  key={header.id}
+                  className={clean ? 'py-2.5 text-xs font-semibold uppercase tracking-wide text-base-content/60' : undefined}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(header.column.columnDef.header, header.getContext())}
@@ -66,9 +74,9 @@ export default function DataTable({
             </tr>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <tr key={row.id}>
+              <tr key={row.id} className={clean ? 'border-b border-base-200 transition-colors last:border-0 hover:bg-base-200/40' : undefined}>
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                  <td key={cell.id} className={clean ? 'py-3 align-middle' : undefined}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
                 ))}
               </tr>
             ))

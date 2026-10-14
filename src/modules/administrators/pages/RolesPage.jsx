@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Eye, Pencil, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react'
+import { Eye, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
 import Button from '../../../components/ui/Button'
+import Tooltip from '../../../components/ui/Tooltip'
 import Badge from '../../../components/ui/Badge'
 import Card from '../../../components/ui/Card'
 import SearchInput from '../../../components/common/SearchInput'
+import RefreshButton from '../../../components/tables/RefreshButton'
+import TableFooter from '../../../components/tables/TableFooter'
 import ErrorState from '../../../components/common/ErrorState'
 import DataTable from '../../../components/tables/DataTable'
-import Pagination from '../../../components/tables/Pagination'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { usePagination } from '../../../hooks/usePagination'
@@ -70,14 +72,18 @@ export default function RolesPage() {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <span className="font-medium">{row.original.name}</span>
-          {row.original.name === SUPER_ADMIN && <Badge variant="primary" size="sm">System</Badge>}
+          {row.original.name === SUPER_ADMIN && <Badge variant="primary" size="sm" className="badge-soft">System</Badge>}
         </div>
       ),
     },
     {
       accessorKey: 'description',
       header: 'Description',
-      cell: ({ row }) => row.original.description ?? <span className="text-base-content/40">—</span>,
+      cell: ({ row }) => (
+        <span className="line-clamp-2 max-w-md text-sm text-base-content/70">
+          {row.original.description ?? <span className="text-base-content/40">No description</span>}
+        </span>
+      ),
     },
     {
       accessorKey: 'permissions',
@@ -86,16 +92,12 @@ export default function RolesPage() {
         const count = row.original.permissions?.length ?? 0
 
         return count > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {row.original.permissions.slice(0, 3).map((permission) => (
-              <Badge key={permission} variant="outline" size="sm">
-                {permission}
-              </Badge>
-            ))}
-            {count > 3 && <Badge variant="neutral" size="sm">+{count - 3} more</Badge>}
-          </div>
+          <span className="whitespace-nowrap text-sm">
+            <span className="font-medium">{count}</span>{' '}
+            <span className="text-base-content/60">{count === 1 ? 'permission' : 'permissions'}</span>
+          </span>
         ) : (
-          <span className="text-base-content/40">No permissions</span>
+          <span className="text-sm text-base-content/40">No permissions</span>
         )
       },
     },
@@ -108,15 +110,15 @@ export default function RolesPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            {canManageRoles && <Button
+            {canManageRoles && <Tooltip label="View details" placement="left"><Button
               variant="ghost"
               size="sm"
               onClick={() => setViewing(role)}
               aria-label={`View ${role.name}`}
             >
               <Eye className="size-4" />
-            </Button>}
-            {canManageRoles && <Button
+            </Button></Tooltip>}
+            {canManageRoles && <Tooltip label="Edit role" placement="left"><Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -126,8 +128,8 @@ export default function RolesPage() {
               aria-label={`Edit ${role.name}`}
             >
               <Pencil className="size-4" />
-            </Button>}
-            {canManageRoles && <Button
+            </Button></Tooltip>}
+            {canManageRoles && <Tooltip label="Permissions" placement="left"><Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -137,8 +139,8 @@ export default function RolesPage() {
               aria-label={`Manage permissions for ${role.name}`}
             >
               <ShieldCheck className="size-4" />
-            </Button>}
-            {canManageRoles && <Button
+            </Button></Tooltip>}
+            {canManageRoles && <Tooltip label={isSystem ? 'The system role cannot be deleted' : 'Delete role'} placement="left"><Button
               variant="ghost"
               size="sm"
               disabled={isSystem}
@@ -147,10 +149,9 @@ export default function RolesPage() {
                 deleteDisclosure.open()
               }}
               aria-label={isSystem ? 'The system role cannot be deleted' : `Delete ${role.name}`}
-              title={isSystem ? 'The system role cannot be deleted' : 'Delete role'}
             >
               <Trash2 className={`size-4 ${isSystem ? 'text-base-content/30' : 'text-error'}`} />
-            </Button>}
+            </Button></Tooltip>}
           </div>
         )
       },
@@ -159,41 +160,39 @@ export default function RolesPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card bodyClassName="p-0">
-        <div className="flex flex-wrap items-center gap-3 border-b border-base-200 p-4">
+      <Card bodyClassName="p-0" className="overflow-hidden border border-base-200 shadow-none">
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3">
           <SearchInput
             value={search}
             onChange={(event) => {
               setSearch(event.target.value)
               pagination.setCurrentPage(1)
             }}
-            placeholder="Search roles…"
-            className="w-full sm:w-64"
+            placeholder="Search roles"
+            size="sm"
+            className="w-full min-w-0 sm:w-72"
           />
-
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh roles">
-            <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
-          </Button>
+          <div className="ml-auto">
+            <RefreshButton onClick={() => refetch()} isFetching={isFetching} label="Refresh roles" />
+          </div>
         </div>
 
         {isError ? (
           <ErrorState title="Could not load roles" message={error?.message} onRetry={refetch} />
         ) : (
-          <DataTable
-            columns={columns}
-            data={roles}
-            isLoading={isLoading}
-            emptyTitle="No roles found"
-            emptyDescription="Try adjusting your search."
-          />
+          <div className="border-t border-base-200">
+            <DataTable
+              variant="clean"
+              columns={columns}
+              data={roles}
+              isLoading={isLoading}
+              emptyTitle={search ? 'No roles match' : 'No roles yet'}
+              emptyDescription={search ? 'Try a different search.' : 'Add a role, then choose what it may view and control.'}
+            />
+          </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-base-200 p-4">
-          <p className="text-sm text-base-content/60">
-            {paginationMeta ? `${paginationMeta.from ?? 0}–${paginationMeta.to ?? 0} of ${paginationMeta.total}` : ''}
-          </p>
-          <Pagination totalItems={paginationMeta?.total ?? 0} perPage={PER_PAGE} pagination={pagination} />
-        </div>
+        <TableFooter meta={paginationMeta} perPage={PER_PAGE} pagination={pagination} noun="roles" />
       </Card>
 
       <RoleFormModal open={formOpen} onClose={() => setFormOpen(false)} role={editing} />

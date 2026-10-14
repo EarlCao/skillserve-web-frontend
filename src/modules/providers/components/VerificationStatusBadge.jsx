@@ -12,10 +12,10 @@ export default function VerificationStatusBadge({ status }) {
     pending: { variant: 'warning', label: 'Pending' },
     rejected: { variant: 'error', label: 'Rejected' },
     additional_info_required: { variant: 'accent', label: 'Info Required' },
-    unverified: { variant: 'secondary', label: 'Unverified' },
+    unverified: { variant: 'outline', label: 'Unverified' },
   }
 
   const { variant, label } = config[status] ?? config.unverified
 
-  return <Badge variant={variant}>{label}</Badge>
+  return <Badge variant={variant} className={`${variant === 'outline' ? 'border-base-300 text-base-content/70' : 'badge-soft'} whitespace-nowrap`}>{label}</Badge>
 }

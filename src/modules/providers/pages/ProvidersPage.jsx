@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Ban, Eye, Power, RefreshCw, XCircle } from 'lucide-react'
+import { Ban, Eye, Power, Star, XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
 import Tooltip from '../../../components/ui/Tooltip'
 import Card from '../../../components/ui/Card'
 import SearchInput from '../../../components/common/SearchInput'
+import PageHeader from '../../../components/common/PageHeader'
+import StatusTabs from '../../../components/tables/StatusTabs'
+import SortControl from '../../../components/tables/SortControl'
+import RefreshButton from '../../../components/tables/RefreshButton'
+import TableFooter from '../../../components/tables/TableFooter'
 import ErrorState from '../../../components/common/ErrorState'
 import DataTable from '../../../components/tables/DataTable'
-import Pagination from '../../../components/tables/Pagination'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useDebounce } from '../../../hooks/useDebounce'
@@ -20,7 +24,7 @@ import {
   useActivateProvider,
   useRemoveVerification,
 } from '../hooks/useProviders'
-import ProviderAvatar from '../components/ProviderAvatar'
+import UserAvatar from '../../users/components/UserAvatar'
 import ProviderStatusBadge from '../components/ProviderStatusBadge'
 import VerificationStatusBadge from '../components/VerificationStatusBadge'
 import ProviderActionModal from '../components/ProviderActionModal'
@@ -29,6 +33,23 @@ import { hasCapability } from '../../../utils/permissions'
 const PER_PAGE = 10
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
+const formatDate = (value) => format(new Date(value), 'MMM d, yyyy')
+
+const VERIFICATION_TABS = [
+  { value: '', label: 'All providers' },
+  { value: 'pending', label: 'Pending review' },
+  { value: 'verified', label: 'Verified' },
+  { value: 'additional_info_required', label: 'Info required' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'unverified', label: 'Unverified' },
+]
+
+const SORT_OPTIONS = [
+  { value: 'created_at', label: 'Joined' },
+  { value: 'average_rating', label: 'Rating' },
+  { value: 'total_bookings', label: 'Bookings' },
+  { value: 'business_name', label: 'Business name' },
+]
 
 /**
  * Provider management list: server-side search, status/verification filters,
@@ -102,41 +123,61 @@ export default function ProvidersPage() {
 
   const columns = [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      cell: ({ row }) => <span className="font-mono text-xs text-base-content/60">#{row.original.id}</span>,
-    },
-    {
       accessorKey: 'business_name',
       header: 'Provider',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <ProviderAvatar name={row.original.user?.name ?? row.original.business_name} size="sm" />
-          <div className="flex flex-col">
-            <span className="font-medium">{row.original.business_name || row.original.user?.name}</span>
-            <span className="text-xs text-base-content/60">{row.original.user?.email}</span>
+      cell: ({ row }) => {
+        const provider = row.original
+        const ownerName = provider.user?.name
+
+        return (
+          <div className="flex min-w-56 items-center gap-3">
+            <UserAvatar name={provider.business_name || ownerName} size="sm" />
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate font-medium">{provider.business_name || ownerName}</span>
+              <span className="truncate text-xs text-base-content/60">
+                {provider.business_name && ownerName ? `${ownerName} · ` : ''}{provider.user?.email}
+              </span>
+            </div>
           </div>
-        </div>
-      ),
+        )
+      },
     },
     {
       accessorKey: 'specialization',
       header: 'Specialization',
-      cell: ({ row }) =>
-        row.original.specialization ?? <span className="text-base-content/40">—</span>,
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <span className="max-w-48 truncate">{row.original.specialization ?? <span className="text-base-content/40">Not set</span>}</span>
+          <span className="font-mono text-xs text-base-content/50">ID #{row.original.id}</span>
+        </div>
+      ),
     },
     {
       accessorKey: 'average_rating',
       header: 'Rating',
       cell: ({ row }) => {
-        const rating = row.original.average_rating
-        return (
-          <div className="flex items-center gap-1">
-            <span className="font-medium">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
-            {rating > 0 && <span className="text-xs text-base-content/50">({row.original.total_reviews})</span>}
-          </div>
+        const rating = Number(row.original.average_rating)
+
+        return rating > 0 ? (
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            <Star className="size-3.5 fill-warning text-warning" aria-hidden="true" />
+            <span className="font-medium">{rating.toFixed(1)}</span>
+            <span className="text-xs text-base-content/50">({row.original.total_reviews})</span>
+          </span>
+        ) : (
+          <span className="whitespace-nowrap text-sm text-base-content/40">No reviews</span>
         )
       },
+    },
+    {
+      id: 'activity',
+      header: 'Activity',
+      cell: ({ row }) => (
+        <div className="flex flex-col whitespace-nowrap text-sm">
+          <span>{row.original.total_bookings} {row.original.total_bookings === 1 ? 'booking' : 'bookings'}</span>
+          <span className="text-xs text-base-content/50">{row.original.services_count} {row.original.services_count === 1 ? 'service' : 'services'}</span>
+        </div>
+      ),
     },
     {
       accessorKey: 'verification_status',
@@ -150,10 +191,15 @@ export default function ProvidersPage() {
     },
     {
       accessorKey: 'created_at',
-      header: 'Created date',
+      header: 'Joined',
       cell: ({ row }) => {
-        const value = formatDateTime(row.original.created_at)
-        return value ? <span className="whitespace-nowrap">{value}</span> : <span className="text-base-content/40">—</span>
+        const value = row.original.created_at
+
+        return value ? (
+          <span className="whitespace-nowrap text-sm" title={formatDateTime(value)}>{formatDate(value)}</span>
+        ) : (
+          <span className="text-base-content/40">—</span>
+        )
       },
     },
     {
@@ -217,98 +263,85 @@ export default function ProvidersPage() {
     },
   ]
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold">Provider Management</h1>
-        <p className="text-sm text-base-content/60">Manage service provider accounts — view profiles, verify, suspend or activate.</p>
-      </div>
+  const hasFilters = Boolean(search || statusFilter || verificationFilter)
+  const clearFilters = () => {
+    setSearch('')
+    setStatusFilter('')
+    setVerificationFilter('')
+    pagination.setCurrentPage(1)
+  }
 
-      <Card bodyClassName="p-0">
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto border-b border-base-200 p-4">
+  return (
+    <div className="flex flex-col gap-5">
+      <PageHeader
+        title="Provider Management"
+        description="Service providers on the platform — review profiles and verification, suspend or reactivate them."
+      />
+
+      <Card bodyClassName="p-0" className="overflow-hidden border border-base-200 shadow-none">
+        <div className="border-b border-base-200 px-4">
+          <StatusTabs
+            label="Filter by verification"
+            options={VERIFICATION_TABS}
+            value={verificationFilter}
+            onChange={applyFilter(setVerificationFilter)}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3">
           <SearchInput
             value={search}
             onChange={(event) => applyFilter(setSearch)(event.target.value)}
-            placeholder="Search by name, email or business…"
-            className="w-44 shrink min-w-0 sm:w-60"
+            placeholder="Search name, email or business"
+            size="sm"
+            className="w-full min-w-0 sm:w-72"
           />
 
           <select
-            className="select select-bordered select-sm w-32 shrink-0"
+            className="select select-bordered select-sm w-auto"
             value={statusFilter}
             onChange={(event) => applyFilter(setStatusFilter)(event.target.value)}
             aria-label="Filter by status"
           >
-            <option value="">All statuses</option>
+            <option value="">Any status</option>
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
           </select>
 
-          <select
-            className="select select-bordered select-sm w-40 shrink-0"
-            value={verificationFilter}
-            onChange={(event) => applyFilter(setVerificationFilter)(event.target.value)}
-            aria-label="Filter by verification"
-          >
-            <option value="">All verification</option>
-            <option value="unverified">Unverified</option>
-            <option value="pending">Pending</option>
-            <option value="verified">Verified</option>
-            <option value="rejected">Rejected</option>
-            <option value="additional_info_required">Info Required</option>
-          </select>
+          {hasFilters && (
+            <button type="button" className="btn btn-link btn-sm px-1 no-underline" onClick={clearFilters}>
+              Clear filters
+            </button>
+          )}
 
-          <select
-            className="select select-bordered select-sm w-40 shrink-0"
-            value={sort}
-            onChange={(event) => applyFilter(setSort)(event.target.value)}
-            aria-label="Sort by"
-          >
-            <option value="created_at">Created date</option>
-            <option value="average_rating">Rating</option>
-            <option value="total_bookings">Bookings</option>
-            <option value="business_name">Business name</option>
-          </select>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 whitespace-nowrap"
-            onClick={() => setDirection((value) => (value === 'asc' ? 'desc' : 'asc'))}
-          >
-            {direction === 'asc' ? 'Ascending' : 'Descending'}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            aria-label="Refresh providers"
-          >
-            <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
-          </Button>
+          <div className="ml-auto flex items-center gap-1">
+            <SortControl
+              options={SORT_OPTIONS}
+              sort={sort}
+              direction={direction}
+              onSortChange={applyFilter(setSort)}
+              onToggleDirection={() => setDirection((value) => (value === 'asc' ? 'desc' : 'asc'))}
+            />
+            <RefreshButton onClick={() => refetch()} isFetching={isFetching} label="Refresh providers" />
+          </div>
         </div>
 
         {isError ? (
           <ErrorState title="Could not load providers" message={error?.message} onRetry={refetch} />
         ) : (
-          <DataTable
-            columns={columns}
-            data={providers}
-            isLoading={isLoading}
-            emptyTitle="No providers found"
-            emptyDescription="Try adjusting your search or filters."
-          />
+          <div className="border-t border-base-200">
+            <DataTable
+              variant="clean"
+              columns={columns}
+              data={providers}
+              isLoading={isLoading}
+              emptyTitle={hasFilters ? 'No providers match' : 'No providers yet'}
+              emptyDescription={hasFilters ? 'Try a different search or clear the filters.' : 'Providers appear here when they register in the app.'}
+            />
+          </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-base-200 p-4">
-          <p className="text-sm text-base-content/60">
-            {paginationMeta ? `${paginationMeta.from ?? 0}–${paginationMeta.to ?? 0} of ${paginationMeta.total}` : ''}
-          </p>
-          <Pagination totalItems={paginationMeta?.total ?? 0} perPage={PER_PAGE} pagination={pagination} />
-        </div>
+        <TableFooter meta={paginationMeta} perPage={PER_PAGE} pagination={pagination} noun="providers" />
       </Card>
 
       <ProviderActionModal

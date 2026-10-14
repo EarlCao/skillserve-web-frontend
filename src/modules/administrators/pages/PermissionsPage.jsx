@@ -72,7 +72,7 @@ export default function PermissionsPage() {
 
   if (roles.length === 0) {
     return (
-      <Card>
+      <Card className="border border-base-200 shadow-none">
         <EmptyState
           title="No roles yet"
           description="Create a role first, then assign permissions to it."
@@ -83,7 +83,7 @@ export default function PermissionsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <Card className="border border-base-200 shadow-none">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm font-medium" htmlFor="permission-role">
             Role

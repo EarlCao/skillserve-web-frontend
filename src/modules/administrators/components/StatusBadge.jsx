@@ -5,8 +5,8 @@ import Badge from '../../../components/ui/Badge'
  */
 export default function StatusBadge({ status }) {
   if (status === 'active') {
-    return <Badge variant="success">Active</Badge>
+    return <Badge variant="success" className="badge-soft">Active</Badge>
   }
 
-  return <Badge variant="error">Inactive</Badge>
+  return <Badge variant="outline" className="border-base-300 text-base-content/70">Inactive</Badge>
 }

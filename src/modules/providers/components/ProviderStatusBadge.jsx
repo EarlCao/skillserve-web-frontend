@@ -8,8 +8,8 @@ import Badge from '../../../components/ui/Badge'
  */
 export default function ProviderStatusBadge({ isSuspended }) {
   if (isSuspended) {
-    return <Badge variant="warning">Suspended</Badge>
+    return <Badge variant="warning" className="badge-soft">Suspended</Badge>
   }
 
-  return <Badge variant="success">Active</Badge>
+  return <Badge variant="success" className="badge-soft">Active</Badge>
 }

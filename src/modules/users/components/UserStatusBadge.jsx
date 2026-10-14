@@ -11,13 +11,14 @@ import Badge from '../../../components/ui/Badge'
  */
 export default function UserStatusBadge({ status, bannedUntil }) {
   if (status === 'suspended') {
-    return <Badge variant="warning">Suspended</Badge>
+    return <Badge variant="warning" className="badge-soft">Suspended</Badge>
   }
 
   if (status === 'banned') {
     return (
       <Badge
         variant="error"
+        className="badge-soft"
         title={
           bannedUntil
             ? `Banned until ${format(new Date(bannedUntil), 'MMM d, yyyy')}`
@@ -29,5 +30,5 @@ export default function UserStatusBadge({ status, bannedUntil }) {
     )
   }
 
-  return <Badge variant="success">Active</Badge>
+  return <Badge variant="success" className="badge-soft">Active</Badge>
 }

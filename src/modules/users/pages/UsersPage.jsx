@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
 import { differenceInCalendarDays, format } from 'date-fns'
-import { Ban, CirclePause, Eye, Pencil, Power, RefreshCw, Trash2, UserCheck } from 'lucide-react'
+import { Ban, CirclePause, Eye, Pencil, Power, Trash2, UserCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
 import Tooltip from '../../../components/ui/Tooltip'
 import Card from '../../../components/ui/Card'
 import SearchInput from '../../../components/common/SearchInput'
+import PageHeader from '../../../components/common/PageHeader'
+import StatusTabs from '../../../components/tables/StatusTabs'
+import SortControl from '../../../components/tables/SortControl'
+import RefreshButton from '../../../components/tables/RefreshButton'
+import TableFooter from '../../../components/tables/TableFooter'
 import ErrorState from '../../../components/common/ErrorState'
 import DataTable from '../../../components/tables/DataTable'
-import Pagination from '../../../components/tables/Pagination'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useDebounce } from '../../../hooks/useDebounce'
@@ -26,6 +30,20 @@ import { hasCapability } from '../../../utils/permissions'
 const PER_PAGE = 10
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
+const formatDate = (value) => format(new Date(value), 'MMM d, yyyy')
+
+const STATUS_TABS = [
+  { value: '', label: 'All customers' },
+  { value: 'active', label: 'Active' },
+  { value: 'suspended', label: 'Suspended' },
+  { value: 'banned', label: 'Banned' },
+]
+
+const SORT_OPTIONS = [
+  { value: 'created_at', label: 'Joined' },
+  { value: 'name', label: 'Name' },
+  { value: 'last_login_at', label: 'Last login' },
+]
 
 // Short countdown shown under the Banned badge, e.g. "Lifts in 5 days".
 const banCountdown = (bannedUntil) => {
@@ -125,33 +143,27 @@ export default function UsersPage() {
 
   const columns = [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      cell: ({ row }) => <span className="font-mono text-xs text-base-content/60">#{row.original.id}</span>,
-    },
-    {
       accessorKey: 'name',
-      header: 'User',
+      header: 'Customer',
       cell: ({ row }) => (
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-56 items-center gap-3">
           <UserAvatar name={row.original.name} src={row.original.profile_photo_url} size="sm" />
-          <div className="flex flex-col">
-            <span className="font-medium">{row.original.name}</span>
-            <span className="text-xs text-base-content/60">{row.original.email}</span>
+          <div className="flex min-w-0 flex-col">
+            <span className="truncate font-medium">{row.original.name}</span>
+            <span className="truncate text-xs text-base-content/60">{row.original.email}</span>
           </div>
         </div>
       ),
     },
     {
       accessorKey: 'phone',
-      header: 'Phone',
-      cell: ({ row }) =>
-        row.original.phone ?? <span className="text-base-content/40">—</span>,
-    },
-    {
-      accessorKey: 'role_name',
-      header: 'Role',
-      cell: ({ row }) => <span className="capitalize">{row.original.role_name ?? row.original.user_type}</span>,
+      header: 'Contact',
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <span className="whitespace-nowrap">{row.original.phone ?? <span className="text-base-content/40">No phone</span>}</span>
+          <span className="font-mono text-xs text-base-content/50">ID #{row.original.id}</span>
+        </div>
+      ),
     },
     {
       accessorKey: 'status',
@@ -160,7 +172,7 @@ export default function UsersPage() {
         const { status, banned_until: bannedUntil } = row.original
 
         return (
-          <div className="flex flex-col items-start gap-0.5">
+          <div className="flex flex-col items-start gap-1">
             <UserStatusBadge status={status} bannedUntil={bannedUntil} />
             {status === 'banned' && (
               <span className="text-xs text-base-content/50">
@@ -172,22 +184,29 @@ export default function UsersPage() {
       },
     },
     {
-      accessorKey: 'verification',
-      header: 'Email',
-      cell: ({ row }) => <VerificationBadge verified={row.original.verification === 'verified'} />,
-    },
-    {
-      accessorKey: 'identity_status',
-      header: 'National ID',
-      cell: ({ row }) => <IdentityStatusBadge status={row.original.identity_status} />,
+      id: 'verification',
+      header: 'Verification',
+      cell: ({ row }) => (
+        <div className="flex flex-col items-start gap-1">
+          <VerificationBadge verified={row.original.verification === 'verified'} size="sm" />
+          <span className="flex items-center gap-1.5">
+            <span className="text-xs text-base-content/50">ID</span>
+            <IdentityStatusBadge status={row.original.identity_status} size="sm" />
+          </span>
+        </div>
+      ),
     },
     {
       accessorKey: 'created_at',
-      header: 'Created date',
+      header: 'Joined',
       cell: ({ row }) => {
-        const value = formatDateTime(row.original.created_at)
+        const value = row.original.created_at
 
-        return value ? <span className="whitespace-nowrap">{value}</span> : <span className="text-base-content/40">—</span>
+        return value ? (
+          <span className="whitespace-nowrap text-sm" title={formatDateTime(value)}>{formatDate(value)}</span>
+        ) : (
+          <span className="text-base-content/40">—</span>
+        )
       },
     },
     {
@@ -287,95 +306,85 @@ export default function UsersPage() {
 
   const isActivateConfirm = confirmTarget?.action === 'activate'
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold">User Management</h1>
-        <p className="text-sm text-base-content/60">Manage platform user accounts — view, edit, suspend, ban or delete.</p>
-      </div>
+  const hasFilters = Boolean(search || statusFilter || verificationFilter)
+  const clearFilters = () => {
+    setSearch('')
+    setStatusFilter('')
+    setVerificationFilter('')
+    pagination.setCurrentPage(1)
+  }
 
-      <Card bodyClassName="p-0">
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto border-b border-base-200 p-4">
+  return (
+    <div className="flex flex-col gap-5">
+      <PageHeader
+        title="Customer Management"
+        description="Customer accounts on the platform — review, edit, suspend, ban or remove them."
+      />
+
+      <Card bodyClassName="p-0" className="overflow-hidden border border-base-200 shadow-none">
+        <div className="border-b border-base-200 px-4">
+          <StatusTabs
+            label="Filter by status"
+            options={STATUS_TABS}
+            value={statusFilter}
+            onChange={applyFilter(setStatusFilter)}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3">
           <SearchInput
             value={search}
             onChange={(event) => applyFilter(setSearch)(event.target.value)}
-            placeholder="Search by name, email or ID…"
-            className="w-44 shrink min-w-0 sm:w-60"
+            placeholder="Search name, email or ID"
+            size="sm"
+            className="w-full min-w-0 sm:w-72"
           />
 
           <select
-            className="select select-bordered select-sm w-32 shrink-0"
-            value={statusFilter}
-            onChange={(event) => applyFilter(setStatusFilter)(event.target.value)}
-            aria-label="Filter by status"
-          >
-            <option value="">All statuses</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
-            <option value="banned">Banned</option>
-          </select>
-
-          <select
-            className="select select-bordered select-sm w-32 shrink-0"
+            className="select select-bordered select-sm w-auto"
             value={verificationFilter}
             onChange={(event) => applyFilter(setVerificationFilter)(event.target.value)}
             aria-label="Filter by email confirmation"
           >
-            <option value="">All emails</option>
+            <option value="">Any email status</option>
             <option value="verified">Email confirmed</option>
             <option value="unverified">Email not confirmed</option>
           </select>
 
-          <select
-            className="select select-bordered select-sm w-40 shrink-0"
-            value={sort}
-            onChange={(event) => applyFilter(setSort)(event.target.value)}
-            aria-label="Sort by"
-          >
-            <option value="created_at">Created date</option>
-            <option value="name">Name</option>
-            <option value="last_login_at">Last login</option>
-          </select>
+          {hasFilters && (
+            <button type="button" className="btn btn-link btn-sm px-1 no-underline" onClick={clearFilters}>
+              Clear filters
+            </button>
+          )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 whitespace-nowrap"
-            onClick={() => setDirection((value) => (value === 'asc' ? 'desc' : 'asc'))}
-          >
-            {direction === 'asc' ? 'Ascending' : 'Descending'}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            aria-label="Refresh users"
-          >
-            <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
-          </Button>
+          <div className="ml-auto flex items-center gap-1">
+            <SortControl
+              options={SORT_OPTIONS}
+              sort={sort}
+              direction={direction}
+              onSortChange={applyFilter(setSort)}
+              onToggleDirection={() => setDirection((value) => (value === 'asc' ? 'desc' : 'asc'))}
+            />
+            <RefreshButton onClick={() => refetch()} isFetching={isFetching} label="Refresh customers" />
+          </div>
         </div>
 
         {isError ? (
-          <ErrorState title="Could not load users" message={error?.message} onRetry={refetch} />
+          <ErrorState title="Could not load customers" message={error?.message} onRetry={refetch} />
         ) : (
-          <DataTable
-            columns={columns}
-            data={users}
-            isLoading={isLoading}
-            emptyTitle="No users found"
-            emptyDescription="Try adjusting your search or filters."
-          />
+          <div className="border-t border-base-200">
+            <DataTable
+              variant="clean"
+              columns={columns}
+              data={users}
+              isLoading={isLoading}
+              emptyTitle={hasFilters ? 'No customers match' : 'No customers yet'}
+              emptyDescription={hasFilters ? 'Try a different search or clear the filters.' : 'Customers appear here when they sign up in the app.'}
+            />
+          </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-base-200 p-4">
-          <p className="text-sm text-base-content/60">
-            {paginationMeta ? `${paginationMeta.from ?? 0}–${paginationMeta.to ?? 0} of ${paginationMeta.total}` : ''}
-          </p>
-          <Pagination totalItems={paginationMeta?.total ?? 0} perPage={PER_PAGE} pagination={pagination} />
-        </div>
+        <TableFooter meta={paginationMeta} perPage={PER_PAGE} pagination={pagination} noun="customers" />
       </Card>
 
       <UserFormModal open={Boolean(editing)} onClose={() => setEditing(null)} user={editing} />          <UserActionModal

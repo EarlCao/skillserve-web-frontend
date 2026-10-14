@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Plus, UserPlus } from 'lucide-react'
 import Button from '../../../components/ui/Button'
+import PageHeader from '../../../components/common/PageHeader'
 import AdministratorsPage from './AdministratorsPage'
 import RolesPage from './RolesPage'
 import PermissionsPage from './PermissionsPage'
@@ -41,29 +42,29 @@ export default function AdministratorManagementPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Administrator Management</h1>
-          <p className="text-sm text-base-content/60">Manage administrator accounts, roles and permissions.</p>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          {activeTab === 'roles' && canManageRoles && (
-            <Button onClick={() => setRoleFormOpen(true)}>
-              <Plus className="size-4" />
-              Add role
-            </Button>
-          )}
-          {activeTab === 'administrators' && canCreateAdministrator && (
-            <Button onClick={() => setAdminFormOpen(true)}>
-              <UserPlus className="size-4" />
-              Add administrator
-            </Button>
-          )}
-        </div>
-      </div>
+    <div className="flex flex-col gap-5">
+      <PageHeader
+        title="Administrator Management"
+        description="Staff accounts, their roles, and what each role may view and control."
+        actions={
+          <>
+            {activeTab === 'roles' && canManageRoles && (
+              <Button onClick={() => setRoleFormOpen(true)}>
+                <Plus className="size-4" />
+                Add role
+              </Button>
+            )}
+            {activeTab === 'administrators' && canCreateAdministrator && (
+              <Button onClick={() => setAdminFormOpen(true)}>
+                <UserPlus className="size-4" />
+                Add administrator
+              </Button>
+            )}
+          </>
+        }
+      />
 
-      <div role="tablist" aria-label="Administrator management sections" className="tabs tabs-border w-fit">
+      <div role="tablist" aria-label="Administrator management sections" className="-mb-1 flex gap-1 border-b border-base-200">
         {TABS.map(({ id, label }) => (
           <button
             key={id}
@@ -73,7 +74,11 @@ export default function AdministratorManagementPage() {
             aria-selected={activeTab === id}
             aria-controls={`admin-panel-${id}`}
             tabIndex={activeTab === id ? 0 : -1}
-            className={`tab text-base ${activeTab === id ? 'tab-active font-bold text-primary' : ''}`}
+            className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === id
+                ? 'border-primary text-primary'
+                : 'border-transparent text-base-content/60 hover:border-base-300 hover:text-base-content'
+            }`}
             onClick={() => selectTab(id)}
           >
             {label}

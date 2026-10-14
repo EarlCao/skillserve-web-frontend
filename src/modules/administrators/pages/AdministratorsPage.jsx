@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Eye, KeyRound, Pencil, Power, RefreshCw } from 'lucide-react'
+import { Eye, KeyRound, Pencil, Power } from 'lucide-react'
 import Button from '../../../components/ui/Button'
+import Tooltip from '../../../components/ui/Tooltip'
 import Badge from '../../../components/ui/Badge'
 import Card from '../../../components/ui/Card'
 import SearchInput from '../../../components/common/SearchInput'
+import SortControl from '../../../components/tables/SortControl'
+import RefreshButton from '../../../components/tables/RefreshButton'
+import TableFooter from '../../../components/tables/TableFooter'
 import ErrorState from '../../../components/common/ErrorState'
 import DataTable from '../../../components/tables/DataTable'
-import Pagination from '../../../components/tables/Pagination'
 import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import { useAuth } from '../../../contexts/AuthContext'
 import { hasCapability } from '../../../utils/permissions'
@@ -25,6 +28,18 @@ import StatusBadge from '../components/StatusBadge'
 const PER_PAGE = 10
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
+const formatDate = (value) => format(new Date(value), 'MMM d, yyyy')
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'Any status' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+]
+
+const SORT_OPTIONS = [
+  { value: 'created_at', label: 'Added' },
+  { value: 'name', label: 'Name' },
+]
 
 /**
  * Administrator management list: server-side search, status/role filters,
@@ -93,25 +108,28 @@ export default function AdministratorsPage() {
   const columns = [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: 'Administrator',
       cell: ({ row }) => (
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-56 items-center gap-3">
           <UserAvatar name={row.original.name} src={row.original.profile_photo_url} size="sm" />
-          <div className="flex flex-col">
-            <span className="font-medium">{row.original.name}</span>
-            <span className="text-xs text-base-content/60">{row.original.email}</span>
+          <div className="flex min-w-0 flex-col">
+            <span className="truncate font-medium">
+              {row.original.name}
+              {row.original.id === user?.id && <span className="ml-1.5 text-xs font-normal text-base-content/50">(you)</span>}
+            </span>
+            <span className="truncate text-xs text-base-content/60">{row.original.email}</span>
           </div>
         </div>
       ),
     },
     {
       accessorKey: 'roles',
-      header: 'Roles',
+      header: 'Role',
       cell: ({ row }) =>
         row.original.roles?.length ? (
           <div className="flex flex-wrap gap-1">
             {row.original.roles.map((role) => (
-              <Badge key={role} variant="secondary">
+              <Badge key={role} variant={role === 'super-admin' ? 'primary' : 'outline'} size="sm" className={role === 'super-admin' ? 'badge-soft' : 'border-base-300 text-base-content/70'}>
                 {role}
               </Badge>
             ))}
@@ -127,25 +145,31 @@ export default function AdministratorsPage() {
     },
     {
       accessorKey: 'last_login_at',
-      header: 'Last login',
+      header: 'Last sign-in',
       cell: ({ row }) => {
-        const value = formatDateTime(row.original.last_login_at)
+        const value = row.original.last_login_at
 
-        return value ? <span className="whitespace-nowrap">{value}</span> : <span className="text-base-content/40">Never</span>
+        return value ? (
+          <span className="whitespace-nowrap text-sm" title={formatDateTime(value)}>{formatDate(value)}</span>
+        ) : (
+          <span className="text-sm text-base-content/40">Never</span>
+        )
       },
     },
     {
-      accessorKey: 'created_by',
-      header: 'Created by',
-      cell: ({ row }) => row.original.created_by?.name ?? <span className="text-base-content/40">—</span>,
-    },
-    {
       accessorKey: 'created_at',
-      header: 'Created date',
+      header: 'Added',
       cell: ({ row }) => {
-        const value = formatDateTime(row.original.created_at)
+        const value = row.original.created_at
 
-        return value ? <span className="whitespace-nowrap">{value}</span> : <span className="text-base-content/40">—</span>
+        return (
+          <div className="flex flex-col whitespace-nowrap">
+            <span className="text-sm" title={formatDateTime(value) ?? undefined}>{value ? formatDate(value) : '—'}</span>
+            {row.original.created_by?.name && (
+              <span className="text-xs text-base-content/50">by {row.original.created_by.name}</span>
+            )}
+          </div>
+        )
       },
     },
     {
@@ -179,15 +203,15 @@ export default function AdministratorsPage() {
 
         return (
           <div className="flex justify-end gap-1">
-            {can('view administrators') && <Button
+            {can('view administrators') && <Tooltip label="View details" placement="left"><Button
               variant="ghost"
               size="sm"
               onClick={() => setViewing(administrator)}
               aria-label={`View ${administrator.name}`}
             >
               <Eye className="size-4" />
-            </Button>}
-            {can('edit administrators') && <Button
+            </Button></Tooltip>}
+            {can('edit administrators') && <Tooltip label="Edit details" placement="left"><Button
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -197,12 +221,11 @@ export default function AdministratorsPage() {
               aria-label={`Edit ${administrator.name}`}
             >
               <Pencil className="size-4" />
-            </Button>}
-            {can('edit administrators') && <Button
+            </Button></Tooltip>}
+            {can('edit administrators') && <Tooltip label={passwordTitle ?? 'Reset password'} placement="left"><Button
               variant="ghost"
               size="sm"
               disabled={!canResetPassword}
-              title={passwordTitle}
               onClick={() => {
                 setPasswordTarget(administrator)
                 passwordDisclosure.open()
@@ -210,12 +233,11 @@ export default function AdministratorsPage() {
               aria-label={`Reset ${administrator.name}'s password`}
             >
               <KeyRound className={`size-4 ${canResetPassword ? 'text-primary' : 'text-base-content/30'}`} />
-            </Button>}
-            {can('edit administrators') && <Button
+            </Button></Tooltip>}
+            {can('edit administrators') && <Tooltip label={statusTitle ?? (isInactive ? 'Activate account' : 'Deactivate account')} placement="left"><Button
               variant="ghost"
               size="sm"
               disabled={!canDeactivate}
-              title={statusTitle}
               onClick={() => {
                 setStatusTarget({ administrator, to: isInactive ? 'active' : 'inactive' })
                 statusDisclosure.open()
@@ -233,43 +255,53 @@ export default function AdministratorsPage() {
               <Power
                 className={`size-4 ${isLocked ? 'text-base-content/30' : isInactive ? 'text-success' : 'text-warning'}`}
               />
-            </Button>}
+            </Button></Tooltip>}
           </div>
         )
       },
     },
   ]
 
+  const hasFilters = Boolean(search || statusFilter || roleFilter)
+  const clearFilters = () => {
+    setSearch('')
+    setStatusFilter('')
+    setRoleFilter('')
+    pagination.setCurrentPage(1)
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <Card bodyClassName="p-0">
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto border-b border-base-200 p-4">
+      <Card bodyClassName="p-0" className="overflow-hidden border border-base-200 shadow-none">
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3">
           <SearchInput
             value={search}
             onChange={(event) => applyFilter(setSearch)(event.target.value)}
-            placeholder="Search by name or email…"
-            className="w-40 shrink min-w-0 sm:w-56"
+            placeholder="Search name or email"
+            size="sm"
+            className="w-full min-w-0 sm:w-72"
           />
 
           <select
-            className="select select-bordered select-sm w-28 shrink-0"
+            className="select select-bordered select-sm w-auto"
             value={statusFilter}
             onChange={(event) => applyFilter(setStatusFilter)(event.target.value)}
             aria-label="Filter by status"
           >
-            <option value="">All statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            {STATUS_OPTIONS.map((option) => (
+              <option key={option.value || 'any'} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
 
           <select
-            className="select select-bordered select-sm w-32 shrink-0"
+            className="select select-bordered select-sm w-auto"
             value={roleFilter}
             onChange={(event) => applyFilter(setRoleFilter)(event.target.value)}
             aria-label="Filter by role"
-            title={roleFilter || 'All roles'}
           >
-            <option value="">All roles</option>
+            <option value="">Any role</option>
             {roleNames.map((role) => (
               <option key={role} value={role}>
                 {role}
@@ -277,55 +309,40 @@ export default function AdministratorsPage() {
             ))}
           </select>
 
-          <select
-            className="select select-bordered select-sm w-40 shrink-0"
-            value={sort}
-            onChange={(event) => applyFilter(setSort)(event.target.value)}
-            aria-label="Sort by"
-          >
-            <option value="created_at">Created date</option>
-            <option value="name">Name</option>
-          </select>
+          {hasFilters && (
+            <button type="button" className="btn btn-link btn-sm px-1 no-underline" onClick={clearFilters}>
+              Clear filters
+            </button>
+          )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 whitespace-nowrap"
-            onClick={() => setDirection((value) => (value === 'asc' ? 'desc' : 'asc'))}
-          >
-            {direction === 'asc' ? 'Ascending' : 'Descending'}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            aria-label="Refresh administrators"
-          >
-            <RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
-          </Button>
+          <div className="ml-auto flex items-center gap-1">
+            <SortControl
+              options={SORT_OPTIONS}
+              sort={sort}
+              direction={direction}
+              onSortChange={applyFilter(setSort)}
+              onToggleDirection={() => setDirection((value) => (value === 'asc' ? 'desc' : 'asc'))}
+            />
+            <RefreshButton onClick={() => refetch()} isFetching={isFetching} label="Refresh administrators" />
+          </div>
         </div>
 
         {isError ? (
           <ErrorState title="Could not load administrators" message={error?.message} onRetry={refetch} />
         ) : (
-          <DataTable
-            columns={columns}
-            data={administrators}
-            isLoading={isLoading}
-            emptyTitle="No administrators found"
-            emptyDescription="Try adjusting your search or filters."
-          />
+          <div className="border-t border-base-200">
+            <DataTable
+              variant="clean"
+              columns={columns}
+              data={administrators}
+              isLoading={isLoading}
+              emptyTitle={hasFilters ? 'No administrators match' : 'No administrators yet'}
+              emptyDescription={hasFilters ? 'Try a different search or clear the filters.' : 'Add an administrator to give someone access to the admin web.'}
+            />
+          </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-base-200 p-4">
-          <p className="text-sm text-base-content/60">
-            {paginationMeta ? `${paginationMeta.from ?? 0}–${paginationMeta.to ?? 0} of ${paginationMeta.total}` : ''}
-          </p>
-          <Pagination totalItems={paginationMeta?.total ?? 0} perPage={PER_PAGE} pagination={pagination} />
-        </div>
+        <TableFooter meta={paginationMeta} perPage={PER_PAGE} pagination={pagination} noun="administrators" />
       </Card>
 
       <AdministratorFormModal
