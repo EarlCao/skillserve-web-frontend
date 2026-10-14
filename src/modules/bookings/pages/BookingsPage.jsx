@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { format } from 'date-fns'
 import { Eye, XCircle, RefreshCw } from 'lucide-react'
 import Button from '../../../components/ui/Button'
@@ -36,7 +37,9 @@ const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy 
 export default function BookingsPage() {
   const { user: currentUser } = useAuth()
   const canRecordPayments = hasCapability(currentUser, 'manage booking payments', 'manage bookings')
-  const [search, setSearch] = useState('')
+  // An Inbox alert links here with ?search=<booking number>.
+  const [searchParams] = useSearchParams()
+  const [search, setSearch] = useState(() => searchParams.get('search') ?? '')
   const debouncedSearch = useDebounce(search, 300)
   const [statusFilter, setStatusFilter] = useState('')
   const [paymentFilter, setPaymentFilter] = useState('')
@@ -253,6 +256,7 @@ export default function BookingsPage() {
             <option value="paid">Paid</option>
             <option value="refunded">Refunded</option>
             <option value="partially_refunded">Partially Refunded</option>
+            <option value="refund_owed">Refund owed (cancelled)</option>
           </select>
 
           <select
@@ -345,6 +349,7 @@ export default function BookingsPage() {
         onCancel={handleCancelFromDetails}
         onManageDispute={handleDisputeFromDetails}
         onRecordPayment={canRecordPayments ? (booking, mode) => setPaymentTarget({ booking, mode }) : undefined}
+        canResolveRefund={canRecordPayments}
       />
 
       <BookingPaymentModal

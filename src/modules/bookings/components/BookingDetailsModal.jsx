@@ -8,6 +8,7 @@ import ErrorState from '../../../components/common/ErrorState'
 import { useBooking, useBookingHistory } from '../hooks/useBookings'
 import { formatCurrency } from '../../../utils'
 import { PrivatePhotoThumbnail } from '../../../components/common/PrivatePhotos'
+import RefundCaseSection from './RefundCaseSection'
 
 const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy HH:mm') : null)
 
@@ -27,6 +28,7 @@ export default function BookingDetailsModal({
   onCancel,
   onManageDispute,
   onRecordPayment,
+  canResolveRefund = false,
 }) {
   const { data, isLoading, isError, error, refetch } = useBooking(bookingId)
   const { data: historyData } = useBookingHistory(bookingId)
@@ -145,6 +147,9 @@ export default function BookingDetailsModal({
               <p className="font-medium">{booking.payment_method ?? '—'}</p>
             </div>
           </div>
+
+          {/* What the provider owes back after a cancellation. */}
+          {booking.refund && <RefundCaseSection booking={booking} canResolve={canResolveRefund} />}
 
           {/* GCash payments the customer sent proof of; the provider confirms them. */}
           {(Number(booking.amount_paid) > 0 || booking.payment_proofs?.length > 0) && (

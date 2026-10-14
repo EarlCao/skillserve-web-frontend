@@ -29,6 +29,7 @@ const HINTS = {
   'general.timezone': 'Set by the server configuration (BUSINESS_TIMEZONE); provider hours and booking times use this timezone.',
   'identity.identity_verification_enforced_from': 'Accounts created before this date keep transacting unverified. Leave it empty and the requirement covers every existing account too.',
   'identity.identity_document_retention_days': 'How long National ID images are kept after a decision.',
+  'booking.downpayment_refund_days': 'When a booking with a payment is cancelled, the provider must return it within this many days. Past it they cannot take new bookings and administrators are alerted.',
   'marketplace.commission_block_min_amount': 'In pesos. A provider who owes less keeps taking new bookings; 0 blocks on any unpaid commission. Finishing agreed jobs is never blocked.',
   'marketplace.commission_block_after_days': 'Blocks even a small debt once the oldest unpaid commission is this many days old; 0 turns this off. Whichever limit is reached first applies.',
 }

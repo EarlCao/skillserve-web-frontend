@@ -91,6 +91,24 @@ export function useRefundBooking() {
 }
 
 /**
+ * Settle a refund owed after a cancellation that the parties could not.
+ */
+export function useResolveRefund() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, resolution, note }) => bookingApi.resolveRefund(id, resolution, note),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Refund case resolved.')
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bookings.all })
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to resolve this refund.')
+    },
+  })
+}
+
+/**
  * Manage-dispute mutation.
  */
 export function useManageDispute() {

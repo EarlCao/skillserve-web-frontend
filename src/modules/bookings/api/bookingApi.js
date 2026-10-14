@@ -8,6 +8,8 @@ export const bookingApi = {
   markPaid: (id, paymentReference) =>
     api.patch(`/bookings/${id}/mark-paid`, { payment_reference: paymentReference || null }),
   refund: (id, amount, reason) => api.patch(`/bookings/${id}/refund`, { amount, reason }),
+  // Settle what a provider owes back after a cancellation: returned | not_returned.
+  resolveRefund: (id, resolution, note) => api.patch(`/bookings/${id}/refund/resolve`, { resolution, note }),
   manageDispute: (id, action, resolution) =>
     api.patch(`/bookings/${id}/dispute`, { action, resolution }),
 }
