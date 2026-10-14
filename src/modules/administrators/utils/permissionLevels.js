@@ -22,6 +22,20 @@ export function accessLevel(group, selected) {
   return 'custom'
 }
 
+/**
+ * [selected] with one permission of [group] switched on or off. Switching on
+ * a control permission also grants the area's view permissions — a control
+ * cannot be used without seeing the page it is on.
+ */
+export function withPermissionToggled(selected, group, name) {
+  if (selected.includes(name)) return selected.filter((item) => item !== name)
+
+  const viewNames = group.view_permissions ?? []
+  const added = viewNames.includes(name) ? [name] : [name, ...viewNames]
+
+  return [...new Set([...selected, ...added])]
+}
+
 /** [selected] with the area set to [level]; other areas are left as they are. */
 export function withAccessLevel(selected, group, level) {
   const names = group.permissions.map((permission) => permission.name)

@@ -1,17 +1,18 @@
 import { useCallback, useState } from 'react'
-import { withAccessLevel } from '../utils/permissionLevels'
+import { withAccessLevel, withPermissionToggled } from '../utils/permissionLevels'
 
 /**
  * Selection + expand/collapse state for the permission matrix. Shared by
  * PermissionsPage and PermissionsModal so both views behave identically.
  *
- * Areas start collapsed: the level buttons are the main control, and the
- * individual permissions are only a detail.
+ * Areas start collapsed: the level buttons cover most cases, and "Choose
+ * specific" opens the individual permissions of an area.
  *
  * @returns {{
  *   selected: string[],
  *   setSelected: (names: string[]) => void,
  *   setLevel: (group: object, level: 'none'|'view'|'full') => void,
+ *   togglePermission: (group: object, name: string) => void,
  *   setAll: (groups: object[], level: 'none'|'view'|'full') => void,
  *   collapsedModules: Set<string>,
  *   toggleModule: (module: string) => void,
@@ -23,6 +24,10 @@ export function usePermissionSelection() {
 
   const setLevel = useCallback((group, level) => {
     setSelected((prev) => withAccessLevel(prev, group, level))
+  }, [])
+
+  const togglePermission = useCallback((group, name) => {
+    setSelected((prev) => withPermissionToggled(prev, group, name))
   }, [])
 
   const setAll = useCallback((groups, level) => {
@@ -45,5 +50,5 @@ export function usePermissionSelection() {
   // The list asks which areas are collapsed; everything not expanded is.
   const collapsedModules = { has: (module) => !expandedModules.has(module) }
 
-  return { selected, setSelected, setLevel, setAll, collapsedModules, toggleModule }
+  return { selected, setSelected, setLevel, togglePermission, setAll, collapsedModules, toggleModule }
 }
