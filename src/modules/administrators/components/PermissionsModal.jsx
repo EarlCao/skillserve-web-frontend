@@ -25,12 +25,11 @@ const SUPER_ADMIN = 'super-admin'
 export default function PermissionsModal({ open, onClose, role }) {
   const matrixQuery = usePermissionMatrix()
   const syncMutation = useSyncRolePermissions()
-  const { selected, setSelected, toggle, toggleGroup, clearAll, collapsedModules, toggleModule } = usePermissionSelection()
+  const { selected, setSelected, setLevel, setAll, collapsedModules, toggleModule } = usePermissionSelection()
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false)
 
   const isSuperAdmin = role?.name === SUPER_ADMIN
   const groups = matrixQuery.data?.data ?? []
-  const permissionNames = groups.flatMap((group) => group.permissions.map((permission) => permission.name))
 
   // Seed the selection from the role's current permissions whenever the modal
   // opens (or the target role changes). Adjusting state during render follows
@@ -41,8 +40,6 @@ export default function PermissionsModal({ open, onClose, role }) {
     setSeedKey(currentSeedKey)
     setSelected(role?.permissions ?? [])
   }
-
-  const onSelectAll = () => setSelected(permissionNames)
 
   const onSubmit = () => {
     if (!role) return
@@ -95,10 +92,8 @@ export default function PermissionsModal({ open, onClose, role }) {
           <PermissionGroupList
             groups={groups}
             selected={selected}
-            onToggle={toggle}
-            onToggleGroup={toggleGroup}
-            onSelectAll={onSelectAll}
-            onClearAll={clearAll}
+            onSetLevel={setLevel}
+            onSetAll={(level) => setAll(groups, level)}
             readOnly={isSuperAdmin}
             collapsedModules={collapsedModules}
             onToggleModule={toggleModule}

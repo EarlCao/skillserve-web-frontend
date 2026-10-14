@@ -124,8 +124,8 @@ export default function AdminLayout() {
   const canManageAnalytics = hasAnyCapability(user, ['view analytics', 'export analytics'])
   const canManageRecognition = hasAnyCapability(user, ['view provider recognition', 'manage provider badges', 'assign provider badges', 'manage featured providers', 'view top rated providers'])
   const canViewAudit = hasAnyCapability(user, ['view audit logs', 'view login activity', 'monitor security events'])
-  const canManageSettings = hasAnyCapability(user, ['manage settings'])
-  const canManageData = hasAnyCapability(user, ['manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records'])
+  const canManageSettings = hasAnyCapability(user, ['view settings', 'manage settings'])
+  const canManageData = hasAnyCapability(user, ['view data', 'manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records'])
   const canManageSupport = hasAnyCapability(user, ['view support', 'manage support', 'assign support tickets', 'respond to support tickets', 'resolve support tickets'])
   // Mirrors the backend viewAny policies: holding only an action permission
   // (settle / verify / reject) does not let you load either list.

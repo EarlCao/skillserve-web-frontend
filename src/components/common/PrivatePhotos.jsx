@@ -21,14 +21,15 @@ export default function PrivatePhotos({ photos, label = 'Photos' }) {
       </span>
       <div className="mt-2 flex flex-wrap gap-2">
         {photos.map((photo, index) => (
-          <Thumbnail key={photo.id} path={photo.download_path} number={index + 1} />
+          <PrivatePhotoThumbnail key={photo.id} path={photo.download_path} number={index + 1} />
         ))}
       </div>
     </div>
   )
 }
 
-function Thumbnail({ path, number }) {
+/** One private photo as a thumbnail; click for full size in a new tab. */
+export function PrivatePhotoThumbnail({ path, number = 1 }) {
   const { data: blob, isLoading, isError, refetch } = useQuery({
     queryKey: QUERY_KEYS.privatePhotos.photo(path),
     queryFn: () => api.get(path, { responseType: 'blob' }),

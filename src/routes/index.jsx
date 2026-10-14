@@ -250,7 +250,7 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <RequirePermission permissions={['manage settings']} />,
+            element: <RequirePermission permissions={['view settings', 'manage settings']} />,
             children: [{ path: 'settings', element: <SettingsPage /> }],
           },
           {
@@ -258,7 +258,7 @@ export const router = createBrowserRouter([
             children: [{ path: 'support', element: <SupportTicketsPage /> }],
           },
           {
-            element: <RequirePermission permissions={['manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records']} />,
+            element: <RequirePermission permissions={['view data', 'manage data', 'export system data', 'archive records', 'restore archived records', 'restore deleted records', 'manage deleted records']} />,
             children: [{ path: 'data-management', element: <DataManagementPage /> }],
           },
         ],

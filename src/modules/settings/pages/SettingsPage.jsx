@@ -7,6 +7,8 @@ import Skeleton from '../../../components/ui/Skeleton'
 import Input from '../../../components/ui/Input'
 import AppearanceFields from '../components/AppearanceFields'
 import { useSettings, useUpdateSettings } from '../hooks/useSettings'
+import { useAuth } from '../../../contexts/AuthContext'
+import { hasCapability } from '../../../utils/permissions'
 
 const GROUPS = [
   ['general', 'General', 'Platform identity and preferences.'],
@@ -36,6 +38,9 @@ const HINTS = {
 const DATE_FIELDS = new Set(['identity.identity_verification_enforced_from'])
 
 export default function SettingsPage() {
+  const { user } = useAuth()
+  // View-level access shows the settings without letting them change.
+  const canEdit = hasCapability(user, 'manage settings')
   const { data, isLoading, isError, error, refetch } = useSettings()
   const updateMutation = useUpdateSettings()
   const [activeGroup, setActiveGroup] = useState('general')
@@ -88,6 +93,8 @@ export default function SettingsPage() {
           ))}
         </div>
         <form onSubmit={save} className="flex flex-col gap-5 p-4 md:p-6">
+          {!canEdit && <div role="status" className="alert">You can view these settings. Changing them needs full control of System settings.</div>}
+          <fieldset disabled={!canEdit} className="flex flex-col gap-5">
           <div><h2 className="text-lg font-semibold">{GROUPS.find(([key]) => key === activeGroup)?.[1]}</h2><p className="text-sm text-base-content/60">{GROUPS.find(([key]) => key === activeGroup)?.[2]}</p></div>
           {freezesExistingAccounts && (
             <div role="alert" className="alert alert-warning">
@@ -109,7 +116,8 @@ export default function SettingsPage() {
             ))}
           </div>
           )}
-          <div className="flex justify-end border-t border-base-200 pt-4"><Button type="submit" loading={updateMutation.isPending}><Save className="size-4" /> Save changes</Button></div>
+          </fieldset>
+          {canEdit && <div className="flex justify-end border-t border-base-200 pt-4"><Button type="submit" loading={updateMutation.isPending}><Save className="size-4" /> Save changes</Button></div>}
         </form>
       </Card>
       <div className="flex items-center gap-2 text-xs text-base-content/50"><SettingsIcon className="size-4" /> Changes are recorded in the security audit log.</div>

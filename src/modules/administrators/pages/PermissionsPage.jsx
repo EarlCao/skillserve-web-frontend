@@ -15,8 +15,8 @@ import { hasCapability } from '../../../utils/permissions'
 const SUPER_ADMIN = 'super-admin'
 
 /**
- * Permission matrix: pick a role, then toggle its permissions grouped by
- * module. Saving syncs the selection to the backend.
+ * Permission matrix: pick a role, then choose No access, View or Full control
+ * for each area of the admin web. Saving syncs the selection to the backend.
  */
 export default function PermissionsPage() {
   const { user } = useAuth()
@@ -24,7 +24,7 @@ export default function PermissionsPage() {
   const rolesQuery = useRoles({ per_page: 100, sort: 'name', direction: 'asc' })
   const matrixQuery = usePermissionMatrix()
   const syncMutation = useSyncRolePermissions()
-  const { selected, setSelected, toggle, toggleGroup, clearAll, collapsedModules, toggleModule } = usePermissionSelection()
+  const { selected, setSelected, setLevel, setAll, collapsedModules, toggleModule } = usePermissionSelection()
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false)
 
   const roles = useMemo(() => rolesQuery.data?.data ?? [], [rolesQuery.data])
@@ -50,8 +50,6 @@ export default function PermissionsPage() {
     setSelectedRole(role)
     setSelected(role?.permissions ?? [])
   }
-
-  const onSelectAll = () => setSelected(permissionNames)
 
   const onSubmit = () => {
     setConfirmSaveOpen(false)
@@ -120,10 +118,8 @@ export default function PermissionsPage() {
         <PermissionGroupList
           groups={groups}
           selected={displayedSelected}
-          onToggle={toggle}
-          onToggleGroup={toggleGroup}
-          onSelectAll={onSelectAll}
-          onClearAll={clearAll}
+          onSetLevel={setLevel}
+          onSetAll={(level) => setAll(groups, level)}
           readOnly={!canManageAdministrators || isSuperAdmin}
           collapsedModules={collapsedModules}
           onToggleModule={toggleModule}

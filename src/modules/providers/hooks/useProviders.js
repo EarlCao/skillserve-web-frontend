@@ -51,8 +51,8 @@ export function useVerificationHistory(id) {
  * Approve provider verification mutation.
  */
 /**
- * Opens a verification document in a new tab. Same approach as
- * useOpenDisputeEvidence: fetch with the admin's token, open a blob URL.
+ * Opens a verification document in a new tab: fetch with the admin's token,
+ * open a blob URL.
  */
 export function useOpenVerificationDocument() {
   return useMutation({
