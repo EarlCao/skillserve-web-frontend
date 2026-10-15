@@ -8,9 +8,11 @@ import {
   MessageSquare,
   Power,
   Star,
+  Trash2,
+  UserCheck,
   XCircle,
 } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
 import Badge from '../../../components/ui/Badge'
@@ -30,6 +32,8 @@ import {
   useSuspendProvider,
   useActivateProvider,
   useRemoveVerification,
+  useDeleteProvider,
+  useUnbanProvider,
 } from '../hooks/useProviders'
 import ProviderAvatar from '../components/ProviderAvatar'
 import ProviderStatusBadge from '../components/ProviderStatusBadge'
@@ -47,6 +51,7 @@ const formatDateTime = (value) => (value ? format(new Date(value), 'MMM d, yyyy 
  */
 export default function ProviderProfilePage() {
   const { providerId } = useParams()
+  const navigate = useNavigate()
   const { user: currentUser } = useAuth()
   const can = (permission) => hasCapability(currentUser, permission, 'manage providers')
 
@@ -62,6 +67,8 @@ export default function ProviderProfilePage() {
   const [showSuspendModal, setShowSuspendModal] = useState(false)
   const [showActivateConfirm, setShowActivateConfirm] = useState(false)
   const [showRemoveVerificationConfirm, setShowRemoveVerificationConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showUnbanConfirm, setShowUnbanConfirm] = useState(false)
 
   const [approveNotes, setApproveNotes] = useState('')
   const [rejectReason, setRejectReason] = useState('')
@@ -74,6 +81,8 @@ export default function ProviderProfilePage() {
   const suspendMutation = useSuspendProvider()
   const activateMutation = useActivateProvider()
   const removeVerificationMutation = useRemoveVerification()
+  const deleteMutation = useDeleteProvider()
+  const unbanMutation = useUnbanProvider()
   const openDocumentMutation = useOpenVerificationDocument()
 
   const handleApprove = () => {
@@ -188,7 +197,16 @@ export default function ProviderProfilePage() {
                   </Button>}
                 </>
               )}
-              {provider.is_suspended ? (
+              {provider.account_status === 'banned' ? (
+                can('activate providers') && <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowUnbanConfirm(true)}
+                >
+                  <UserCheck className="size-4 text-success" />
+                  Unban
+                </Button>
+              ) : provider.is_suspended ? (
                 can('activate providers') && <Button
                   variant="outline"
                   size="sm"
@@ -217,6 +235,14 @@ export default function ProviderProfilePage() {
                   Remove Verification
                 </Button>
               )}
+              {can('delete providers') && <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                <Trash2 className="size-4 text-error" />
+                Delete
+              </Button>}
             </>
           )}
         </div>
@@ -238,7 +264,7 @@ export default function ProviderProfilePage() {
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-lg font-semibold">{provider?.business_name || provider?.user?.name}</span>
-                <ProviderStatusBadge isSuspended={provider?.is_suspended} />
+                <ProviderStatusBadge isSuspended={provider?.is_suspended} accountStatus={provider?.account_status} />
                 <VerificationStatusBadge status={provider?.verification_status} />
               </div>
               <p className="text-sm text-base-content/60">{provider?.user?.email}</p>
@@ -603,7 +629,7 @@ export default function ProviderProfilePage() {
         open={showSuspendModal}
         onClose={() => setShowSuspendModal(false)}
         title="Suspend provider?"
-        description={`${provider?.business_name || provider?.user?.name} will not be able to offer services while suspended.`}
+        description={`${provider?.business_name || provider?.user?.name} will be signed out of the mobile app at once and cannot sign in or offer services while suspended.`}
         footer={
           <>
             <Button variant="ghost" onClick={() => setShowSuspendModal(false)} disabled={suspendMutation.isPending}>
@@ -661,6 +687,41 @@ export default function ProviderProfilePage() {
         title="Remove verification?"
         description={`This will remove the verified status of ${provider?.business_name || provider?.user?.name}. They will need to re-apply for verification.`}
         confirmText="Remove verification"
+        variant="error"
+      />
+
+      {/* Unban Confirm */}
+      <ConfirmDialog
+        open={showUnbanConfirm}
+        onCancel={() => setShowUnbanConfirm(false)}
+        onConfirm={() => {
+          if (provider) unbanMutation.mutate(provider.id, { onSuccess: () => setShowUnbanConfirm(false) })
+        }}
+        loading={unbanMutation.isPending}
+        title="Unban provider?"
+        description={`${provider?.business_name || provider?.user?.name} will be able to sign in again, and is emailed that the ban was lifted. If they are also suspended, activate them afterwards to return them to the marketplace.`}
+        confirmText="Unban"
+        variant="primary"
+      />
+
+      {/* Delete Confirm */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={() => {
+          if (provider) {
+            deleteMutation.mutate(provider.id, {
+              onSuccess: () => {
+                setShowDeleteConfirm(false)
+                navigate('/admin/providers')
+              },
+            })
+          }
+        }}
+        loading={deleteMutation.isPending}
+        title="Delete provider?"
+        description={`This will delete ${provider?.business_name || provider?.user?.name}'s account and sign them out of the mobile app at once. Their booking history is kept, and the account can be restored from Data Management. A provider with open bookings, an unreturned downpayment or unpaid commission cannot be deleted.`}
+        confirmText="Delete provider"
         variant="error"
       />
     </div>

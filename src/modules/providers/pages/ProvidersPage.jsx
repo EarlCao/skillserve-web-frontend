@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Ban, Eye, Power, Star, XCircle } from 'lucide-react'
+import { Ban, Eye, Power, Star, Trash2, UserCheck, XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
 import Tooltip from '../../../components/ui/Tooltip'
@@ -23,6 +23,8 @@ import {
   useSuspendProvider,
   useActivateProvider,
   useRemoveVerification,
+  useDeleteProvider,
+  useUnbanProvider,
 } from '../hooks/useProviders'
 import UserAvatar from '../../users/components/UserAvatar'
 import ProviderStatusBadge from '../components/ProviderStatusBadge'
@@ -53,7 +55,7 @@ const SORT_OPTIONS = [
 
 /**
  * Provider management list: server-side search, status/verification filters,
- * sorting, pagination and the moderation actions (suspend / activate / remove verification).
+ * sorting, pagination and the moderation actions (suspend / activate / remove verification / delete).
  */
 export default function ProvidersPage() {
   const navigate = useNavigate()
@@ -76,6 +78,8 @@ export default function ProvidersPage() {
   const suspendMutation = useSuspendProvider()
   const activateMutation = useActivateProvider()
   const removeVerificationMutation = useRemoveVerification()
+  const deleteMutation = useDeleteProvider()
+  const unbanMutation = useUnbanProvider()
 
   const { data, isLoading, isFetching, isError, error, refetch } = useProviders({
     search: debouncedSearch || undefined,
@@ -114,12 +118,22 @@ export default function ProvidersPage() {
     }
   }
 
-  const confirmRemoveVerification = () => {
+  const confirmSimpleAction = () => {
     const target = confirmTarget
     if (!target) return
 
-    removeVerificationMutation.mutate(target.provider.id, { onSuccess: () => confirmDisclosure.close() })
+    if (target.action === 'delete') {
+      deleteMutation.mutate(target.provider.id, { onSuccess: () => confirmDisclosure.close() })
+    } else if (target.action === 'unban') {
+      unbanMutation.mutate(target.provider.id, { onSuccess: () => confirmDisclosure.close() })
+    } else {
+      removeVerificationMutation.mutate(target.provider.id, { onSuccess: () => confirmDisclosure.close() })
+    }
   }
+
+  const isDeleteConfirm = confirmTarget?.action === 'delete'
+  const isUnbanConfirm = confirmTarget?.action === 'unban'
+  const confirmName = confirmTarget ? confirmTarget.provider.business_name || confirmTarget.provider.user?.name : ''
 
   const columns = [
     {
@@ -187,7 +201,7 @@ export default function ProvidersPage() {
     {
       accessorKey: 'is_suspended',
       header: 'Status',
-      cell: ({ row }) => <ProviderStatusBadge isSuspended={row.original.is_suspended} />,
+      cell: ({ row }) => <ProviderStatusBadge isSuspended={row.original.is_suspended} accountStatus={row.original.account_status} />,
     },
     {
       accessorKey: 'created_at',
@@ -219,7 +233,19 @@ export default function ProvidersPage() {
             >
               <Eye className="size-4" />
             </Button></Tooltip>}
-            {isSuspended ? (
+            {provider.account_status === 'banned' ? (
+              can('activate providers') && <Tooltip label="Unban provider" placement="left"><Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setConfirmTarget({ provider, action: 'unban' })
+                  confirmDisclosure.open()
+                }}
+                aria-label={`Unban ${provider.business_name || provider.user?.name}`}
+              >
+                <UserCheck className="size-4 text-success" />
+              </Button></Tooltip>
+            ) : isSuspended ? (
               can('activate providers') && <Tooltip label="Activate provider" placement="left"><Button
                 variant="ghost"
                 size="sm"
@@ -257,6 +283,17 @@ export default function ProvidersPage() {
                 <XCircle className="size-4 text-error" />
               </Button></Tooltip>
             )}
+            {can('delete providers') && <Tooltip label="Delete account" placement="left"><Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setConfirmTarget({ provider, action: 'delete' })
+                confirmDisclosure.open()
+              }}
+              aria-label={`Delete ${provider.business_name || provider.user?.name}`}
+            >
+              <Trash2 className="size-4 text-error" />
+            </Button></Tooltip>}
           </div>
         )
       },
@@ -275,7 +312,7 @@ export default function ProvidersPage() {
     <div className="flex flex-col gap-5">
       <PageHeader
         title="Provider Management"
-        description="Service providers on the platform — review profiles and verification, suspend or reactivate them."
+        description="Service providers on the platform — review profiles and verification, suspend, reactivate or delete them."
       />
 
       <Card bodyClassName="p-0" className="overflow-hidden border border-base-200 shadow-none">
@@ -360,7 +397,7 @@ export default function ProvidersPage() {
           moderationTarget
             ? moderationTarget.action === 'activate'
               ? `This will restore ${moderationTarget.provider.business_name || moderationTarget.provider.user?.name}'s access to the platform.`
-              : `${moderationTarget.provider.business_name || moderationTarget.provider.user?.name} will not be able to offer services while suspended.`
+              : `${moderationTarget.provider.business_name || moderationTarget.provider.user?.name} will be signed out of the mobile app at once and cannot sign in or offer services while suspended.`
             : ''
         }
         confirmText={
@@ -378,16 +415,20 @@ export default function ProvidersPage() {
       <ConfirmDialog
         open={confirmDisclosure.isOpen}
         onCancel={confirmDisclosure.close}
-        onConfirm={confirmRemoveVerification}
-        loading={removeVerificationMutation.isPending}
-        title="Remove verification?"
+        onConfirm={confirmSimpleAction}
+        loading={isDeleteConfirm ? deleteMutation.isPending : isUnbanConfirm ? unbanMutation.isPending : removeVerificationMutation.isPending}
+        title={isDeleteConfirm ? 'Delete provider?' : isUnbanConfirm ? 'Unban provider?' : 'Remove verification?'}
         description={
           confirmTarget
-            ? `This will remove the verified status of ${confirmTarget.provider.business_name || confirmTarget.provider.user?.name}. They will need to re-apply for verification.`
+            ? isUnbanConfirm
+              ? `${confirmName} will be able to sign in again, and is emailed that the ban was lifted. If they are also suspended, activate them afterwards to return them to the marketplace.`
+              : isDeleteConfirm
+              ? `This will delete ${confirmName}'s account and sign them out of the mobile app at once. Their booking history is kept, and the account can be restored from Data Management. A provider with open bookings, an unreturned downpayment or unpaid commission cannot be deleted.`
+              : `This will remove the verified status of ${confirmName}. They will need to re-apply for verification.`
             : ''
         }
-        confirmText="Remove verification"
-        variant="error"
+        confirmText={isDeleteConfirm ? 'Delete provider' : isUnbanConfirm ? 'Unban' : 'Remove verification'}
+        variant={isUnbanConfirm ? 'primary' : 'error'}
       />
     </div>
   )

@@ -425,10 +425,10 @@ export default function UserProfilePage() {
             description={
               moderationTarget
                 ? moderationTarget.action === 'ban'
-                  ? `${moderationTarget.user.name} will not be able to sign in for the chosen duration.`
+                  ? `${moderationTarget.user.name} will be signed out of the mobile app at once and cannot sign in for the chosen duration.`
                   : moderationTarget.action === 'unban'
                     ? `This will restore ${moderationTarget.user.name}'s access to the platform immediately.`
-                    : `${moderationTarget.user.name} will not be able to sign in while suspended.`
+                    : `${moderationTarget.user.name} will be signed out of the mobile app at once and cannot sign in while suspended.`
                 : ''
             }
             confirmText={

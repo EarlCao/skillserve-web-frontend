@@ -173,3 +173,42 @@ export function useActivateProvider() {
     },
   })
 }
+
+/**
+ * Unban provider mutation — lifts a ban made from a report.
+ */
+export function useUnbanProvider() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id) => providerApi.unban(id),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Ban lifted.')
+      invalidateProviderCaches(queryClient)
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to lift the ban.')
+    },
+  })
+}
+
+/**
+ * Delete provider mutation. Refused (409) while the provider still has open
+ * bookings, an unreturned downpayment or unpaid commission; the server's
+ * message says which.
+ */
+export function useDeleteProvider() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id) => providerApi.remove(id),
+    onSuccess: (data) => {
+      toast.success(data?.message ?? 'Provider deleted.')
+      invalidateProviderCaches(queryClient)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dataManagement.all })
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Unable to delete the provider.')
+    },
+  })
+}

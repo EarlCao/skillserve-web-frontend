@@ -18,4 +18,6 @@ export const providerApi = {
     api.get(`/providers/${providerId}/verification-documents/${documentId}/download`, { responseType: 'blob' }),
   suspend: (id, reason) => api.patch(`/providers/${id}/suspend`, { reason }),
   activate: (id) => api.patch(`/providers/${id}/activate`),
+  unban: (id) => api.patch(`/providers/${id}/unban`),
+  remove: (id) => api.delete(`/providers/${id}`),
 }
