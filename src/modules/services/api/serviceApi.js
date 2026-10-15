@@ -11,7 +11,7 @@ export const serviceApi = {
   update: (id, payload) => api.put(`/services/${id}`, payload),
   approve: (id, notes) => api.patch(`/services/${id}/approve`, { notes }),
   reject: (id, reason) => api.patch(`/services/${id}/reject`, { reason }),
-  hide: (id, isHidden) => api.patch(`/services/${id}/hide`, { is_hidden: isHidden }),
-  feature: (id, isFeatured) => api.patch(`/services/${id}/feature`, { is_featured: isFeatured }),
-  remove: (id) => api.delete(`/services/${id}`),
+  hide: (id, isHidden, reason) => api.patch(`/services/${id}/hide`, { is_hidden: isHidden, reason }),
+  feature: (id, isFeatured, reason) => api.patch(`/services/${id}/feature`, { is_featured: isFeatured, reason }),
+  remove: (id, reason) => api.delete(`/services/${id}`, { data: { reason } }),
 }

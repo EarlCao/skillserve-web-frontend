@@ -80,14 +80,14 @@ export default function UserProfilePage() {
     }
   }
 
-  const confirmSimpleAction = () => {
+  const confirmSimpleAction = (reason) => {
     const target = confirmTarget
     if (!target) return
 
     if (target.action === 'activate') {
-      activateMutation.mutate(target.user.id, { onSuccess: () => confirmDisclosure.close() })
+      activateMutation.mutate({ id: target.user.id, reason }, { onSuccess: () => confirmDisclosure.close() })
     } else {
-      deleteMutation.mutate(target.user.id, {
+      deleteMutation.mutate({ id: target.user.id, reason }, {
         onSuccess: () => {
           navigate('/admin/users')
           confirmDisclosure.close()
@@ -457,11 +457,12 @@ export default function UserProfilePage() {
               confirmTarget
                 ? isActivateConfirm
                   ? `This will restore ${confirmTarget.user.name}'s access to the platform.`
-                  : `This will permanently delete ${confirmTarget.user.name}'s account. The action cannot be undone.`
+                  : `This will delete ${confirmTarget.user.name}'s account and sign them out of the mobile app at once. They are emailed your reason. The account can be restored from Data Management.`
                 : ''
             }
             confirmText={isActivateConfirm ? 'Activate' : 'Delete'}
             variant={isActivateConfirm ? 'primary' : 'error'}
+            reason={isActivateConfirm ? { required: false } : { required: true }}
           />
         </>
       )}

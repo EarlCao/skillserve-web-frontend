@@ -10,14 +10,14 @@ export const providerApi = {
   approveVerification: (id, notes) => api.patch(`/providers/${id}/verification/approve`, { notes }),
   rejectVerification: (id, reason) => api.patch(`/providers/${id}/verification/reject`, { reason }),
   requestAdditionalInfo: (id, message) => api.patch(`/providers/${id}/verification/request-info`, { message }),
-  removeVerification: (id) => api.patch(`/providers/${id}/verification/remove`),
+  removeVerification: (id, reason) => api.patch(`/providers/${id}/verification/remove`, { reason }),
   verificationHistory: (id) => api.get(`/providers/${id}/verification-history`),
   // Private file behind the admin's token, so it is fetched as a blob rather
   // than opened as a plain link.
   verificationDocument: (providerId, documentId) =>
     api.get(`/providers/${providerId}/verification-documents/${documentId}/download`, { responseType: 'blob' }),
   suspend: (id, reason) => api.patch(`/providers/${id}/suspend`, { reason }),
-  activate: (id) => api.patch(`/providers/${id}/activate`),
-  unban: (id) => api.patch(`/providers/${id}/unban`),
-  remove: (id) => api.delete(`/providers/${id}`),
+  activate: (id, reason) => api.patch(`/providers/${id}/activate`, { reason }),
+  unban: (id, reason) => api.patch(`/providers/${id}/unban`, { reason }),
+  remove: (id, reason) => api.delete(`/providers/${id}`, { data: { reason } }),
 }

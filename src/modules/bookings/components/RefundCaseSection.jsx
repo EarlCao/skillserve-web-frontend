@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import Button from '../../../components/ui/Button'
 import Textarea from '../../../components/ui/Textarea'
 import Badge from '../../../components/ui/Badge'
+import ConfirmDialog from '../../../components/feedback/ConfirmDialog'
 import { PrivatePhotoThumbnail } from '../../../components/common/PrivatePhotos'
 import { formatCurrency } from '../../../utils'
 import { useResolveRefund } from '../hooks/useBookings'
@@ -26,6 +27,8 @@ const STATUS = {
 export default function RefundCaseSection({ booking, canResolve }) {
   const refund = booking.refund
   const [note, setNote] = useState('')
+  // The decision waiting for confirmation: 'returned' or 'not_returned'.
+  const [pendingResolution, setPendingResolution] = useState(null)
   const resolve = useResolveRefund()
 
   if (!refund) return null
@@ -34,7 +37,10 @@ export default function RefundCaseSection({ booking, canResolve }) {
     ? { variant: 'error', label: 'Overdue — provider blocked' }
     : STATUS[refund.status] ?? { variant: 'neutral', label: refund.status }
   const settleable = canResolve && refund.status !== 'confirmed'
-  const submit = (resolution) => resolve.mutate({ id: booking.id, resolution, note: note.trim() }, { onSuccess: () => setNote('') })
+  const submit = () => resolve.mutate(
+    { id: booking.id, resolution: pendingResolution, note: note.trim() },
+    { onSuccess: () => { setNote(''); setPendingResolution(null) } },
+  )
 
   return (
     <div className="rounded-md border border-base-300 p-3 text-sm">
@@ -73,15 +79,27 @@ export default function RefundCaseSection({ booking, canResolve }) {
             placeholder="What you checked, e.g. the GCash records both sides sent…"
           />
           <div className="flex flex-wrap justify-end gap-2">
-            <Button variant="error" size="sm" onClick={() => submit('not_returned')} disabled={note.trim().length < 3} loading={resolve.isPending}>
+            <Button variant="error" size="sm" onClick={() => setPendingResolution('not_returned')} disabled={note.trim().length < 3} loading={resolve.isPending}>
               Not returned — keep provider blocked
             </Button>
-            <Button variant="success" size="sm" onClick={() => submit('returned')} disabled={note.trim().length < 3} loading={resolve.isPending}>
+            <Button variant="success" size="sm" onClick={() => setPendingResolution('returned')} disabled={note.trim().length < 3} loading={resolve.isPending}>
               Returned — record it
             </Button>
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={Boolean(pendingResolution)}
+        onCancel={() => setPendingResolution(null)}
+        onConfirm={submit}
+        loading={resolve.isPending}
+        title={pendingResolution === 'returned' ? 'Record the payment as returned?' : 'Record the payment as not returned?'}
+        description={pendingResolution === 'returned'
+          ? `The ${formatCurrency(refund.amount)} counts as returned to the customer and the provider is no longer blocked. Both are sent your note: "${note.trim()}"`
+          : `The provider stays blocked from new work until it is settled. Both are sent your note: "${note.trim()}"`}
+        confirmText={pendingResolution === 'returned' ? 'Record as returned' : 'Record as not returned'}
+        variant={pendingResolution === 'returned' ? 'primary' : 'error'}
+      />
     </div>
   )
 }

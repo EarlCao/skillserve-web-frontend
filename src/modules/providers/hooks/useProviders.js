@@ -127,7 +127,7 @@ export function useRemoveVerification() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => providerApi.removeVerification(id),
+    mutationFn: ({ id, reason }) => providerApi.removeVerification(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Provider verification removed.')
       invalidateProviderCaches(queryClient)
@@ -163,7 +163,7 @@ export function useActivateProvider() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => providerApi.activate(id),
+    mutationFn: ({ id, reason }) => providerApi.activate(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Provider activated.')
       invalidateProviderCaches(queryClient)
@@ -181,7 +181,7 @@ export function useUnbanProvider() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => providerApi.unban(id),
+    mutationFn: ({ id, reason }) => providerApi.unban(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Ban lifted.')
       invalidateProviderCaches(queryClient)
@@ -201,7 +201,7 @@ export function useDeleteProvider() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => providerApi.remove(id),
+    mutationFn: ({ id, reason }) => providerApi.remove(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Provider deleted.')
       invalidateProviderCaches(queryClient)

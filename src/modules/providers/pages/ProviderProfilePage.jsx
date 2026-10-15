@@ -666,51 +666,54 @@ export default function ProviderProfilePage() {
       <ConfirmDialog
         open={showActivateConfirm}
         onCancel={() => setShowActivateConfirm(false)}
-        onConfirm={() => {
-          if (provider) activateMutation.mutate(provider.id, { onSuccess: () => setShowActivateConfirm(false) })
+        onConfirm={(reason) => {
+          if (provider) activateMutation.mutate({ id: provider.id, reason }, { onSuccess: () => setShowActivateConfirm(false) })
         }}
         loading={activateMutation.isPending}
         title="Activate provider?"
         description={`This will restore ${provider?.business_name || provider?.user?.name}'s access to the platform.`}
         confirmText="Activate"
         variant="primary"
+        reason={{ required: false }}
       />
 
       {/* Remove Verification Confirm */}
       <ConfirmDialog
         open={showRemoveVerificationConfirm}
         onCancel={() => setShowRemoveVerificationConfirm(false)}
-        onConfirm={() => {
-          if (provider) removeVerificationMutation.mutate(provider.id, { onSuccess: () => setShowRemoveVerificationConfirm(false) })
+        onConfirm={(reason) => {
+          if (provider) removeVerificationMutation.mutate({ id: provider.id, reason }, { onSuccess: () => setShowRemoveVerificationConfirm(false) })
         }}
         loading={removeVerificationMutation.isPending}
         title="Remove verification?"
         description={`This will remove the verified status of ${provider?.business_name || provider?.user?.name}. They will need to re-apply for verification.`}
         confirmText="Remove verification"
         variant="error"
+        reason={{ required: true }}
       />
 
       {/* Unban Confirm */}
       <ConfirmDialog
         open={showUnbanConfirm}
         onCancel={() => setShowUnbanConfirm(false)}
-        onConfirm={() => {
-          if (provider) unbanMutation.mutate(provider.id, { onSuccess: () => setShowUnbanConfirm(false) })
+        onConfirm={(reason) => {
+          if (provider) unbanMutation.mutate({ id: provider.id, reason }, { onSuccess: () => setShowUnbanConfirm(false) })
         }}
         loading={unbanMutation.isPending}
         title="Unban provider?"
         description={`${provider?.business_name || provider?.user?.name} will be able to sign in again, and is emailed that the ban was lifted. If they are also suspended, activate them afterwards to return them to the marketplace.`}
         confirmText="Unban"
         variant="primary"
+        reason={{ required: false }}
       />
 
       {/* Delete Confirm */}
       <ConfirmDialog
         open={showDeleteConfirm}
         onCancel={() => setShowDeleteConfirm(false)}
-        onConfirm={() => {
+        onConfirm={(reason) => {
           if (provider) {
-            deleteMutation.mutate(provider.id, {
+            deleteMutation.mutate({ id: provider.id, reason }, {
               onSuccess: () => {
                 setShowDeleteConfirm(false)
                 navigate('/admin/providers')
@@ -720,9 +723,10 @@ export default function ProviderProfilePage() {
         }}
         loading={deleteMutation.isPending}
         title="Delete provider?"
-        description={`This will delete ${provider?.business_name || provider?.user?.name}'s account and sign them out of the mobile app at once. Their booking history is kept, and the account can be restored from Data Management. A provider with open bookings, an unreturned downpayment or unpaid commission cannot be deleted.`}
+        description={`This will delete ${provider?.business_name || provider?.user?.name}'s account and sign them out of the mobile app at once. They are emailed your reason. Their booking history is kept, and the account can be restored from Data Management. A provider with open bookings, an unreturned downpayment or unpaid commission cannot be deleted.`}
         confirmText="Delete provider"
         variant="error"
+        reason={{ required: true }}
       />
     </div>
   )

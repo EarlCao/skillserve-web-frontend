@@ -31,6 +31,6 @@ function useRecognitionMutation(mutationFn, message) {
 export function useCreateBadge() { return useRecognitionMutation(providerRecognitionApi.createBadge, 'Badge created.') }
 export function useUpdateBadge() { return useRecognitionMutation(({ id, ...payload }) => providerRecognitionApi.updateBadge(id, payload), 'Badge updated.') }
 export function useDeleteBadge() { return useRecognitionMutation(providerRecognitionApi.deleteBadge, 'Badge deleted.') }
-export function useAssignBadge() { return useRecognitionMutation(({ providerId, badgeId }) => providerRecognitionApi.assignBadge(providerId, badgeId), 'Badge assigned.') }
-export function useRemoveBadge() { return useRecognitionMutation(({ providerId, badgeId }) => providerRecognitionApi.removeBadge(providerId, badgeId), 'Badge removed.') }
-export function useToggleFeatured() { return useRecognitionMutation(({ providerId, isFeatured }) => providerRecognitionApi.featured(providerId, isFeatured), 'Featured status updated.') }
+export function useAssignBadge() { return useRecognitionMutation(({ providerId, badgeId, reason }) => providerRecognitionApi.assignBadge(providerId, badgeId, reason), 'Badge assigned.') }
+export function useRemoveBadge() { return useRecognitionMutation(({ providerId, badgeId, reason }) => providerRecognitionApi.removeBadge(providerId, badgeId, reason), 'Badge removed.') }
+export function useToggleFeatured() { return useRecognitionMutation(({ providerId, isFeatured, reason }) => providerRecognitionApi.featured(providerId, isFeatured, reason), 'Featured status updated.') }

@@ -114,20 +114,20 @@ export default function ProvidersPage() {
     if (target.action === 'suspend') {
       suspendMutation.mutate({ id: target.provider.id, reason: payload }, { onSuccess: () => actionDisclosure.close() })
     } else if (target.action === 'activate') {
-      activateMutation.mutate(target.provider.id, { onSuccess: () => actionDisclosure.close() })
+      activateMutation.mutate({ id: target.provider.id, reason: payload }, { onSuccess: () => actionDisclosure.close() })
     }
   }
 
-  const confirmSimpleAction = () => {
+  const confirmSimpleAction = (reason) => {
     const target = confirmTarget
     if (!target) return
 
     if (target.action === 'delete') {
-      deleteMutation.mutate(target.provider.id, { onSuccess: () => confirmDisclosure.close() })
+      deleteMutation.mutate({ id: target.provider.id, reason }, { onSuccess: () => confirmDisclosure.close() })
     } else if (target.action === 'unban') {
-      unbanMutation.mutate(target.provider.id, { onSuccess: () => confirmDisclosure.close() })
+      unbanMutation.mutate({ id: target.provider.id, reason }, { onSuccess: () => confirmDisclosure.close() })
     } else {
-      removeVerificationMutation.mutate(target.provider.id, { onSuccess: () => confirmDisclosure.close() })
+      removeVerificationMutation.mutate({ id: target.provider.id, reason }, { onSuccess: () => confirmDisclosure.close() })
     }
   }
 
@@ -423,12 +423,13 @@ export default function ProvidersPage() {
             ? isUnbanConfirm
               ? `${confirmName} will be able to sign in again, and is emailed that the ban was lifted. If they are also suspended, activate them afterwards to return them to the marketplace.`
               : isDeleteConfirm
-              ? `This will delete ${confirmName}'s account and sign them out of the mobile app at once. Their booking history is kept, and the account can be restored from Data Management. A provider with open bookings, an unreturned downpayment or unpaid commission cannot be deleted.`
+              ? `This will delete ${confirmName}'s account and sign them out of the mobile app at once. They are emailed your reason. Their booking history is kept, and the account can be restored from Data Management. A provider with open bookings, an unreturned downpayment or unpaid commission cannot be deleted.`
               : `This will remove the verified status of ${confirmName}. They will need to re-apply for verification.`
             : ''
         }
         confirmText={isDeleteConfirm ? 'Delete provider' : isUnbanConfirm ? 'Unban' : 'Remove verification'}
         variant={isUnbanConfirm ? 'primary' : 'error'}
+        reason={{ required: !isUnbanConfirm }}
       />
     </div>
   )

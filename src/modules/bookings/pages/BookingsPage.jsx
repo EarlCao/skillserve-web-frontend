@@ -88,10 +88,10 @@ export default function BookingsPage() {
     }
   }, [paginationMeta?.last_page]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const confirmCancel = () => {
+  const confirmCancel = (reason) => {
     if (!cancelTarget) return
     cancelMutation.mutate(
-      { id: cancelTarget.id, reason: cancelTarget.reason },
+      { id: cancelTarget.id, reason },
       { onSuccess: () => { cancelDisclosure.close(); setCancelTarget(null); setViewing(null); } },
     )
   }
@@ -367,26 +367,13 @@ export default function BookingsPage() {
         title="Cancel booking?"
         description={
           cancelTarget
-            ? `This will cancel booking "${cancelTarget.booking_number}". This action cannot be undone.`
+            ? `This will cancel booking "${cancelTarget.booking_number}". The customer and the provider are told your reason. This cannot be undone.`
             : ''
         }
         confirmText="Cancel Booking"
         variant="error"
-      >
-        <div className="mt-2">
-          <label className="label" htmlFor="cancel-reason">
-            <span className="label-text">Reason (optional)</span>
-          </label>
-          <textarea
-            id="cancel-reason"
-            className="textarea textarea-bordered textarea-sm w-full"
-            placeholder="Enter cancellation reason…"
-            rows={3}
-            value={cancelTarget?.reason ?? ''}
-            onChange={(event) => setCancelTarget((prev) => prev ? { ...prev, reason: event.target.value } : prev)}
-          />
-        </div>
-      </ConfirmDialog>
+        reason={{ required: true, hint: 'The customer and the provider are told what you write.' }}
+      />
 
       <Modal
         open={disputeActionDisclosure.isOpen}

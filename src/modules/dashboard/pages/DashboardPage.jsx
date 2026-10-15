@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { Activity, AlertTriangle, CalendarCheck, CheckCircle2, Clock3, ShieldCheck, TrendingUp, UserCheck, Users } from 'lucide-react'
+import { Activity, AlertTriangle, CalendarCheck, CheckCircle2, Clock3, ShieldCheck, TrendingUp, UserCheck, UserX, Users } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import Card from '../../../components/ui/Card'
 import ErrorState from '../../../components/common/ErrorState'
@@ -93,6 +93,7 @@ export default function DashboardPage() {
           <SummaryCard label="Providers" value={users.total_providers} detail="registered providers" icon={UserCheck} tone="secondary" />
           <SummaryCard label="Active users" value={users.active_users} detail="currently active" icon={TrendingUp} tone="success" />
           <SummaryCard label="Suspended users" value={users.suspended_users} detail="needs attention" icon={AlertTriangle} tone="warning" />
+          <SummaryCard label="Deleted users" value={users.deleted_users ?? 0} detail="restorable in Data Management" icon={UserX} tone="error" />
           <SummaryCard label="Services" value={services.total_services} detail="all service listings" icon={Activity} />
           <SummaryCard label="Approved services" value={services.approved_services} detail="ready for clients" icon={CheckCircle2} tone="success" />
           <SummaryCard label="Pending services" value={services.pending_services} detail="awaiting review" icon={Clock3} tone="warning" />

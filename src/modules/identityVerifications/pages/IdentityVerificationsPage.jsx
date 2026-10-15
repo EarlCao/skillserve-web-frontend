@@ -150,7 +150,7 @@ export default function IdentityVerificationsPage() {
         <h1 className="text-2xl font-bold">Identity Verification</h1>
         <p className="text-sm text-base-content/60">
           Review Philippine National ID submissions from customers and providers. A National ID can
-          back only one active account.
+          verify only one customer account and one provider account.
         </p>
       </div>
 

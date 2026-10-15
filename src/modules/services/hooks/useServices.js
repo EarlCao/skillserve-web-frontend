@@ -98,7 +98,7 @@ export function useHideService() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, isHidden }) => serviceApi.hide(id, isHidden),
+    mutationFn: ({ id, isHidden, reason }) => serviceApi.hide(id, isHidden, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Service visibility updated.')
       invalidateServiceCaches(queryClient)
@@ -116,7 +116,7 @@ export function useFeatureService() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, isFeatured }) => serviceApi.feature(id, isFeatured),
+    mutationFn: ({ id, isFeatured, reason }) => serviceApi.feature(id, isFeatured, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Service featured status updated.')
       invalidateServiceCaches(queryClient)
@@ -134,7 +134,7 @@ export function useDeleteService() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: serviceApi.remove,
+    mutationFn: ({ id, reason }) => serviceApi.remove(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Service deleted.')
       invalidateServiceCaches(queryClient)

@@ -26,7 +26,8 @@ const ACTION_LABELS = {
  *
  * The available actions depend on the reported item type (user: warning /
  * suspend / ban; service: hide; review: hide / remove; message: remove).
- * Suspend and ban require a reason; bans additionally require a duration
+ * Every action against someone (suspend, ban, hide, remove) requires a
+ * reason, which the person affected is told; bans additionally require a duration
  * (fixed number of days, with quick presets, or "forever"); warnings require
  * a message. An optional note is recorded with every action.
  *
@@ -54,7 +55,7 @@ export default function ReportActionModal({
   const [note, setNote] = useState('')
   const [touched, setTouched] = useState(false)
 
-  const requiresReason = action === 'suspend' || action === 'ban'
+  const requiresReason = ['suspend', 'ban', 'hide', 'remove'].includes(action)
   const missingReason = requiresReason && !reason.trim()
   const missingWarning = action === 'warning' && !warningMessage.trim()
   const invalidDays = duration === 'days' && (!Number.isInteger(days) || days < 1)
@@ -131,12 +132,17 @@ export default function ReportActionModal({
             label="Reason"
             required
             error={touched && missingReason ? 'Please provide a reason.' : undefined}
-            hint="Recorded on the account and in the audit log."
+            hint="The person affected is told what you write. It is also kept in the audit log."
           >
             <textarea
               className={`textarea textarea-bordered w-full ${touched && missingReason ? 'textarea-error' : ''}`}
               rows={3}
-              placeholder={action === 'ban' ? 'Why is this account being banned?' : 'Why is this account being suspended?'}
+              placeholder={{
+                ban: 'Why is this account being banned?',
+                suspend: 'Why is this account being suspended?',
+                hide: 'Why is this being hidden?',
+                remove: 'Why is this being removed?',
+              }[action]}
               value={reason}
               onChange={(event) => setReason(event.target.value)}
             />

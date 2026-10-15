@@ -9,9 +9,9 @@ export const userApi = {
   show: (id) => api.get(`/users/${id}`),
   update: (id, payload) => api.put(`/users/${id}`, payload),
   suspend: (id, reason) => api.patch(`/users/${id}/suspend`, { reason }),
-  activate: (id) => api.patch(`/users/${id}/activate`),
+  activate: (id, reason) => api.patch(`/users/${id}/activate`, { reason }),
   ban: (id, { reason, duration, days } = {}) => api.patch(`/users/${id}/ban`, { reason, duration, days }),
   unban: (id, { reason } = {}) => api.patch(`/users/${id}/unban`, { reason }),
   banHistory: (id) => api.get(`/users/${id}/moderation-history`),
-  remove: (id) => api.delete(`/users/${id}`),
+  remove: (id, reason) => api.delete(`/users/${id}`, { data: { reason } }),
 }

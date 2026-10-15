@@ -88,7 +88,7 @@ export function useActivateUser() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => userApi.activate(id),
+    mutationFn: ({ id, reason }) => userApi.activate(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'User activated.')
       invalidateUserCaches(queryClient)
@@ -142,7 +142,7 @@ export function useDeleteUser() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => userApi.remove(id),
+    mutationFn: ({ id, reason }) => userApi.remove(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'User deleted.')
       invalidateUserCaches(queryClient)

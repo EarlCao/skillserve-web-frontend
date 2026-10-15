@@ -77,18 +77,18 @@ export default function ReviewsPage() {
     }
   }, [paginationMeta?.last_page]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const confirmHide = () => {
+  const confirmHide = (reason) => {
     if (!hideTarget) return
     const isCurrentlyHidden = hideTarget.status === 'hidden'
     hideMutation.mutate(
-      { id: hideTarget.id, isHidden: !isCurrentlyHidden },
+      { id: hideTarget.id, isHidden: !isCurrentlyHidden, reason },
       { onSuccess: () => { hideDisclosure.close(); setHideTarget(null); setViewing(null); } },
     )
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = (reason) => {
     if (!deleteTarget) return
-    deleteMutation.mutate(deleteTarget.id, {
+    deleteMutation.mutate({ id: deleteTarget.id, reason }, {
       onSuccess: () => { deleteDisclosure.close(); setDeleteTarget(null); setViewing(null); },
     })
   }
@@ -345,6 +345,7 @@ export default function ReviewsPage() {
         }
         confirmText={hideTarget?.status === 'hidden' ? 'Restore' : 'Hide'}
         variant={hideTarget?.status === 'hidden' ? 'primary' : 'warning'}
+        reason={{ required: hideTarget?.status !== 'hidden', hint: 'The reviewer is told what you write.' }}
       />
 
       <ConfirmDialog
@@ -355,11 +356,12 @@ export default function ReviewsPage() {
         title="Remove review?"
         description={
           deleteTarget
-            ? 'This will permanently remove the review. This action cannot be undone.'
+            ? 'This will remove the review from the provider\'s profile. The reviewer is told your reason. It can be restored from Data Management.'
             : ''
         }
         confirmText="Remove"
         variant="error"
+        reason={{ required: true, hint: 'The reviewer is told what you write.' }}
       />
     </div>
   )

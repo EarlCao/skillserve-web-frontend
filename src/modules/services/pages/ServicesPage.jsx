@@ -114,10 +114,10 @@ export default function ServicesPage() {
     }
   }, [paginationMeta?.last_page]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const confirmApprove = () => {
+  const confirmApprove = (notes) => {
     if (!approveTarget) return
     approveMutation.mutate(
-      { id: approveTarget.id },
+      { id: approveTarget.id, notes },
       { onSuccess: () => { approveDisclosure.close(); setApproveTarget(null); setViewing(null); } },
     )
   }
@@ -135,25 +135,25 @@ export default function ServicesPage() {
     )
   }
 
-  const confirmHide = () => {
+  const confirmHide = (reason) => {
     if (!hideTarget) return
     hideMutation.mutate(
-      { id: hideTarget.id, isHidden: !hideTarget.is_hidden },
+      { id: hideTarget.id, isHidden: !hideTarget.is_hidden, reason },
       { onSuccess: () => { hideDisclosure.close(); setHideTarget(null); setViewing(null); } },
     )
   }
 
-  const confirmFeature = () => {
+  const confirmFeature = (reason) => {
     if (!featureTarget) return
     featureMutation.mutate(
-      { id: featureTarget.id, isFeatured: !featureTarget.is_featured },
+      { id: featureTarget.id, isFeatured: !featureTarget.is_featured, reason },
       { onSuccess: () => { featureDisclosure.close(); setFeatureTarget(null); setViewing(null); } },
     )
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = (reason) => {
     if (!deleteTarget) return
-    deleteMutation.mutate(deleteTarget.id, {
+    deleteMutation.mutate({ id: deleteTarget.id, reason }, {
       onSuccess: () => { deleteDisclosure.close(); setDeleteTarget(null); setViewing(null); },
     })
   }
@@ -457,6 +457,7 @@ export default function ServicesPage() {
         }
         confirmText="Approve"
         variant="primary"
+        reason={{ required: false, hint: 'The provider is told what you write.' }}
       />
 
       <ConfirmDialog
@@ -498,6 +499,7 @@ export default function ServicesPage() {
         }
         confirmText={hideTarget?.is_hidden ? 'Unhide' : 'Hide'}
         variant={hideTarget?.is_hidden ? 'primary' : 'warning'}
+        reason={{ required: !hideTarget?.is_hidden, hint: 'The provider is told what you write.' }}
       />
 
       <ConfirmDialog
@@ -515,6 +517,7 @@ export default function ServicesPage() {
         }
         confirmText={featureTarget?.is_featured ? 'Unfeature' : 'Feature'}
         variant={featureTarget?.is_featured ? 'outline' : 'primary'}
+        reason={{ required: Boolean(featureTarget?.is_featured), hint: 'The provider is told what you write.' }}
       />
 
       <ConfirmDialog
@@ -525,11 +528,12 @@ export default function ServicesPage() {
         title="Delete service?"
         description={
           deleteTarget
-            ? `This will delete "${deleteTarget.title}". The provider will be notified. This action cannot be undone.`
+            ? `This will delete "${deleteTarget.title}". The provider is told your reason.`
             : ''
         }
         confirmText="Delete"
         variant="error"
+        reason={{ required: true, hint: 'The provider is told what you write.' }}
       />
     </div>
   )

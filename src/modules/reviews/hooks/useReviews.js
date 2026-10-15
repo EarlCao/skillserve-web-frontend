@@ -42,7 +42,7 @@ export function useHideReview() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, isHidden }) => reviewApi.hide(id, isHidden),
+    mutationFn: ({ id, isHidden, reason }) => reviewApi.hide(id, isHidden, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Review visibility updated.')
       invalidateReviewCaches(queryClient)
@@ -60,7 +60,7 @@ export function useRemoveReview() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: reviewApi.remove,
+    mutationFn: ({ id, reason }) => reviewApi.remove(id, reason),
     onSuccess: (data) => {
       toast.success(data?.message ?? 'Review removed.')
       invalidateReviewCaches(queryClient)

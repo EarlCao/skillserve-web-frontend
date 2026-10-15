@@ -5,12 +5,13 @@ import Textarea from '../../../components/ui/Textarea'
 
 /**
  * Modal for provider moderation actions (suspend / activate).
- * Suspend requires a reason; activate is a simple confirmation.
+ * Suspend requires a reason; activate takes an optional note. Either is
+ * passed on to the provider.
  *
  * @param {object} props
  * @param {boolean} props.open
  * @param {() => void} props.onClose
- * @param {(reason?: string) => void} props.onConfirm
+ * @param {(reason?: string | null) => void} props.onConfirm
  * @param {boolean} props.loading
  * @param {'suspend' | 'activate'} props.action
  * @param {string} props.title
@@ -34,7 +35,7 @@ export default function ProviderActionModal({
 
   const handleSubmit = () => {
     if (needsReason && !reason.trim()) return
-    onConfirm(needsReason ? reason.trim() : undefined)
+    onConfirm(reason.trim() || null)
     setReason('')
   }
 
@@ -60,22 +61,20 @@ export default function ProviderActionModal({
         </>
       }
     >
-      {needsReason && (
-        <div className="flex flex-col gap-2">
-          <label htmlFor="action-reason" className="text-sm font-medium">
-            Reason <span className="text-error">*</span>
-          </label>
-          <Textarea
-            id="action-reason"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Please provide a reason…"
-            rows={3}
-            maxLength={500}
-          />
-          <p className="text-xs text-base-content/50">{reason.length}/500 characters</p>
-        </div>
-      )}
+      <div className="flex flex-col gap-2">
+        <label htmlFor="action-reason" className="text-sm font-medium">
+          {needsReason ? <>Reason <span className="text-error">*</span></> : 'Note (optional)'}
+        </label>
+        <Textarea
+          id="action-reason"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={needsReason ? 'Please provide a reason…' : 'Add a note…'}
+          rows={3}
+          maxLength={500}
+        />
+        <p className="text-xs text-base-content/50">The provider is told what you write. {reason.length}/500 characters</p>
+      </div>
     </Modal>
   )
 }
