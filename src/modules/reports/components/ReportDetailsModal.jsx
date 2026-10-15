@@ -38,6 +38,7 @@ export default function ReportDetailsModal({
       open={open}
       onClose={onClose}
       title="Report Details"
+      boxClassName="max-w-2xl"
       description="Investigate the reported item and record findings before taking action."
       footer={
         <>

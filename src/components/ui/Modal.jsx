@@ -71,7 +71,7 @@ export default function Modal({ open, onClose, title, description, children, foo
           </div>
         )}
         {children}
-        {footer && <div className="modal-action">{footer}</div>}
+        {footer && <div className="modal-action flex-wrap">{footer}</div>}
       </div>
     </dialog>
   )
